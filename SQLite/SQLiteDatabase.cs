@@ -1,11 +1,19 @@
-﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+﻿#if !NET && !NETCOREAPP
+using UnityEngine;
+#endif
+
+#if !NET && !NETCOREAPP
 using Mono.Data.Sqlite;
+#else
+using Microsoft.Data.Sqlite;
+#endif
+
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using System;
 #endif
-using UnityEngine;
 
 namespace MultiplayerARPG.MMO
 {
@@ -13,13 +21,18 @@ namespace MultiplayerARPG.MMO
     {
         public static readonly string LogTag = nameof(SQLiteDatabase);
 
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private string dbPath = "./mmorpgtemplate.sqlite3";
 
+#if !NET && !NETCOREAPP
         [Header("Running In Editor")]
         [SerializeField]
         [Tooltip("You should set this to where you build app to make database path as same as map server")]
+#endif
         private string editorDbPath = "./mmorpgtemplate.sqlite3";
+
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         private SqliteConnection connection;
 
@@ -366,6 +379,7 @@ namespace MultiplayerARPG.MMO
             )");
 
             // Migrate data
+#if !NET && !NETCOREAPP
             if (IsColumnExist("buildings", "dataId"))
             {
                 if (!IsColumnExist("buildings", "entityId"))
@@ -379,6 +393,7 @@ namespace MultiplayerARPG.MMO
                 }
                 ExecuteNonQuery("ALTER TABLE buildings DROP dataId;");
             }
+#endif
 
             // Migrate fields
             if (!IsColumnExist("characterhotkey", "relateId"))
@@ -655,6 +670,8 @@ namespace MultiplayerARPG.MMO
         public string GetConnectionString()
         {
             string path = dbPath;
+
+#if !NET && !NETCOREAPP
             if (Application.isMobilePlatform)
             {
                 if (path.StartsWith("./"))
@@ -669,6 +686,7 @@ namespace MultiplayerARPG.MMO
 
             if (!File.Exists(path))
                 SqliteConnection.CreateFile(path);
+#endif
 
             return "URI=file:" + path;
         }
@@ -932,5 +950,5 @@ namespace MultiplayerARPG.MMO
             }
         }
 #endif
+        }
     }
-}

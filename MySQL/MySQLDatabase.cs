@@ -1,11 +1,14 @@
-﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+﻿#if !NET && !NETCOREAPP
+using UnityEngine;
+#endif
+
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using MySqlConnector;
 using Newtonsoft.Json;
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
 #endif
-using UnityEngine;
 
 namespace MultiplayerARPG.MMO
 {
@@ -13,15 +16,25 @@ namespace MultiplayerARPG.MMO
     {
         public static readonly string LogTag = nameof(MySQLDatabase);
 
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private string address = "127.0.0.1";
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private int port = 3306;
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private string username = "root";
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private string password = "";
+#if !NET && !NETCOREAPP
         [SerializeField]
+#endif
         private string dbName = "mmorpgtemplate";
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
@@ -79,8 +92,10 @@ namespace MultiplayerARPG.MMO
 
         private void Migration()
         {
+            string migrationId;
+#if !NET && !NETCOREAPP
             // 1.57b
-            string migrationId = "1.57b";
+            migrationId = "1.57b";
             if (!HasMigrationId(migrationId))
             {
                 LogInformation(LogTag, $"Migrating up to {migrationId}");
@@ -107,6 +122,7 @@ namespace MultiplayerARPG.MMO
                 InsertMigrationId(migrationId);
                 LogInformation(LogTag, $"Migrated to {migrationId}");
             }
+#endif
             migrationId = "1.58";
             if (!HasMigrationId(migrationId))
             {
@@ -951,5 +967,5 @@ namespace MultiplayerARPG.MMO
             }
         }
 #endif
-    }
+        }
 }

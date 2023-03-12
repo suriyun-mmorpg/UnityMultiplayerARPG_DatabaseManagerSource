@@ -1,11 +1,18 @@
-﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+﻿#if !NET && !NETCOREAPP
+using UnityEngine;
+#endif
+
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using System.Collections.Generic;
 #endif
-using UnityEngine;
 
 namespace MultiplayerARPG.MMO
 {
+#if !NET && !NETCOREAPP
     public abstract partial class BaseDatabase : MonoBehaviour, IDatabaseManagerLogging
+#else
+    public abstract partial class BaseDatabase : IDatabaseManagerLogging
+#endif
     {
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;

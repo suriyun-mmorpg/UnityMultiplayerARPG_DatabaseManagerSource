@@ -1,5 +1,10 @@
-﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+﻿#if !NET && !NETCOREAPP
 using Mono.Data.Sqlite;
+#else
+using Microsoft.Data.Sqlite;
+#endif
+
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using System;
 using System.Collections.Generic;
 
