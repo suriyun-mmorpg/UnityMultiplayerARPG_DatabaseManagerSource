@@ -58,15 +58,15 @@ namespace MultiplayerARPG.MMO
                 LogInformation(LogTag, "Found config file");
                 string dataAsJson = File.ReadAllText(configFilePath);
                 MySQLConfig replacingConfig = JsonConvert.DeserializeObject<MySQLConfig>(dataAsJson);
-                if (!string.IsNullOrWhiteSpace(replacingConfig.mySqlAddress))
+                if (replacingConfig.mySqlAddress != null)
                     config.mySqlAddress = replacingConfig.mySqlAddress;
                 if (replacingConfig.mySqlPort.HasValue)
                     config.mySqlPort = replacingConfig.mySqlPort.Value;
-                if (!string.IsNullOrWhiteSpace(replacingConfig.mySqlUsername))
+                if (replacingConfig.mySqlUsername != null)
                     config.mySqlUsername = replacingConfig.mySqlUsername;
-                if (!string.IsNullOrWhiteSpace(replacingConfig.mySqlPassword))
+                if (replacingConfig.mySqlPassword != null)
                     config.mySqlPassword = replacingConfig.mySqlPassword;
-                if (!string.IsNullOrWhiteSpace(replacingConfig.mySqlDbName))
+                if (replacingConfig.mySqlDbName != null)
                     config.mySqlDbName = replacingConfig.mySqlDbName;
                 configFileFound = true;
             }

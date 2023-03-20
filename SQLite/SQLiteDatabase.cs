@@ -53,7 +53,7 @@ namespace MultiplayerARPG.MMO
                 LogInformation(LogTag, "Found config file");
                 string dataAsJson = File.ReadAllText(configFilePath);
                 SQLiteConfig replacingConfig = JsonConvert.DeserializeObject<SQLiteConfig>(dataAsJson);
-                if (!string.IsNullOrWhiteSpace(replacingConfig.sqliteDbPath))
+                if (replacingConfig.sqliteDbPath != null)
                     config.sqliteDbPath = replacingConfig.sqliteDbPath;
                 configFileFound = true;
             }
