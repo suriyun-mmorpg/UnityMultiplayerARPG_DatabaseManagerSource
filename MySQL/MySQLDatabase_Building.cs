@@ -21,38 +21,34 @@ namespace MultiplayerARPG.MMO
                 result.CreatorId = reader.GetString(7);
                 result.CreatorName = reader.GetString(8);
                 result.ExtraData = reader.GetString(9);
-                result.PositionX = reader.GetFloat(10);
-                result.PositionY = reader.GetFloat(11);
-                result.PositionZ = reader.GetFloat(12);
-                result.RotationX = reader.GetFloat(13);
-                result.RotationY = reader.GetFloat(14);
-                result.RotationZ = reader.GetFloat(15);
+                result.Position = new Vec3(reader.GetFloat(10), reader.GetFloat(11), reader.GetFloat(12));
+                result.Rotation = new Vec3(reader.GetFloat(13), reader.GetFloat(14), reader.GetFloat(15));
                 return true;
             }
             result = new BuildingSaveData();
             return false;
         }
 
-        public override void CreateBuilding(string mapName, IBuildingSaveData saveData)
+        public override void CreateBuilding(string mapName, IBuildingSaveData building)
         {
             MySqlConnection connection = NewConnection();
             OpenConnectionSync(connection);
             ExecuteNonQuerySync(connection, null, "INSERT INTO buildings (id, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
-                new MySqlParameter("@id", saveData.Id),
-                new MySqlParameter("@parentId", saveData.ParentId),
-                new MySqlParameter("@entityId", saveData.EntityId),
-                new MySqlParameter("@currentHp", saveData.CurrentHp),
-                new MySqlParameter("@remainsLifeTime", saveData.RemainsLifeTime),
+                new MySqlParameter("@id", building.Id),
+                new MySqlParameter("@parentId", building.ParentId),
+                new MySqlParameter("@entityId", building.EntityId),
+                new MySqlParameter("@currentHp", building.CurrentHp),
+                new MySqlParameter("@remainsLifeTime", building.RemainsLifeTime),
                 new MySqlParameter("@mapName", mapName),
-                new MySqlParameter("@positionX", saveData.PositionX),
-                new MySqlParameter("@positionY", saveData.PositionY),
-                new MySqlParameter("@positionZ", saveData.PositionZ),
-                new MySqlParameter("@rotationX", saveData.RotationX),
-                new MySqlParameter("@rotationY", saveData.RotationY),
-                new MySqlParameter("@rotationZ", saveData.RotationZ),
-                new MySqlParameter("@creatorId", saveData.CreatorId),
-                new MySqlParameter("@creatorName", saveData.CreatorName),
-                new MySqlParameter("@extraData", saveData.ExtraData));
+                new MySqlParameter("@positionX", building.Position.x),
+                new MySqlParameter("@positionY", building.Position.y),
+                new MySqlParameter("@positionZ", building.Position.z),
+                new MySqlParameter("@rotationX", building.Rotation.x),
+                new MySqlParameter("@rotationY", building.Rotation.y),
+                new MySqlParameter("@rotationZ", building.Rotation.z),
+                new MySqlParameter("@creatorId", building.CreatorId),
+                new MySqlParameter("@creatorName", building.CreatorName),
+                new MySqlParameter("@extraData", building.ExtraData));
             connection.Close();
         }
 
@@ -101,12 +97,12 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@creatorId", building.CreatorId),
                 new MySqlParameter("@creatorName", building.CreatorName),
                 new MySqlParameter("@extraData", building.ExtraData),
-                new MySqlParameter("@positionX", building.PositionX),
-                new MySqlParameter("@positionY", building.PositionY),
-                new MySqlParameter("@positionZ", building.PositionZ),
-                new MySqlParameter("@rotationX", building.RotationX),
-                new MySqlParameter("@rotationY", building.RotationY),
-                new MySqlParameter("@rotationZ", building.RotationZ),
+                new MySqlParameter("@positionX", building.Position.x),
+                new MySqlParameter("@positionY", building.Position.y),
+                new MySqlParameter("@positionZ", building.Position.z),
+                new MySqlParameter("@rotationX", building.Rotation.x),
+                new MySqlParameter("@rotationY", building.Rotation.y),
+                new MySqlParameter("@rotationZ", building.Rotation.z),
                 new MySqlParameter("@mapName", mapName));
             connection.Close();
         }

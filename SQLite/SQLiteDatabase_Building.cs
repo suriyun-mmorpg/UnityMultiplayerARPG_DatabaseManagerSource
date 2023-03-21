@@ -26,36 +26,32 @@ namespace MultiplayerARPG.MMO
                 result.CreatorId = reader.GetString(7);
                 result.CreatorName = reader.GetString(8);
                 result.ExtraData = reader.GetString(9);
-                result.PositionX = reader.GetFloat(10);
-                result.PositionY = reader.GetFloat(11);
-                result.PositionZ = reader.GetFloat(12);
-                result.RotationX = reader.GetFloat(13);
-                result.RotationY = reader.GetFloat(14);
-                result.RotationZ = reader.GetFloat(15);
+                result.Position = new Vec3(reader.GetFloat(10), reader.GetFloat(11), reader.GetFloat(12));
+                result.Rotation = new Vec3(reader.GetFloat(13), reader.GetFloat(14), reader.GetFloat(15));
                 return true;
             }
             result = new BuildingSaveData();
             return false;
         }
 
-        public override void CreateBuilding(string mapName, IBuildingSaveData saveData)
+        public override void CreateBuilding(string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("INSERT INTO buildings (id, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
-                new SqliteParameter("@id", saveData.Id),
-                new SqliteParameter("@parentId", saveData.ParentId),
-                new SqliteParameter("@entityId", saveData.EntityId),
-                new SqliteParameter("@currentHp", saveData.CurrentHp),
-                new SqliteParameter("@remainsLifeTime", saveData.RemainsLifeTime),
+                new SqliteParameter("@id", building.Id),
+                new SqliteParameter("@parentId", building.ParentId),
+                new SqliteParameter("@entityId", building.EntityId),
+                new SqliteParameter("@currentHp", building.CurrentHp),
+                new SqliteParameter("@remainsLifeTime", building.RemainsLifeTime),
                 new SqliteParameter("@mapName", mapName),
-                new SqliteParameter("@positionX", saveData.PositionX),
-                new SqliteParameter("@positionY", saveData.PositionY),
-                new SqliteParameter("@positionZ", saveData.PositionZ),
-                new SqliteParameter("@rotationX", saveData.RotationX),
-                new SqliteParameter("@rotationY", saveData.RotationY),
-                new SqliteParameter("@rotationZ", saveData.RotationZ),
-                new SqliteParameter("@creatorId", saveData.CreatorId),
-                new SqliteParameter("@creatorName", saveData.CreatorName),
-                new SqliteParameter("@extraData", saveData.ExtraData));
+                new SqliteParameter("@positionX", building.Position.x),
+                new SqliteParameter("@positionY", building.Position.y),
+                new SqliteParameter("@positionZ", building.Position.z),
+                new SqliteParameter("@rotationX", building.Rotation.x),
+                new SqliteParameter("@rotationY", building.Rotation.y),
+                new SqliteParameter("@rotationZ", building.Rotation.z),
+                new SqliteParameter("@creatorId", building.CreatorId),
+                new SqliteParameter("@creatorName", building.CreatorName),
+                new SqliteParameter("@extraData", building.ExtraData));
         }
 
         public override List<BuildingSaveData> ReadBuildings(string mapName)
@@ -101,12 +97,12 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@creatorId", building.CreatorId),
                 new SqliteParameter("@creatorName", building.CreatorName),
                 new SqliteParameter("@extraData", building.ExtraData),
-                new SqliteParameter("@positionX", building.PositionX),
-                new SqliteParameter("@positionY", building.PositionY),
-                new SqliteParameter("@positionZ", building.PositionZ),
-                new SqliteParameter("@rotationX", building.RotationX),
-                new SqliteParameter("@rotationY", building.RotationY),
-                new SqliteParameter("@rotationZ", building.RotationZ),
+                new SqliteParameter("@positionX", building.Position.x),
+                new SqliteParameter("@positionY", building.Position.y),
+                new SqliteParameter("@positionZ", building.Position.z),
+                new SqliteParameter("@rotationX", building.Rotation.x),
+                new SqliteParameter("@rotationY", building.Rotation.y),
+                new SqliteParameter("@rotationZ", building.Rotation.z),
                 new SqliteParameter("@mapName", mapName));
         }
 
