@@ -1,7 +1,7 @@
-﻿#if !NET && !NETCOREAPP
-using Mono.Data.Sqlite;
-#else
+﻿#if NET || NETCOREAPP
 using Microsoft.Data.Sqlite;
+#elif (UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE
+using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
