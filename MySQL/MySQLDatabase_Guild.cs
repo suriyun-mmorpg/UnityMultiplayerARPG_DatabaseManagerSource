@@ -158,7 +158,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@id", id));
         }
 
-        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, bool canUseStorage, byte shareExpPercentage)
+        public override void UpdateGuildRole(int id, byte guildRole, GuildRoleData guildRoleData)
         {
             ExecuteNonQuerySync("DELETE FROM guildrole WHERE guildId=@guildId AND guildRole=@guildRole",
                 new MySqlParameter("@guildId", id),
@@ -168,10 +168,10 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@guildId", id),
                 new MySqlParameter("@guildRole", guildRole),
                 new MySqlParameter("@name", name),
-                new MySqlParameter("@canInvite", canInvite),
-                new MySqlParameter("@canKick", canKick),
-                new MySqlParameter("@canUseStorage", canUseStorage),
-                new MySqlParameter("@shareExpPercentage", shareExpPercentage));
+                new MySqlParameter("@canInvite", guildRoleData.canInvite),
+                new MySqlParameter("@canKick", guildRoleData.canKick),
+                new MySqlParameter("@canUseStorage", guildRoleData.canUseStorage),
+                new MySqlParameter("@shareExpPercentage", guildRoleData.shareExpPercentage));
         }
 
         public override void UpdateGuildMemberRole(string characterId, byte guildRole)

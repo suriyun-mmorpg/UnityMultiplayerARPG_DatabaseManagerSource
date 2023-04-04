@@ -165,7 +165,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@id", id));
         }
 
-        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, bool canUseStorage, byte shareExpPercentage)
+        public override void UpdateGuildRole(int id, byte guildRole, GuildRoleData guildRoleData)
         {
             ExecuteNonQuery("DELETE FROM guildrole WHERE guildId=@guildId AND guildRole=@guildRole",
                 new SqliteParameter("@guildId", id),
@@ -175,10 +175,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@guildId", id),
                 new SqliteParameter("@guildRole", guildRole),
                 new SqliteParameter("@name", name),
-                new SqliteParameter("@canInvite", canInvite),
-                new SqliteParameter("@canKick", canKick),
-                new SqliteParameter("@canUseStorage", canUseStorage),
-                new SqliteParameter("@shareExpPercentage", shareExpPercentage));
+                new SqliteParameter("@canInvite", guildRoleData.canInvite),
+                new SqliteParameter("@canKick", guildRoleData.canKick),
+                new SqliteParameter("@canUseStorage", guildRoleData.canUseStorage),
+                new SqliteParameter("@shareExpPercentage", guildRoleData.shareExpPercentage));
         }
 
         public override void UpdateGuildMemberRole(string characterId, byte guildRole)
