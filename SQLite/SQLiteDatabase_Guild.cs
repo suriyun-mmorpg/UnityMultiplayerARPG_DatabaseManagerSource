@@ -68,10 +68,11 @@ namespace MultiplayerARPG.MMO
                         guildRoleData.roleName = reader.GetString(1);
                         guildRoleData.canInvite = reader.GetBoolean(2);
                         guildRoleData.canKick = reader.GetBoolean(3);
-                        guildRoleData.shareExpPercentage = reader.GetByte(4);
+                        guildRoleData.canUseStorage = reader.GetBoolean(4);
+                        guildRoleData.shareExpPercentage = reader.GetByte(5);
                         result.SetRole(guildRole, guildRoleData);
                     }
-                }, "SELECT guildRole, name, canInvite, canKick, shareExpPercentage FROM guildrole WHERE guildId=@id",
+                }, "SELECT guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage FROM guildrole WHERE guildId=@id",
                     new SqliteParameter("@id", id));
                 // Guild members
                 ExecuteReader((reader) =>
@@ -164,18 +165,19 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@id", id));
         }
 
-        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, byte shareExpPercentage)
+        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, bool canUseStorage, byte shareExpPercentage)
         {
             ExecuteNonQuery("DELETE FROM guildrole WHERE guildId=@guildId AND guildRole=@guildRole",
                 new SqliteParameter("@guildId", id),
                 new SqliteParameter("@guildRole", guildRole));
-            ExecuteNonQuery("INSERT INTO guildrole (guildId, guildRole, name, canInvite, canKick, shareExpPercentage) " +
-                "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @shareExpPercentage)",
+            ExecuteNonQuery("INSERT INTO guildrole (guildId, guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage) " +
+                "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @canUseStorage, @shareExpPercentage)",
                 new SqliteParameter("@guildId", id),
                 new SqliteParameter("@guildRole", guildRole),
                 new SqliteParameter("@name", name),
                 new SqliteParameter("@canInvite", canInvite),
                 new SqliteParameter("@canKick", canKick),
+                new SqliteParameter("@canUseStorage", canUseStorage),
                 new SqliteParameter("@shareExpPercentage", shareExpPercentage));
         }
 

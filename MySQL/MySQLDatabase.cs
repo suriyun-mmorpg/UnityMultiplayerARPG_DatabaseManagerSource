@@ -409,6 +409,19 @@ namespace MultiplayerARPG.MMO
                 InsertMigrationId(migrationId);
                 LogInformation(LogTag, $"Migrated to {migrationId}");
             }
+            migrationId = "1.82";
+            if (!HasMigrationId(migrationId))
+            {
+                LogInformation(LogTag, $"Migrating up to {migrationId}");
+                ExecuteNonQuerySync("ALTER TABLE `guildrole` ADD `canUseStorage` BOOLEAN NOT NULL AFTER `canKick`;");
+                ExecuteNonQuerySync("ALTER TABLE `guildrole` CHANGE `canInvite` `canInvite` TINYINT(1) NOT NULL DEFAULT '0';");
+                ExecuteNonQuerySync("ALTER TABLE `guildrole` CHANGE `canKick` `canKick` TINYINT(1) NOT NULL DEFAULT '0';");
+                ExecuteNonQuerySync("ALTER TABLE `guildrole` CHANGE `canUseStorage` `canUseStorage` TINYINT(1) NOT NULL DEFAULT '0';");
+                ExecuteNonQuerySync("ALTER TABLE `guildrole` CHANGE `shareExpPercentage` `shareExpPercentage` INT(11) NOT NULL DEFAULT '0';");
+                // Insert migrate history
+                InsertMigrationId(migrationId);
+                LogInformation(LogTag, $"Migrated to {migrationId}");
+            }
 
         }
         private bool HasMigrationId(string migrationId)

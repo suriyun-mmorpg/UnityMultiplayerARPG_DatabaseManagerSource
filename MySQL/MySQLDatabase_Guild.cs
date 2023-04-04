@@ -65,10 +65,11 @@ namespace MultiplayerARPG.MMO
                         guildRoleData.roleName = reader.GetString(1);
                         guildRoleData.canInvite = reader.GetBoolean(2);
                         guildRoleData.canKick = reader.GetBoolean(3);
-                        guildRoleData.shareExpPercentage = reader.GetByte(4);
+                        guildRoleData.canUseStorage = reader.GetBoolean(4);
+                        guildRoleData.shareExpPercentage = reader.GetByte(5);
                         result.SetRole(guildRole, guildRoleData);
                     }
-                }, "SELECT guildRole, name, canInvite, canKick, shareExpPercentage FROM guildrole WHERE guildId=@id",
+                }, "SELECT guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage FROM guildrole WHERE guildId=@id",
                     new MySqlParameter("@id", id));
                 // Guild members
                 ExecuteReaderSync((reader) =>
@@ -157,18 +158,19 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@id", id));
         }
 
-        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, byte shareExpPercentage)
+        public override void UpdateGuildRole(int id, byte guildRole, string name, bool canInvite, bool canKick, bool canUseStorage, byte shareExpPercentage)
         {
             ExecuteNonQuerySync("DELETE FROM guildrole WHERE guildId=@guildId AND guildRole=@guildRole",
                 new MySqlParameter("@guildId", id),
                 new MySqlParameter("@guildRole", guildRole));
-            ExecuteNonQuerySync("INSERT INTO guildrole (guildId, guildRole, name, canInvite, canKick, shareExpPercentage) " +
-                "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @shareExpPercentage)",
+            ExecuteNonQuerySync("INSERT INTO guildrole (guildId, guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage) " +
+                "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @canUseStorage, @shareExpPercentage)",
                 new MySqlParameter("@guildId", id),
                 new MySqlParameter("@guildRole", guildRole),
                 new MySqlParameter("@name", name),
                 new MySqlParameter("@canInvite", canInvite),
                 new MySqlParameter("@canKick", canKick),
+                new MySqlParameter("@canUseStorage", canUseStorage),
                 new MySqlParameter("@shareExpPercentage", shareExpPercentage));
         }
 

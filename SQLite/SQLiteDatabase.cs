@@ -335,9 +335,10 @@ namespace MultiplayerARPG.MMO
               guildId INTEGER NOT NULL,
               guildRole INTEGER NOT NULL,
               name TEXT NOT NULL,
-              canInvite INTEGER NOT NULL,
-              canKick INTEGER NOT NULL,
-              shareExpPercentage INTEGER NOT NULL
+              canInvite INTEGER NOT NULL DEFAULT 0,
+              canKick INTEGER NOT NULL DEFAULT 0,
+              canUseStorage INTEGER NOT NULL DEFAULT 0,
+              shareExpPercentage INTEGER NOT NULL DEFAULT 0
             )");
 
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS guildskill (
@@ -551,6 +552,9 @@ namespace MultiplayerARPG.MMO
 
             if (!IsColumnExist("guild", "maxMembers"))
                 ExecuteNonQuery("ALTER TABLE guild ADD maxMembers INTEGER NOT NULL DEFAULT 0;");
+
+            if (!IsColumnExist("guildrole", "canUseStorage"))
+                ExecuteNonQuery("ALTER TABLE guildrole ADD canUseStorage INTEGER NOT NULL DEFAULT 0;");
 
             if (!IsColumnExist("mail", "cash"))
                 ExecuteNonQuery("ALTER TABLE mail ADD cash INTEGER NOT NULL DEFAULT 0;");
