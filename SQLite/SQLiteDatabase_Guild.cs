@@ -174,7 +174,7 @@ namespace MultiplayerARPG.MMO
                 "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @canUseStorage, @shareExpPercentage)",
                 new SqliteParameter("@guildId", id),
                 new SqliteParameter("@guildRole", guildRole),
-                new SqliteParameter("@name", name),
+                new SqliteParameter("@name", guildRoleData.roleName),
                 new SqliteParameter("@canInvite", guildRoleData.canInvite),
                 new SqliteParameter("@canKick", guildRoleData.canKick),
                 new SqliteParameter("@canUseStorage", guildRoleData.canUseStorage),

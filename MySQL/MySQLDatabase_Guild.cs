@@ -167,7 +167,7 @@ namespace MultiplayerARPG.MMO
                 "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @canUseStorage, @shareExpPercentage)",
                 new MySqlParameter("@guildId", id),
                 new MySqlParameter("@guildRole", guildRole),
-                new MySqlParameter("@name", name),
+                new MySqlParameter("@name", guildRoleData.roleName),
                 new MySqlParameter("@canInvite", guildRoleData.canInvite),
                 new MySqlParameter("@canKick", guildRoleData.canKick),
                 new MySqlParameter("@canUseStorage", guildRoleData.canUseStorage),
