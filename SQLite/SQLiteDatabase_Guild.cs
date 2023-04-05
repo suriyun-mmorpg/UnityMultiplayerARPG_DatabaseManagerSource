@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 #elif (UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE
 using Mono.Data.Sqlite;
 #endif
+using System.Collections.Generic;
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 namespace MultiplayerARPG.MMO

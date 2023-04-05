@@ -1,5 +1,6 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
