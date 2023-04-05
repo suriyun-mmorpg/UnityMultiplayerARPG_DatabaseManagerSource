@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MultiplayerARPG.MMO
+﻿namespace MultiplayerARPG.MMO
 {
     public partial struct CreateGuildReq
     {
