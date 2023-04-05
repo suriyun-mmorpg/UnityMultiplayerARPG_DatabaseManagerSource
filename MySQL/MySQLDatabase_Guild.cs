@@ -26,7 +26,7 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public override GuildData ReadGuild(int id, GuildRoleData[] defaultGuildRoles)
+        public override GuildData ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
             GuildData result = null;
             ExecuteReaderSync((reader) =>
