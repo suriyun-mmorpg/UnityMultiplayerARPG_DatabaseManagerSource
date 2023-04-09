@@ -8,5 +8,6 @@ namespace MultiplayerARPG.MMO
         public string mySqlUsername;
         public string mySqlPassword;
         public string mySqlDbName;
+        public string mySqlConnectionString;
     }
 }

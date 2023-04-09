@@ -36,6 +36,11 @@ namespace MultiplayerARPG.MMO
         [SerializeField]
 #endif
         private string dbName = "mmorpgtemplate";
+#if !NET && !NETCOREAPP
+        [SerializeField]
+        [Tooltip("Leave this empty to use `address`, `port`, `username`, `password` and `dbName` to build connection string")]
+#endif
+        private string connectionString = "";
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         public override void Initialize()
@@ -51,6 +56,7 @@ namespace MultiplayerARPG.MMO
                 mySqlUsername = username,
                 mySqlPassword = password,
                 mySqlDbName = dbName,
+                mySqlConnectionString = connectionString,
             };
             LogInformation(LogTag, "Reading config file from " + configFilePath);
             if (File.Exists(configFilePath))
@@ -68,6 +74,8 @@ namespace MultiplayerARPG.MMO
                     config.mySqlPassword = replacingConfig.mySqlPassword;
                 if (replacingConfig.mySqlDbName != null)
                     config.mySqlDbName = replacingConfig.mySqlDbName;
+                if (replacingConfig.mySqlConnectionString != null)
+                    config.mySqlConnectionString = replacingConfig.mySqlConnectionString;
                 configFileFound = true;
             }
 
@@ -76,6 +84,7 @@ namespace MultiplayerARPG.MMO
             username = config.mySqlUsername;
             password = config.mySqlPassword;
             dbName = config.mySqlDbName;
+            connectionString = config.mySqlConnectionString;
 
             if (!configFileFound)
             {
@@ -90,6 +99,8 @@ namespace MultiplayerARPG.MMO
 
         public string GetConnectionString()
         {
+            if (!string.IsNullOrWhiteSpace(this.connectionString))
+                return this.connectionString;
             string connectionString = "Server=" + address + ";" +
             "Port=" + port + ";" +
             "Uid=" + username + ";" +
