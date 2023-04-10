@@ -1,6 +1,6 @@
 namespace MultiplayerARPG.MMO
 {
-    public interface IDatabaseManagerLogging
+    public interface IDatabaseLogging
     {
         void LogInformation(string tag, string msg);
         void LogWarning(string tag, string msg);
