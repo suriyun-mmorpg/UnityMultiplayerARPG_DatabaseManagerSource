@@ -7,7 +7,7 @@ namespace MultiplayerARPG.MMO
         public StorageType StorageType { get; set; }
         public string StorageOwnerId { get; set; }
         public List<CharacterItem> StorageItems { get; set; }
-        public bool UpdateCharacterData { get; set; }
-        public PlayerCharacterData CharacterData { get; set; }
+#nullable enable
+        public PlayerCharacterData? CharacterData { get; set; }
     }
 }
