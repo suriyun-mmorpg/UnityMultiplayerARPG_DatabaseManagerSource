@@ -9,9 +9,9 @@ using System.Collections.Generic;
 namespace MultiplayerARPG.MMO
 {
 #if !NET && !NETCOREAPP
-    public abstract partial class BaseDatabase : MonoBehaviour, IDatabaseManagerLogging
+    public abstract partial class BaseDatabase : MonoBehaviour, IDatabase, IDatabaseManagerLogging
 #else
-    public abstract partial class BaseDatabase : IDatabaseManagerLogging
+    public abstract partial class BaseDatabase : IDatabase, IDatabaseManagerLogging
 #endif
     {
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
