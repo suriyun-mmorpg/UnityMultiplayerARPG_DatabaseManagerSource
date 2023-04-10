@@ -426,9 +426,10 @@ namespace MultiplayerARPG.MMO
 
             if (Application.isEditor)
                 path = editorDbPath;
-#endif
+
             if (!File.Exists(path))
                 SqliteConnection.CreateFile(path);
+#endif
 
             return "URI=file:" + path;
         }
