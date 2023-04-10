@@ -92,7 +92,7 @@ namespace MultiplayerARPG.MMO
                 LogInformation(LogTag, "Not found config file, creating a new one");
                 if (!Directory.Exists(configFolder))
                     Directory.CreateDirectory(configFolder);
-                File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config));
+                File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
             }
             this.InvokeInstanceDevExtMethods("Init");
         }
