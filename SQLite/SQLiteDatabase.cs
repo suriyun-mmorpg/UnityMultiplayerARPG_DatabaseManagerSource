@@ -34,7 +34,7 @@ namespace MultiplayerARPG.MMO
         private string editorDbPath = "./mmorpgtemplate.sqlite3";
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-        private SqliteConnection connection;
+        private SqliteConnection? _connection;
 
         public override void Initialize()
         {
@@ -69,16 +69,16 @@ namespace MultiplayerARPG.MMO
                 File.WriteAllText(configFilePath, JsonConvert.SerializeObject(config, Formatting.Indented));
             }
 
-            connection = NewConnection();
-            connection.Open();
+            _connection = NewConnection();
+            _connection.Open();
             Init();
             this.InvokeInstanceDevExtMethods("Init");
         }
 
         public override void Destroy()
         {
-            if (connection != null)
-                connection.Close();
+            if (_connection != null)
+                _connection.Close();
         }
 
         private void Init()
@@ -382,7 +382,7 @@ namespace MultiplayerARPG.MMO
 
         private bool IsColumnExist(string tableName, string findingColumn)
         {
-            using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", connection))
+            using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", _connection))
             {
                 SqliteDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -397,7 +397,7 @@ namespace MultiplayerARPG.MMO
 
         private bool IsColumnType(string tableName, string findingColumn, string type)
         {
-            using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", connection))
+            using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", _connection))
             {
                 SqliteDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -447,7 +447,7 @@ namespace MultiplayerARPG.MMO
         public int ExecuteNonQuery(SqliteTransaction transaction, string sql, params SqliteParameter[] args)
         {
             int numRows = 0;
-            using (SqliteCommand cmd = new SqliteCommand(sql, connection))
+            using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)
                     cmd.Transaction = transaction;
@@ -475,7 +475,7 @@ namespace MultiplayerARPG.MMO
         public object ExecuteScalar(SqliteTransaction transaction, string sql, params SqliteParameter[] args)
         {
             object result = null;
-            using (SqliteCommand cmd = new SqliteCommand(sql, connection))
+            using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)
                     cmd.Transaction = transaction;
@@ -502,7 +502,7 @@ namespace MultiplayerARPG.MMO
 
         public void ExecuteReader(SqliteTransaction transaction, Action<SqliteDataReader> onRead, string sql, params SqliteParameter[] args)
         {
-            using (SqliteCommand cmd = new SqliteCommand(sql, connection))
+            using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)
                     cmd.Transaction = transaction;

@@ -68,7 +68,7 @@ namespace MultiplayerARPG.MMO
 
         public override void SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
         {
-            SqliteTransaction transaction = connection.BeginTransaction();
+            SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
                 DeleteSummonBuff(transaction, characterId);

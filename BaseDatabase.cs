@@ -16,7 +16,7 @@ namespace MultiplayerARPG.MMO
     {
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
-        protected IDatabaseUserLoginManager _userLoginManager = new DefaultUserLoginManager(new DefaultUserLoginManagerConfig());
+        protected IDatabaseUserLogin _userLoginManager;
 
         public virtual void Initialize() { }
         public virtual void Destroy() { }

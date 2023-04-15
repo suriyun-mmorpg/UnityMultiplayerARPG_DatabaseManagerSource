@@ -15,7 +15,7 @@ namespace MultiplayerARPG.MMO
         {
             // Delete all character then add all of them
             string characterId = characterData.Id;
-            SqliteTransaction transaction = connection.BeginTransaction();
+            SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
                 DeleteCharacterAttributes(transaction, characterId);
@@ -355,7 +355,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                SqliteTransaction transaction = connection.BeginTransaction();
+                SqliteTransaction transaction = _connection.BeginTransaction();
                 try
                 {
                     ExecuteNonQuery(transaction, "DELETE FROM characters WHERE id=@characterId", new SqliteParameter("@characterId", id));

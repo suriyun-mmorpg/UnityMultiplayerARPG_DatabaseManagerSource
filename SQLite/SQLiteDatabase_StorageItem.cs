@@ -79,7 +79,7 @@ namespace MultiplayerARPG.MMO
 
         public override void UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            SqliteTransaction transaction = connection.BeginTransaction();
+            SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
                 DeleteStorageItems(transaction, storageType, storageOwnerId);

@@ -6,12 +6,12 @@ namespace MultiplayerARPG.MMO
     /// <summary>
     /// The default one use nanoid to generate ID, use MD5 (with salt setting) I recommend you to create new database user login manager because MD5 is considered insecure nowsaday
     /// </summary>
-    public class DefaultUserLoginManager : IDatabaseUserLoginManager
+    public class DefaultDatabaseUserLogin : IDatabaseUserLogin
     {
         private string _passwordSaltPrefix = string.Empty;
         private string _passwordSaltPostfix = string.Empty;
 
-        public DefaultUserLoginManager(DefaultUserLoginManagerConfig config)
+        public DefaultDatabaseUserLogin(DefaultDatabaseUserLoginConfig config)
         {
             _passwordSaltPrefix = config.PasswordSaltPrefix;
             _passwordSaltPostfix = config.PasswordSaltPostfix;
