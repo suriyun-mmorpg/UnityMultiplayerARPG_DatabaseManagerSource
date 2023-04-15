@@ -484,7 +484,7 @@ namespace MultiplayerARPG.MMO
                 {
                     id = reader.GetString(0);
                     string hashedPassword = reader.GetString(1);
-                    if (!password.PasswordVerify(hashedPassword))
+                    if (!_userLoginManager.VerifyPassword(password, hashedPassword))
                         id = string.Empty;
                 }
             }, "SELECT id, password FROM userlogin WHERE username=@username AND authType=@authType LIMIT 1",
@@ -562,9 +562,9 @@ namespace MultiplayerARPG.MMO
         public override void CreateUserLogin(string username, string password, string email)
         {
             ExecuteNonQuerySync("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
-                new MySqlParameter("@id", GenericUtils.GetUniqueId()),
+                new MySqlParameter("@id", _userLoginManager.GenerateNewId()),
                 new MySqlParameter("@username", username),
-                new MySqlParameter("@password", password.PasswordHash()),
+                new MySqlParameter("@password", _userLoginManager.GetHashedPassword(password)),
                 new MySqlParameter("@email", email),
                 new MySqlParameter("@authType", AUTH_TYPE_NORMAL));
         }
