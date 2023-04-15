@@ -4,6 +4,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial interface IDatabase
     {
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         string ValidateUserLogin(string username, string password);
         bool ValidateAccessToken(string userId, string accessToken);
         bool ValidateEmailVerification(string userId);
@@ -91,5 +92,6 @@ namespace MultiplayerARPG.MMO
         int GetMailNotification(string userId);
 
         void UpdateUserCount(int userCount);
+#endif
     }
 }
