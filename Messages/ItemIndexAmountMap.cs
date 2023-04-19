@@ -1,5 +1,6 @@
 ﻿namespace MultiplayerARPG.MMO
 {
+#nullable enable
     public partial struct ItemIndexAmountMap
     {
         public int Index { get; set; }

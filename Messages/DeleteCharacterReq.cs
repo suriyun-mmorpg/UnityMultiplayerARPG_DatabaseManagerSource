@@ -1,5 +1,6 @@
 ﻿namespace MultiplayerARPG.MMO
 {
+#nullable enable
     public partial struct DeleteCharacterReq
     {
         public string UserId { get; set; }

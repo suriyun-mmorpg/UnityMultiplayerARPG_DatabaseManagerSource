@@ -1,5 +1,6 @@
 ﻿namespace MultiplayerARPG.MMO
 {
+#nullable enable
     public partial struct UpdateGuildOptionsReq
     {
         public int GuildId { get; set; }

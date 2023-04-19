@@ -34,7 +34,9 @@ namespace MultiplayerARPG.MMO
         private string editorDbPath = "./mmorpgtemplate.sqlite3";
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+#nullable enable
         private SqliteConnection? _connection;
+#nullable restore
 
         public override void Initialize()
         {

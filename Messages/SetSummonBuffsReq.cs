@@ -2,6 +2,7 @@
 
 namespace MultiplayerARPG.MMO
 {
+#nullable enable
     public partial struct SetSummonBuffsReq
     {
         public string CharacterId { get; set; }

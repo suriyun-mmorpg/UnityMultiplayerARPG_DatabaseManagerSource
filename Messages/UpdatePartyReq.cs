@@ -1,5 +1,6 @@
 ﻿namespace MultiplayerARPG.MMO
 {
+#nullable enable
     public partial struct UpdatePartyReq
     {
         public int PartyId { get; set; }
