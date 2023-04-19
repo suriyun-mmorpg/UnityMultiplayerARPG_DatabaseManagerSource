@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -7,7 +8,6 @@ namespace MultiplayerARPG.MMO
         public StorageType StorageType { get; set; }
         public string StorageOwnerId { get; set; }
         public List<CharacterItem> StorageItems { get; set; }
-#nullable enable
         public PlayerCharacterData? CharacterData { get; set; }
     }
 }

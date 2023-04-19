@@ -1,4 +1,5 @@
-﻿#if !NET && !NETCOREAPP
+﻿#nullable enable
+#if !NET && !NETCOREAPP
 using UnityEngine;
 #endif
 
