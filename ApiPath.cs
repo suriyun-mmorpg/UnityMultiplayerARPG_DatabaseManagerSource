@@ -1,6 +1,6 @@
 ﻿namespace MultiplayerARPG.MMO
 {
-    public class DatabaseApiPath
+    public partial class DatabaseApiPath
     {
         public const string ValidateUserLogin = "validate-user-login";
         public const string ValidateAccessToken = "validate-access-token";
