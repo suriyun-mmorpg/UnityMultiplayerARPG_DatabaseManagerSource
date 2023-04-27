@@ -47,7 +47,7 @@ namespace MultiplayerARPG.MMO
         {
             // Json file read
             bool configFileFound = false;
-            string configFolder = "./config";
+            string configFolder = "./Config";
             string configFilePath = configFolder + "/mySqlConfig.json";
             MySQLConfig config = new MySQLConfig()
             {

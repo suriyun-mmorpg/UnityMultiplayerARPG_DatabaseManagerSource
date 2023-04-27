@@ -42,7 +42,7 @@ namespace MultiplayerARPG.MMO
         {
             // Json file read
             bool configFileFound = false;
-            string configFolder = "./config";
+            string configFolder = "./Config";
             string configFilePath = configFolder + "/sqliteConfig.json";
             SQLiteConfig config = new SQLiteConfig()
             {
