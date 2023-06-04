@@ -1,4 +1,4 @@
-﻿#if !NET && !NETCOREAPP
+﻿#if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -21,12 +21,12 @@ namespace MultiplayerARPG.MMO
     {
         public static readonly string LogTag = nameof(SQLiteDatabase);
 
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private string dbPath = "./mmorpgtemplate.sqlite3";
 
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [Header("Running In Editor")]
         [SerializeField]
         [Tooltip("You should set this to where you build app to make database path as same as map server")]
@@ -415,7 +415,7 @@ namespace MultiplayerARPG.MMO
         {
             string path = dbPath;
 
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
             if (Application.isMobilePlatform)
             {
                 if (path.StartsWith("./"))

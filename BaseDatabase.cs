@@ -1,4 +1,4 @@
-﻿#if !NET && !NETCOREAPP
+﻿#if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
     public abstract partial class BaseDatabase : MonoBehaviour, IDatabase, IDatabaseLogging
 #else
     public abstract partial class BaseDatabase : IDatabase, IDatabaseLogging

@@ -1,4 +1,4 @@
-﻿#if !NET && !NETCOREAPP
+﻿#if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -16,27 +16,27 @@ namespace MultiplayerARPG.MMO
     {
         public static readonly string LogTag = nameof(MySQLDatabase);
 
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private string address = "127.0.0.1";
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private int port = 3306;
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private string username = "root";
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private string password = "";
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
 #endif
         private string dbName = "mmorpgtemplate";
-#if !NET && !NETCOREAPP
+#if UNITY_2017_1_OR_NEWER
         [SerializeField]
         [Tooltip("Leave this empty to use `address`, `port`, `username`, `password` and `dbName` to build connection string")]
 #endif
