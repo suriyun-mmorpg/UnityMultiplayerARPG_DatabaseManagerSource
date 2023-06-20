@@ -255,6 +255,69 @@ namespace MultiplayerARPG.MMO
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
 
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_server_boolean (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_server_int32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_server_float32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value REAL NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_private_boolean (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_private_int32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_private_float32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value REAL NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_public_boolean (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_public_int32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value INTEGER NOT NULL DEFAULT 0
+            )");
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_public_float32 (
+              id TEXT NOT NULL PRIMARY KEY,
+              characterId TEXT NOT NULL,
+              hashedKey INTEGER NOT NULL,
+              value REAL NOT NULL DEFAULT 0
+            )");
+
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS summonbuffs (
               id TEXT NOT NULL PRIMARY KEY,
               characterId TEXT NOT NULL,
