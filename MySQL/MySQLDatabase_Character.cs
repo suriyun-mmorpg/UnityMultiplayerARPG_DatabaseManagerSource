@@ -6,11 +6,8 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private void FillCharacterAttributes(IPlayerCharacterData characterData)
+        private void FillCharacterAttributes(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterAttributes(connection, transaction, characterData.Id);
@@ -20,23 +17,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterAttribute(connection, transaction, insertedIds, characterData.Id, characterData.Attributes[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing attributes of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterBuffs(IPlayerCharacterData characterData)
+        private void FillCharacterBuffs(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterBuffs(connection, transaction, characterData.Id);
@@ -46,23 +37,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterBuff(connection, transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing buffs of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterHotkeys(IPlayerCharacterData characterData)
+        private void FillCharacterHotkeys(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterHotkeys(connection, transaction, characterData.Id);
@@ -72,23 +57,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterHotkey(connection, transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing hotkeys of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterItems(IPlayerCharacterData characterData)
+        private void FillCharacterItems(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterItems(connection, transaction, characterData.Id);
@@ -106,23 +85,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterQuests(IPlayerCharacterData characterData)
+        private void FillCharacterQuests(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterQuests(connection, transaction, characterData.Id);
@@ -132,23 +105,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterQuest(connection, transaction, insertedIds, characterData.Id, characterData.Quests[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing quests of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterCurrencies(IPlayerCharacterData characterData)
+        private void FillCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterCurrencies(connection, transaction, characterData.Id);
@@ -158,23 +125,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterCurrency(connection, transaction, insertedIds, characterData.Id, characterData.Currencies[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing currencies of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterSkills(IPlayerCharacterData characterData)
+        private void FillCharacterSkills(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterSkills(connection, transaction, characterData.Id);
@@ -184,23 +145,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterSkill(connection, transaction, insertedIds, characterData.Id, characterData.Skills[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skills of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterSkillUsages(IPlayerCharacterData characterData)
+        private void FillCharacterSkillUsages(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterSkillUsages(connection, transaction, characterData.Id);
@@ -210,23 +165,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterSkillUsage(connection, transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterSummons(IPlayerCharacterData characterData)
+        private void FillCharacterSummons(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterSummons(connection, transaction, characterData.Id);
@@ -236,23 +185,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterSummon(connection, transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterDataBooleans(string tableName, string characterId, IList<CharacterDataBoolean> list)
+        private void FillCharacterDataBooleans(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> list)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterDataBooleans(connection, transaction, tableName, characterId);
@@ -262,23 +205,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterDataBoolean(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom boolean of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterDataInt32s(string tableName, string characterId, IList<CharacterDataInt32> list)
+        private void FillCharacterDataInt32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> list)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterDataInt32s(connection, transaction, tableName, characterId);
@@ -288,23 +225,17 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterDataInt32(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom int32 of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterDataFloat32s(string tableName, string characterId, IList<CharacterDataFloat32> list)
+        private void FillCharacterDataFloat32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataFloat32> list)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
                 DeleteCharacterDataFloat32s(connection, transaction, tableName, characterId);
@@ -314,82 +245,90 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterDataFloat32(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom float32 of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        private void FillCharacterRelatesData(IPlayerCharacterData characterData)
+        private void FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            FillCharacterAttributes(characterData);
-            FillCharacterCurrencies(characterData);
-            FillCharacterBuffs(characterData);
-            FillCharacterHotkeys(characterData);
-            FillCharacterItems(characterData);
-            FillCharacterQuests(characterData);
-            FillCharacterSkills(characterData);
-            FillCharacterSkillUsages(characterData);
-            FillCharacterSummons(characterData);
+            FillCharacterItems(connection, transaction, characterData);
+            FillCharacterQuests(connection, transaction, characterData);
+            FillCharacterSkills(connection, transaction, characterData);
+            FillCharacterSkillUsages(connection, transaction, characterData);
+            FillCharacterSummons(connection, transaction, characterData);
 
-            FillCharacterDataBooleans("character_server_boolean", characterData.Id, characterData.ServerBools);
-            FillCharacterDataInt32s("character_server_int32", characterData.Id, characterData.ServerInts);
-            FillCharacterDataFloat32s("character_server_float32", characterData.Id, characterData.ServerFloats);
+            FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+            FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+            FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
 
-            FillCharacterDataBooleans("character_private_boolean", characterData.Id, characterData.PrivateBools);
-            FillCharacterDataInt32s("character_private_int32", characterData.Id, characterData.PrivateInts);
-            FillCharacterDataFloat32s("character_private_float32", characterData.Id, characterData.PrivateFloats);
+            FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+            FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+            FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
 
-            FillCharacterDataBooleans("character_public_boolean", characterData.Id, characterData.PublicBools);
-            FillCharacterDataInt32s("character_public_int32", characterData.Id, characterData.PublicInts);
-            FillCharacterDataFloat32s("character_public_float32", characterData.Id, characterData.PublicFloats);
+            FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+            FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+            FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
         public override void CreateCharacter(string userId, IPlayerCharacterData character)
         {
-            ExecuteNonQuerySync("INSERT INTO characters " +
-                "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
-                "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
-                new MySqlParameter("@id", character.Id),
-                new MySqlParameter("@userId", userId),
-                new MySqlParameter("@dataId", character.DataId),
-                new MySqlParameter("@entityId", character.EntityId),
-                new MySqlParameter("@factionId", character.FactionId),
-                new MySqlParameter("@characterName", character.CharacterName),
-                new MySqlParameter("@level", character.Level),
-                new MySqlParameter("@exp", character.Exp),
-                new MySqlParameter("@currentHp", character.CurrentHp),
-                new MySqlParameter("@currentMp", character.CurrentMp),
-                new MySqlParameter("@currentStamina", character.CurrentStamina),
-                new MySqlParameter("@currentFood", character.CurrentFood),
-                new MySqlParameter("@currentWater", character.CurrentWater),
-                new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                new MySqlParameter("@statPoint", character.StatPoint),
-                new MySqlParameter("@skillPoint", character.SkillPoint),
-                new MySqlParameter("@gold", character.Gold),
-                new MySqlParameter("@currentMapName", character.CurrentMapName),
-                new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
-                new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
-                new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
-                new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
-                new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                new MySqlParameter("@respawnMapName", character.RespawnMapName),
-                new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                new MySqlParameter("@mountDataId", character.MountDataId),
-                new MySqlParameter("@iconDataId", character.IconDataId),
-                new MySqlParameter("@frameDataId", character.FrameDataId),
-                new MySqlParameter("@titleDataId", character.TitleDataId));
-            FillCharacterRelatesData(character);
-            this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
+            MySqlConnection connection = NewConnection();
+            OpenConnectionSync(connection);
+            MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuerySync(connection, transaction, "INSERT INTO characters " +
+                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
+                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
+                    new MySqlParameter("@id", character.Id),
+                    new MySqlParameter("@userId", userId),
+                    new MySqlParameter("@dataId", character.DataId),
+                    new MySqlParameter("@entityId", character.EntityId),
+                    new MySqlParameter("@factionId", character.FactionId),
+                    new MySqlParameter("@characterName", character.CharacterName),
+                    new MySqlParameter("@level", character.Level),
+                    new MySqlParameter("@exp", character.Exp),
+                    new MySqlParameter("@currentHp", character.CurrentHp),
+                    new MySqlParameter("@currentMp", character.CurrentMp),
+                    new MySqlParameter("@currentStamina", character.CurrentStamina),
+                    new MySqlParameter("@currentFood", character.CurrentFood),
+                    new MySqlParameter("@currentWater", character.CurrentWater),
+                    new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                    new MySqlParameter("@statPoint", character.StatPoint),
+                    new MySqlParameter("@skillPoint", character.SkillPoint),
+                    new MySqlParameter("@gold", character.Gold),
+                    new MySqlParameter("@currentMapName", character.CurrentMapName),
+                    new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
+                    new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
+                    new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                    new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
+                    new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
+                    new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                    new MySqlParameter("@respawnMapName", character.RespawnMapName),
+                    new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                    new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                    new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+                    new MySqlParameter("@mountDataId", character.MountDataId),
+                    new MySqlParameter("@iconDataId", character.IconDataId),
+                    new MySqlParameter("@frameDataId", character.FrameDataId),
+                    new MySqlParameter("@titleDataId", character.TitleDataId));
+                FillCharacterRelatesData(connection, transaction, character);
+                transaction.Commit();
+                this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            connection.Close();
         }
 
         private bool ReadCharacter(MySqlDataReader reader, out PlayerCharacterData result)
@@ -611,75 +550,90 @@ namespace MultiplayerARPG.MMO
 
         public override void UpdateCharacter(IPlayerCharacterData character)
         {
-            ExecuteNonQuerySync("UPDATE characters SET " +
-                "dataId=@dataId, " +
-                "entityId=@entityId, " +
-                "factionId=@factionId, " +
-                "characterName=@characterName, " +
-                "level=@level, " +
-                "exp=@exp, " +
-                "currentHp=@currentHp, " +
-                "currentMp=@currentMp, " +
-                "currentStamina=@currentStamina, " +
-                "currentFood=@currentFood, " +
-                "currentWater=@currentWater, " +
-                "equipWeaponSet=@equipWeaponSet, " +
-                "statPoint=@statPoint, " +
-                "skillPoint=@skillPoint, " +
-                "gold=@gold, " +
-                "currentMapName=@currentMapName, " +
-                "currentPositionX=@currentPositionX, " +
-                "currentPositionY=@currentPositionY, " +
-                "currentPositionZ=@currentPositionZ, " +
-                "currentRotationX=@currentRotationX, " +
-                "currentRotationY=@currentRotationY, " +
-                "currentRotationZ=@currentRotationZ, " +
-                "respawnMapName=@respawnMapName, " +
-                "respawnPositionX=@respawnPositionX, " +
-                "respawnPositionY=@respawnPositionY, " +
-                "respawnPositionZ=@respawnPositionZ, " +
-                "mountDataId=@mountDataId, " +
-                "iconDataId=@iconDataId, " +
-                "frameDataId=@frameDataId, " +
-                "titleDataId=@titleDataId, " +
-                "lastDeadTime=@lastDeadTime, " +
-                "unmuteTime=@unmuteTime " +
-                "WHERE id=@id",
-                new MySqlParameter("@dataId", character.DataId),
-                new MySqlParameter("@entityId", character.EntityId),
-                new MySqlParameter("@factionId", character.FactionId),
-                new MySqlParameter("@characterName", character.CharacterName),
-                new MySqlParameter("@level", character.Level),
-                new MySqlParameter("@exp", character.Exp),
-                new MySqlParameter("@currentHp", character.CurrentHp),
-                new MySqlParameter("@currentMp", character.CurrentMp),
-                new MySqlParameter("@currentStamina", character.CurrentStamina),
-                new MySqlParameter("@currentFood", character.CurrentFood),
-                new MySqlParameter("@currentWater", character.CurrentWater),
-                new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                new MySqlParameter("@statPoint", character.StatPoint),
-                new MySqlParameter("@skillPoint", character.SkillPoint),
-                new MySqlParameter("@gold", character.Gold),
-                new MySqlParameter("@currentMapName", character.CurrentMapName),
-                new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
-                new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
-                new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
-                new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
-                new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                new MySqlParameter("@respawnMapName", character.RespawnMapName),
-                new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                new MySqlParameter("@mountDataId", character.MountDataId),
-                new MySqlParameter("@iconDataId", character.IconDataId),
-                new MySqlParameter("@frameDataId", character.FrameDataId),
-                new MySqlParameter("@titleDataId", character.TitleDataId),
-                new MySqlParameter("@lastDeadTime", character.LastDeadTime),
-                new MySqlParameter("@unmuteTime", character.UnmuteTime),
-                new MySqlParameter("@id", character.Id));
-            FillCharacterRelatesData(character);
-            this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
+            MySqlConnection connection = NewConnection();
+            OpenConnectionSync(connection);
+            MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuerySync(connection, transaction, "UPDATE characters SET " +
+                    "dataId=@dataId, " +
+                    "entityId=@entityId, " +
+                    "factionId=@factionId, " +
+                    "characterName=@characterName, " +
+                    "level=@level, " +
+                    "exp=@exp, " +
+                    "currentHp=@currentHp, " +
+                    "currentMp=@currentMp, " +
+                    "currentStamina=@currentStamina, " +
+                    "currentFood=@currentFood, " +
+                    "currentWater=@currentWater, " +
+                    "equipWeaponSet=@equipWeaponSet, " +
+                    "statPoint=@statPoint, " +
+                    "skillPoint=@skillPoint, " +
+                    "gold=@gold, " +
+                    "currentMapName=@currentMapName, " +
+                    "currentPositionX=@currentPositionX, " +
+                    "currentPositionY=@currentPositionY, " +
+                    "currentPositionZ=@currentPositionZ, " +
+                    "currentRotationX=@currentRotationX, " +
+                    "currentRotationY=@currentRotationY, " +
+                    "currentRotationZ=@currentRotationZ, " +
+                    "respawnMapName=@respawnMapName, " +
+                    "respawnPositionX=@respawnPositionX, " +
+                    "respawnPositionY=@respawnPositionY, " +
+                    "respawnPositionZ=@respawnPositionZ, " +
+                    "mountDataId=@mountDataId, " +
+                    "iconDataId=@iconDataId, " +
+                    "frameDataId=@frameDataId, " +
+                    "titleDataId=@titleDataId, " +
+                    "lastDeadTime=@lastDeadTime, " +
+                    "unmuteTime=@unmuteTime " +
+                    "WHERE id=@id",
+                    new MySqlParameter("@dataId", character.DataId),
+                    new MySqlParameter("@entityId", character.EntityId),
+                    new MySqlParameter("@factionId", character.FactionId),
+                    new MySqlParameter("@characterName", character.CharacterName),
+                    new MySqlParameter("@level", character.Level),
+                    new MySqlParameter("@exp", character.Exp),
+                    new MySqlParameter("@currentHp", character.CurrentHp),
+                    new MySqlParameter("@currentMp", character.CurrentMp),
+                    new MySqlParameter("@currentStamina", character.CurrentStamina),
+                    new MySqlParameter("@currentFood", character.CurrentFood),
+                    new MySqlParameter("@currentWater", character.CurrentWater),
+                    new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                    new MySqlParameter("@statPoint", character.StatPoint),
+                    new MySqlParameter("@skillPoint", character.SkillPoint),
+                    new MySqlParameter("@gold", character.Gold),
+                    new MySqlParameter("@currentMapName", character.CurrentMapName),
+                    new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
+                    new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
+                    new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                    new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
+                    new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
+                    new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                    new MySqlParameter("@respawnMapName", character.RespawnMapName),
+                    new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                    new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                    new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+                    new MySqlParameter("@mountDataId", character.MountDataId),
+                    new MySqlParameter("@iconDataId", character.IconDataId),
+                    new MySqlParameter("@frameDataId", character.FrameDataId),
+                    new MySqlParameter("@titleDataId", character.TitleDataId),
+                    new MySqlParameter("@lastDeadTime", character.LastDeadTime),
+                    new MySqlParameter("@unmuteTime", character.UnmuteTime),
+                    new MySqlParameter("@id", character.Id));
+                FillCharacterRelatesData(connection, transaction, character);
+                transaction.Commit();
+                this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            connection.Close();
         }
 
         public override void DeleteCharacter(string userId, string id)
