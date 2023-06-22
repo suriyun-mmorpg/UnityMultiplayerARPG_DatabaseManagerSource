@@ -42,12 +42,12 @@ namespace MultiplayerARPG.MMO
                 result = new List<CharacterDataBoolean>();
             ExecuteReaderSync((reader) =>
             {
-                CharacterDataBoolean tempSummon;
-                while (ReadCharacterDataBoolean(reader, out tempSummon))
+                CharacterDataBoolean tempData;
+                while (ReadCharacterDataBoolean(reader, out tempData))
                 {
-                    result.Add(tempSummon);
+                    result.Add(tempData);
                 }
-            }, $"SELECT hashedKey, value FROM {tableName} WHERE characterId=@characterId ORDER BY type DESC",
+            }, $"SELECT hashedKey, value FROM {tableName} WHERE characterId=@characterId",
                 new MySqlParameter("@characterId", characterId));
             return result;
         }

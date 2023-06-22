@@ -47,12 +47,12 @@ namespace MultiplayerARPG.MMO
                 result = new List<CharacterDataInt32>();
             ExecuteReader((reader) =>
             {
-                CharacterDataInt32 tempSummon;
-                while (ReadCharacterDataInt32(reader, out tempSummon))
+                CharacterDataInt32 tempData;
+                while (ReadCharacterDataInt32(reader, out tempData))
                 {
-                    result.Add(tempSummon);
+                    result.Add(tempData);
                 }
-            }, $"SELECT hashedKey, value FROM {tableName} WHERE characterId=@characterId ORDER BY type DESC",
+            }, $"SELECT hashedKey, value FROM {tableName} WHERE characterId=@characterId",
                 new SqliteParameter("@characterId", characterId));
             return result;
         }
