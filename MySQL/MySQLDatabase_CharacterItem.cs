@@ -14,11 +14,11 @@ namespace MultiplayerARPG.MMO
                 LogWarning(LogTag, $"Item {id}, inventory type {inventoryType}, for character {characterId}, already inserted");
                 return;
             }
-            if (string.IsNullOrEmpty(characterItem.id))
+            if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
             ExecuteNonQuerySync(connection, transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
-                new MySqlParameter("@id", characterItem.id),
+                new MySqlParameter("@id", id),
                 new MySqlParameter("@idx", idx),
                 new MySqlParameter("@inventoryType", (byte)inventoryType),
                 new MySqlParameter("@characterId", characterId),
