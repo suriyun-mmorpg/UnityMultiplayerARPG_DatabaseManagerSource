@@ -42,9 +42,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@level", characterSkill.level));
         }
 
-        public List<CharacterSkill> ReadCharacterSkills(string characterId)
+        public List<CharacterSkill> ReadCharacterSkills(string characterId, List<CharacterSkill> result = null)
         {
-            List<CharacterSkill> result = new List<CharacterSkill>();
+            if (result == null)
+                result = new List<CharacterSkill>();
             ExecuteReader((reader) =>
             {
                 CharacterSkill tempSkill;

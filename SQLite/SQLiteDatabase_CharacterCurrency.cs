@@ -42,9 +42,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@amount", characterCurrency.amount));
         }
 
-        public List<CharacterCurrency> ReadCharacterCurrencies(string characterId)
+        public List<CharacterCurrency> ReadCharacterCurrencies(string characterId, List<CharacterCurrency> result = null)
         {
-            List<CharacterCurrency> result = new List<CharacterCurrency>();
+            if (result == null)
+                result = new List<CharacterCurrency>();
             ExecuteReader((reader) =>
             {
                 CharacterCurrency tempCurrency;

@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
 
         public void CreateCharacterSummon(SqliteTransaction transaction, HashSet<string> insertedIds, int idx, string characterId, CharacterSummon characterSummon)
         {
-            string id = ZString.Concat(characterId, "_", idx);
+            string id = ZString.Concat(characterId, "_", (int)characterSummon.type, "_", idx);
             if (insertedIds.Contains(id))
             {
                 LogWarning(LogTag, $"Summon {id}, for character {characterId}, already inserted");
@@ -51,9 +51,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@currentMp", characterSummon.currentMp));
         }
 
-        public List<CharacterSummon> ReadCharacterSummons(string characterId)
+        public List<CharacterSummon> ReadCharacterSummons(string characterId, List<CharacterSummon> result = null)
         {
-            List<CharacterSummon> result = new List<CharacterSummon>();
+            if (result == null)
+                result = new List<CharacterSummon>();
             ExecuteReader((reader) =>
             {
                 CharacterSummon tempSummon;

@@ -11,26 +11,73 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private void FillCharacterRelatesData(IPlayerCharacterData characterData)
+        private void FillCharacterAttributes(SqliteTransaction transaction, IPlayerCharacterData characterData)
         {
-            // Delete all character then add all of them
-            string characterId = characterData.Id;
-            SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
-                DeleteCharacterAttributes(transaction, characterId);
-                DeleteCharacterCurrencies(transaction, characterId);
-                DeleteCharacterBuffs(transaction, characterId);
-                DeleteCharacterHotkeys(transaction, characterId);
-                DeleteCharacterItems(transaction, characterId);
-                DeleteCharacterQuests(transaction, characterId);
-                DeleteCharacterSkills(transaction, characterId);
-                DeleteCharacterSkillUsages(transaction, characterId);
-                DeleteCharacterSummons(transaction, characterId);
-
+                DeleteCharacterAttributes(transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                insertedIds.Clear();
+                for (i = 0; i < characterData.Attributes.Count; ++i)
+                {
+                    CreateCharacterAttribute(transaction, insertedIds, i, characterData.Id, characterData.Attributes[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing attributes of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterBuffs(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterBuffs(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.Buffs.Count; ++i)
+                {
+                    CreateCharacterBuff(transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing buffs of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterHotkeys(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterHotkeys(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.Hotkeys.Count; ++i)
+                {
+                    CreateCharacterHotkey(transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing hotkeys of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterItems(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterItems(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
                 for (i = 0; i < characterData.SelectableWeaponSets.Count; ++i)
                 {
                     CreateCharacterEquipWeapons(transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
@@ -43,104 +90,247 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateCharacterNonEquipItem(transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
                 }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
 
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Attributes.Count; ++i)
-                {
-                    CreateCharacterAttribute(transaction, insertedIds, i, characterData.Id, characterData.Attributes[i]);
-                }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Currencies.Count; ++i)
-                {
-                    CreateCharacterCurrency(transaction, insertedIds, i, characterData.Id, characterData.Currencies[i]);
-                }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Skills.Count; ++i)
-                {
-                    CreateCharacterSkill(transaction, insertedIds, i, characterData.Id, characterData.Skills[i]);
-                }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.SkillUsages.Count; ++i)
-                {
-                    CreateCharacterSkillUsage(transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
-                }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Summons.Count; ++i)
-                {
-                    CreateCharacterSummon(transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
-                }
-
-                insertedIds.Clear();
+        private void FillCharacterQuests(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterQuests(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
                 for (i = 0; i < characterData.Quests.Count; ++i)
                 {
                     CreateCharacterQuest(transaction, insertedIds, i, characterData.Id, characterData.Quests[i]);
                 }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Buffs.Count; ++i)
-                {
-                    CreateCharacterBuff(transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
-                }
-
-                insertedIds.Clear();
-                for (i = 0; i < characterData.Hotkeys.Count; ++i)
-                {
-                    CreateCharacterHotkey(transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
-                }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while filling character relates data");
+                LogError(LogTag, "Transaction, Error occurs while replacing quests of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                throw ex;
             }
-            transaction.Dispose();
+        }
+
+        private void FillCharacterCurrencies(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterCurrencies(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.Currencies.Count; ++i)
+                {
+                    CreateCharacterCurrency(transaction, insertedIds, i, characterData.Id, characterData.Currencies[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing currencies of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterSkills(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterSkills(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.Skills.Count; ++i)
+                {
+                    CreateCharacterSkill(transaction, insertedIds, i, characterData.Id, characterData.Skills[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing skills of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterSkillUsages(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterSkillUsages(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.SkillUsages.Count; ++i)
+                {
+                    CreateCharacterSkillUsage(transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterSummons(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            try
+            {
+                DeleteCharacterSummons(transaction, characterData.Id);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < characterData.Summons.Count; ++i)
+                {
+                    CreateCharacterSummon(transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterDataBooleans(SqliteTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> list)
+        {
+            try
+            {
+                DeleteCharacterDataBooleans(transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataBoolean(transaction, tableName, insertedIds, characterId, list[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom boolean of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterDataInt32s(SqliteTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> list)
+        {
+            try
+            {
+                DeleteCharacterDataInt32s(transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataInt32(transaction, tableName, insertedIds, characterId, list[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom int32 of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterDataFloat32s(SqliteTransaction transaction, string tableName, string characterId, IList<CharacterDataFloat32> list)
+        {
+            try
+            {
+                DeleteCharacterDataFloat32s(transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataFloat32(transaction, tableName, insertedIds, characterId, list[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom float32 of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                throw ex;
+            }
+        }
+
+        private void FillCharacterRelatesData(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        {
+            FillCharacterItems(transaction, characterData);
+            FillCharacterQuests(transaction, characterData);
+            FillCharacterSkills(transaction, characterData);
+            FillCharacterSkillUsages(transaction, characterData);
+            FillCharacterSummons(transaction, characterData);
+
+            FillCharacterDataBooleans(transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+            FillCharacterDataInt32s(transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+            FillCharacterDataFloat32s(transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+
+            FillCharacterDataBooleans(transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+            FillCharacterDataInt32s(transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+            FillCharacterDataFloat32s(transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+
+            FillCharacterDataBooleans(transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+            FillCharacterDataInt32s(transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+            FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
         public override void CreateCharacter(string userId, IPlayerCharacterData character)
         {
-            ExecuteNonQuery("INSERT INTO characters " +
-                "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
-                "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
-                new SqliteParameter("@id", character.Id),
-                new SqliteParameter("@userId", userId),
-                new SqliteParameter("@dataId", character.DataId),
-                new SqliteParameter("@entityId", character.EntityId),
-                new SqliteParameter("@factionId", character.FactionId),
-                new SqliteParameter("@characterName", character.CharacterName),
-                new SqliteParameter("@level", character.Level),
-                new SqliteParameter("@exp", character.Exp),
-                new SqliteParameter("@currentHp", character.CurrentHp),
-                new SqliteParameter("@currentMp", character.CurrentMp),
-                new SqliteParameter("@currentStamina", character.CurrentStamina),
-                new SqliteParameter("@currentFood", character.CurrentFood),
-                new SqliteParameter("@currentWater", character.CurrentWater),
-                new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
-                new SqliteParameter("@statPoint", character.StatPoint),
-                new SqliteParameter("@skillPoint", character.SkillPoint),
-                new SqliteParameter("@gold", character.Gold),
-                new SqliteParameter("@currentMapName", character.CurrentMapName),
-                new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
-                new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
-                new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
-                new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
-                new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
-                new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
-                new SqliteParameter("@respawnMapName", character.RespawnMapName),
-                new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
-                new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
-                new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
-                new SqliteParameter("@mountDataId", character.MountDataId),
-                new SqliteParameter("@iconDataId", character.IconDataId),
-                new SqliteParameter("@frameDataId", character.FrameDataId),
-                new SqliteParameter("@titleDataId", character.TitleDataId));
-            FillCharacterRelatesData(character);
-            this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery("INSERT INTO characters " +
+                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
+                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
+                    new SqliteParameter("@id", character.Id),
+                    new SqliteParameter("@userId", userId),
+                    new SqliteParameter("@dataId", character.DataId),
+                    new SqliteParameter("@entityId", character.EntityId),
+                    new SqliteParameter("@factionId", character.FactionId),
+                    new SqliteParameter("@characterName", character.CharacterName),
+                    new SqliteParameter("@level", character.Level),
+                    new SqliteParameter("@exp", character.Exp),
+                    new SqliteParameter("@currentHp", character.CurrentHp),
+                    new SqliteParameter("@currentMp", character.CurrentMp),
+                    new SqliteParameter("@currentStamina", character.CurrentStamina),
+                    new SqliteParameter("@currentFood", character.CurrentFood),
+                    new SqliteParameter("@currentWater", character.CurrentWater),
+                    new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
+                    new SqliteParameter("@statPoint", character.StatPoint),
+                    new SqliteParameter("@skillPoint", character.SkillPoint),
+                    new SqliteParameter("@gold", character.Gold),
+                    new SqliteParameter("@currentMapName", character.CurrentMapName),
+                    new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
+                    new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
+                    new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
+                    new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
+                    new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
+                    new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
+                    new SqliteParameter("@respawnMapName", character.RespawnMapName),
+                    new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
+                    new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
+                    new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
+                    new SqliteParameter("@mountDataId", character.MountDataId),
+                    new SqliteParameter("@iconDataId", character.IconDataId),
+                    new SqliteParameter("@frameDataId", character.FrameDataId),
+                    new SqliteParameter("@titleDataId", character.TitleDataId));
+                FillCharacterRelatesData(transaction, character);
+                transaction.Commit();
+                this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
         }
 
         private bool ReadCharacter(SqliteDataReader reader, out PlayerCharacterData result)
@@ -199,7 +389,10 @@ namespace MultiplayerARPG.MMO
             bool withSummons = true,
             bool withHotkeys = true,
             bool withQuests = true,
-            bool withCurrencies = true)
+            bool withCurrencies = true,
+            bool withServerCustomData = true,
+            bool withPrivateCustomData = true,
+            bool withPublicCustomData = true)
         {
             PlayerCharacterData result = null;
             ExecuteReader((reader) =>
@@ -216,28 +409,112 @@ namespace MultiplayerARPG.MMO
             // Found character, then read its relates data
             if (result != null)
             {
+                List<EquipWeapons> selectableWeaponSets = new List<EquipWeapons>();
+                List<CharacterAttribute> attributes = new List<CharacterAttribute>();
+                List<CharacterSkill> skills = new List<CharacterSkill>();
+                List<CharacterSkillUsage> skillUsages = new List<CharacterSkillUsage>();
+                List<CharacterBuff> buffs = new List<CharacterBuff>();
+                List<CharacterItem> equipItems = new List<CharacterItem>();
+                List<CharacterItem> nonEquipItems = new List<CharacterItem>();
+                List<CharacterSummon> summons = new List<CharacterSummon>();
+                List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
+                List<CharacterQuest> quests = new List<CharacterQuest>();
+                List<CharacterCurrency> currencies = new List<CharacterCurrency>();
+
+                List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
+
+                List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
+
+                List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
+
+                // Read data
                 if (withEquipWeapons)
-                    result.SelectableWeaponSets = ReadCharacterEquipWeapons(id);
+                    ReadCharacterEquipWeapons(id, selectableWeaponSets);
                 if (withAttributes)
-                    result.Attributes = ReadCharacterAttributes(id);
+                    ReadCharacterAttributes(id, attributes);
                 if (withSkills)
-                    result.Skills = ReadCharacterSkills(id);
+                    ReadCharacterSkills(id, skills);
                 if (withSkillUsages)
-                    result.SkillUsages = ReadCharacterSkillUsages(id);
+                    ReadCharacterSkillUsages(id, skillUsages);
                 if (withBuffs)
-                    result.Buffs = ReadCharacterBuffs(id);
+                    ReadCharacterBuffs(id, buffs);
                 if (withEquipItems)
-                    result.EquipItems = ReadCharacterEquipItems(id);
+                    ReadCharacterEquipItems(id, equipItems);
                 if (withNonEquipItems)
-                    result.NonEquipItems = ReadCharacterNonEquipItems(id);
+                    ReadCharacterNonEquipItems(id, nonEquipItems);
                 if (withSummons)
-                    result.Summons = ReadCharacterSummons(id);
+                    ReadCharacterSummons(id, summons);
                 if (withHotkeys)
-                    result.Hotkeys = ReadCharacterHotkeys(id);
+                    ReadCharacterHotkeys(id, hotkeys);
                 if (withQuests)
-                    result.Quests = ReadCharacterQuests(id);
+                    ReadCharacterQuests(id, quests);
                 if (withCurrencies)
-                    result.Currencies = ReadCharacterCurrencies(id);
+                    ReadCharacterCurrencies(id, currencies);
+                if (withServerCustomData)
+                {
+                    ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
+                    ReadCharacterDataInt32s("character_server_int32", id, serverInts);
+                    ReadCharacterDataFloat32s("character_server_float32", id, serverFloats);
+                }
+                if (withPrivateCustomData)
+                {
+                    ReadCharacterDataBooleans("character_private_boolean", id, privateBools);
+                    ReadCharacterDataInt32s("character_private_int32", id, privateInts);
+                    ReadCharacterDataFloat32s("character_private_float32", id, privateFloats);
+                }
+                if (withPublicCustomData)
+                {
+                    ReadCharacterDataBooleans("character_public_boolean", id, publicBools);
+                    ReadCharacterDataInt32s("character_public_int32", id, publicInts);
+                    ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
+                }
+                // Assign read data
+                if (withEquipWeapons)
+                    result.SelectableWeaponSets = selectableWeaponSets;
+                if (withAttributes)
+                    result.Attributes = attributes;
+                if (withSkills)
+                    result.Skills = skills;
+                if (withSkillUsages)
+                    result.SkillUsages = skillUsages;
+                if (withBuffs)
+                    result.Buffs = buffs;
+                if (withEquipItems)
+                    result.EquipItems = equipItems;
+                if (withNonEquipItems)
+                    result.NonEquipItems = nonEquipItems;
+                if (withSummons)
+                    result.Summons = summons;
+                if (withHotkeys)
+                    result.Hotkeys = hotkeys;
+                if (withQuests)
+                    result.Quests = quests;
+                if (withCurrencies)
+                    result.Currencies = currencies;
+                if (withServerCustomData)
+                {
+                    result.ServerBools = serverBools;
+                    result.ServerInts = serverInts;
+                    result.ServerFloats = serverFloats;
+                }
+                if (withPrivateCustomData)
+                {
+                    result.PrivateBools = privateBools;
+                    result.PrivateInts = privateInts;
+                    result.PrivateFloats = privateFloats;
+                }
+                if (withPublicCustomData)
+                {
+                    result.PublicBools = publicBools;
+                    result.PublicInts = publicInts;
+                    result.PublicFloats = publicFloats;
+                }
                 // Invoke dev extension methods
                 this.InvokeInstanceDevExtMethods("ReadCharacter",
                     result,
@@ -251,7 +528,10 @@ namespace MultiplayerARPG.MMO
                     withSummons,
                     withHotkeys,
                     withQuests,
-                    withCurrencies);
+                    withCurrencies,
+                    withServerCustomData,
+                    withPrivateCustomData,
+                    withPublicCustomData);
             }
             return result;
         }
@@ -269,82 +549,94 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new SqliteParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false));
+                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
 
         public override void UpdateCharacter(IPlayerCharacterData character)
         {
-            ExecuteNonQuery("UPDATE characters SET " +
-                "dataId=@dataId, " +
-                "entityId=@entityId, " +
-                "factionId=@factionId, " +
-                "characterName=@characterName, " +
-                "level=@level, " +
-                "exp=@exp, " +
-                "currentHp=@currentHp, " +
-                "currentMp=@currentMp, " +
-                "currentStamina=@currentStamina, " +
-                "currentFood=@currentFood, " +
-                "currentWater=@currentWater, " +
-                "equipWeaponSet=@equipWeaponSet, " +
-                "statPoint=@statPoint, " +
-                "skillPoint=@skillPoint, " +
-                "gold=@gold, " +
-                "currentMapName=@currentMapName, " +
-                "currentPositionX=@currentPositionX, " +
-                "currentPositionY=@currentPositionY, " +
-                "currentPositionZ=@currentPositionZ, " +
-                "currentRotationX=@currentRotationX, " +
-                "currentRotationY=@currentRotationY, " +
-                "currentRotationZ=@currentRotationZ, " +
-                "respawnMapName=@respawnMapName, " +
-                "respawnPositionX=@respawnPositionX, " +
-                "respawnPositionY=@respawnPositionY, " +
-                "respawnPositionZ=@respawnPositionZ, " +
-                "mountDataId=@mountDataId, " +
-                "iconDataId=@iconDataId, " +
-                "frameDataId=@frameDataId, " +
-                "titleDataId=@titleDataId, " +
-                "lastDeadTime=@lastDeadTime, " +
-                "unmuteTime=@unmuteTime " +
-                "WHERE id=@id",
-                new SqliteParameter("@dataId", character.DataId),
-                new SqliteParameter("@entityId", character.EntityId),
-                new SqliteParameter("@factionId", character.FactionId),
-                new SqliteParameter("@characterName", character.CharacterName),
-                new SqliteParameter("@level", character.Level),
-                new SqliteParameter("@exp", character.Exp),
-                new SqliteParameter("@currentHp", character.CurrentHp),
-                new SqliteParameter("@currentMp", character.CurrentMp),
-                new SqliteParameter("@currentStamina", character.CurrentStamina),
-                new SqliteParameter("@currentFood", character.CurrentFood),
-                new SqliteParameter("@currentWater", character.CurrentWater),
-                new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
-                new SqliteParameter("@statPoint", character.StatPoint),
-                new SqliteParameter("@skillPoint", character.SkillPoint),
-                new SqliteParameter("@gold", character.Gold),
-                new SqliteParameter("@currentMapName", character.CurrentMapName),
-                new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
-                new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
-                new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
-                new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
-                new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
-                new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
-                new SqliteParameter("@respawnMapName", character.RespawnMapName),
-                new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
-                new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
-                new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
-                new SqliteParameter("@mountDataId", character.MountDataId),
-                new SqliteParameter("@iconDataId", character.IconDataId),
-                new SqliteParameter("@frameDataId", character.FrameDataId),
-                new SqliteParameter("@titleDataId", character.TitleDataId),
-                new SqliteParameter("@lastDeadTime", character.LastDeadTime),
-                new SqliteParameter("@unmuteTime", character.UnmuteTime),
-                new SqliteParameter("@id", character.Id));
-            FillCharacterRelatesData(character);
-            this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery("UPDATE characters SET " +
+                    "dataId=@dataId, " +
+                    "entityId=@entityId, " +
+                    "factionId=@factionId, " +
+                    "characterName=@characterName, " +
+                    "level=@level, " +
+                    "exp=@exp, " +
+                    "currentHp=@currentHp, " +
+                    "currentMp=@currentMp, " +
+                    "currentStamina=@currentStamina, " +
+                    "currentFood=@currentFood, " +
+                    "currentWater=@currentWater, " +
+                    "equipWeaponSet=@equipWeaponSet, " +
+                    "statPoint=@statPoint, " +
+                    "skillPoint=@skillPoint, " +
+                    "gold=@gold, " +
+                    "currentMapName=@currentMapName, " +
+                    "currentPositionX=@currentPositionX, " +
+                    "currentPositionY=@currentPositionY, " +
+                    "currentPositionZ=@currentPositionZ, " +
+                    "currentRotationX=@currentRotationX, " +
+                    "currentRotationY=@currentRotationY, " +
+                    "currentRotationZ=@currentRotationZ, " +
+                    "respawnMapName=@respawnMapName, " +
+                    "respawnPositionX=@respawnPositionX, " +
+                    "respawnPositionY=@respawnPositionY, " +
+                    "respawnPositionZ=@respawnPositionZ, " +
+                    "mountDataId=@mountDataId, " +
+                    "iconDataId=@iconDataId, " +
+                    "frameDataId=@frameDataId, " +
+                    "titleDataId=@titleDataId, " +
+                    "lastDeadTime=@lastDeadTime, " +
+                    "unmuteTime=@unmuteTime " +
+                    "WHERE id=@id",
+                    new SqliteParameter("@dataId", character.DataId),
+                    new SqliteParameter("@entityId", character.EntityId),
+                    new SqliteParameter("@factionId", character.FactionId),
+                    new SqliteParameter("@characterName", character.CharacterName),
+                    new SqliteParameter("@level", character.Level),
+                    new SqliteParameter("@exp", character.Exp),
+                    new SqliteParameter("@currentHp", character.CurrentHp),
+                    new SqliteParameter("@currentMp", character.CurrentMp),
+                    new SqliteParameter("@currentStamina", character.CurrentStamina),
+                    new SqliteParameter("@currentFood", character.CurrentFood),
+                    new SqliteParameter("@currentWater", character.CurrentWater),
+                    new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
+                    new SqliteParameter("@statPoint", character.StatPoint),
+                    new SqliteParameter("@skillPoint", character.SkillPoint),
+                    new SqliteParameter("@gold", character.Gold),
+                    new SqliteParameter("@currentMapName", character.CurrentMapName),
+                    new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
+                    new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
+                    new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
+                    new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
+                    new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
+                    new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
+                    new SqliteParameter("@respawnMapName", character.RespawnMapName),
+                    new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
+                    new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
+                    new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
+                    new SqliteParameter("@mountDataId", character.MountDataId),
+                    new SqliteParameter("@iconDataId", character.IconDataId),
+                    new SqliteParameter("@frameDataId", character.FrameDataId),
+                    new SqliteParameter("@titleDataId", character.TitleDataId),
+                    new SqliteParameter("@lastDeadTime", character.LastDeadTime),
+                    new SqliteParameter("@unmuteTime", character.UnmuteTime),
+                    new SqliteParameter("@id", character.Id));
+                FillCharacterRelatesData(transaction, character);
+                transaction.Commit();
+                this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
         }
 
         public override void DeleteCharacter(string userId, string id)
@@ -369,6 +661,18 @@ namespace MultiplayerARPG.MMO
                     DeleteCharacterSkills(transaction, id);
                     DeleteCharacterSkillUsages(transaction, id);
                     DeleteCharacterSummons(transaction, id);
+
+                    DeleteCharacterDataBooleans(transaction, "character_server_boolean", id);
+                    DeleteCharacterDataInt32s(transaction, "character_server_int32", id);
+                    DeleteCharacterDataFloat32s(transaction, "character_server_float32", id);
+
+                    DeleteCharacterDataBooleans(transaction, "character_private_boolean", id);
+                    DeleteCharacterDataInt32s(transaction, "character_private_int32", id);
+                    DeleteCharacterDataFloat32s(transaction, "character_private_float32", id);
+
+                    DeleteCharacterDataBooleans(transaction, "character_public_boolean", id);
+                    DeleteCharacterDataInt32s(transaction, "character_public_int32", id);
+                    DeleteCharacterDataFloat32s(transaction, "character_public_float32", id);
                     transaction.Commit();
                 }
                 catch (System.Exception ex)

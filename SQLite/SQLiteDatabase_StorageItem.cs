@@ -23,7 +23,7 @@ namespace MultiplayerARPG.MMO
                 return;
             insertedIds.Add(id);
             ExecuteNonQuery(transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
-                new SqliteParameter("@id", characterItem.id),
+                new SqliteParameter("@id", id),
                 new SqliteParameter("@idx", idx),
                 new SqliteParameter("@storageType", (byte)storageType),
                 new SqliteParameter("@storageOwnerId", storageOwnerId),

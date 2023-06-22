@@ -43,9 +43,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@coolDownRemainsDuration", characterSkillUsage.coolDownRemainsDuration));
         }
 
-        public List<CharacterSkillUsage> ReadCharacterSkillUsages(string characterId)
+        public List<CharacterSkillUsage> ReadCharacterSkillUsages(string characterId, List<CharacterSkillUsage> result = null)
         {
-            List<CharacterSkillUsage> result = new List<CharacterSkillUsage>();
+            if (result == null)
+                result = new List<CharacterSkillUsage>();
             ExecuteReader((reader) =>
             {
                 CharacterSkillUsage tempSkillUsage;

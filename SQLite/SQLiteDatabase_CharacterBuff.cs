@@ -45,9 +45,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@buffRemainsDuration", characterBuff.buffRemainsDuration));
         }
 
-        public List<CharacterBuff> ReadCharacterBuffs(string characterId)
+        public List<CharacterBuff> ReadCharacterBuffs(string characterId, List<CharacterBuff> result = null)
         {
-            List<CharacterBuff> result = new List<CharacterBuff>();
+            if (result == null)
+                result = new List<CharacterBuff>();
             ExecuteReader((reader) =>
             {
                 CharacterBuff tempBuff;

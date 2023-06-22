@@ -43,9 +43,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@relateId", characterHotkey.relateId));
         }
 
-        public List<CharacterHotkey> ReadCharacterHotkeys(string characterId)
+        public List<CharacterHotkey> ReadCharacterHotkeys(string characterId, List<CharacterHotkey> result = null)
         {
-            List<CharacterHotkey> result = new List<CharacterHotkey>();
+            if (result == null)
+                result = new List<CharacterHotkey>();
             ExecuteReader((reader) =>
             {
                 CharacterHotkey tempHotkey;

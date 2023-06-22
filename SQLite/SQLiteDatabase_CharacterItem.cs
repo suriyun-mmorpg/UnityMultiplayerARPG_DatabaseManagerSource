@@ -19,11 +19,11 @@ namespace MultiplayerARPG.MMO
                 LogWarning(LogTag, $"Item {id}, inventory type {inventoryType}, for character {characterId}, already inserted");
                 return;
             }
-            if (string.IsNullOrEmpty(characterItem.id))
+            if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
             ExecuteNonQuery(transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
-                new SqliteParameter("@id", characterItem.id),
+                new SqliteParameter("@id", id),
                 new SqliteParameter("@idx", idx),
                 new SqliteParameter("@inventoryType", (byte)inventoryType),
                 new SqliteParameter("@characterId", characterId),
@@ -63,9 +63,10 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        private List<CharacterItem> ReadCharacterItems(string characterId, InventoryType inventoryType)
+        private List<CharacterItem> ReadCharacterItems(string characterId, InventoryType inventoryType, List<CharacterItem> result = null)
         {
-            List<CharacterItem> result = new List<CharacterItem>();
+            if (result == null)
+                result = new List<CharacterItem>();
             ExecuteReader((reader) =>
             {
                 CharacterItem tempInventory;
@@ -79,9 +80,10 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public List<EquipWeapons> ReadCharacterEquipWeapons(string characterId)
+        public List<EquipWeapons> ReadCharacterEquipWeapons(string characterId, List<EquipWeapons> result = null)
         {
-            List<EquipWeapons> result = new List<EquipWeapons>();
+            if (result == null)
+                result = new List<EquipWeapons>();
             ExecuteReader((reader) =>
             {
                 CharacterItem tempInventory;
@@ -118,9 +120,9 @@ namespace MultiplayerARPG.MMO
             CreateCharacterItem(transaction, insertedIds, idx, characterId, InventoryType.EquipItems, characterItem);
         }
 
-        public List<CharacterItem> ReadCharacterEquipItems(string characterId)
+        public List<CharacterItem> ReadCharacterEquipItems(string characterId, List<CharacterItem> result = null)
         {
-            return ReadCharacterItems(characterId, InventoryType.EquipItems);
+            return ReadCharacterItems(characterId, InventoryType.EquipItems, result);
         }
 
         public void CreateCharacterNonEquipItem(SqliteTransaction transaction, HashSet<string> insertedIds, int idx, string characterId, CharacterItem characterItem)
@@ -128,9 +130,9 @@ namespace MultiplayerARPG.MMO
             CreateCharacterItem(transaction, insertedIds, idx, characterId, InventoryType.NonEquipItems, characterItem);
         }
 
-        public List<CharacterItem> ReadCharacterNonEquipItems(string characterId)
+        public List<CharacterItem> ReadCharacterNonEquipItems(string characterId, List<CharacterItem> result = null)
         {
-            return ReadCharacterItems(characterId, InventoryType.NonEquipItems);
+            return ReadCharacterItems(characterId, InventoryType.NonEquipItems, result);
         }
 
         public void DeleteCharacterItems(SqliteTransaction transaction, string characterId)

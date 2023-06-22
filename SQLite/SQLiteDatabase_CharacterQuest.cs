@@ -48,9 +48,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@completedTasks", characterQuest.WriteCompletedTasks()));
         }
 
-        public List<CharacterQuest> ReadCharacterQuests(string characterId)
+        public List<CharacterQuest> ReadCharacterQuests(string characterId, List<CharacterQuest> result = null)
         {
-            List<CharacterQuest> result = new List<CharacterQuest>();
+            if (result == null)
+                result = new List<CharacterQuest>();
             ExecuteReader((reader) =>
             {
                 CharacterQuest tempQuest;

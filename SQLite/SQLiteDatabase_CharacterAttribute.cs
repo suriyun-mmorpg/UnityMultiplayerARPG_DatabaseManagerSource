@@ -42,9 +42,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@amount", characterAttribute.amount));
         }
 
-        public List<CharacterAttribute> ReadCharacterAttributes(string characterId)
+        public List<CharacterAttribute> ReadCharacterAttributes(string characterId, List<CharacterAttribute> result = null)
         {
-            List<CharacterAttribute> result = new List<CharacterAttribute>();
+            if (result == null)
+                result = new List<CharacterAttribute>();
             ExecuteReader((reader) =>
             {
                 CharacterAttribute tempAttribute;
