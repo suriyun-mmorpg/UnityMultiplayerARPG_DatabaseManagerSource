@@ -418,15 +418,19 @@ namespace MultiplayerARPG.MMO
                 List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
                 List<CharacterQuest> quests = new List<CharacterQuest>();
                 List<CharacterCurrency> currencies = new List<CharacterCurrency>();
+
                 List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
                 List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
                 List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
+
                 List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
                 List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
                 List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
+
                 List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
                 List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
                 List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
+
                 // Read data
                 if (withEquipWeapons)
                     ReadCharacterEquipWeapons(id, selectableWeaponSets);
