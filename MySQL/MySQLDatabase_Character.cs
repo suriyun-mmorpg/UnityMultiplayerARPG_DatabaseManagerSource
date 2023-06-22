@@ -547,7 +547,7 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new MySqlParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false));
+                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
