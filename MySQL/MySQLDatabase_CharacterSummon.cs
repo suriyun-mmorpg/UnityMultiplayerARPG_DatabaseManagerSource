@@ -27,7 +27,7 @@ namespace MultiplayerARPG.MMO
 
         public void CreateCharacterSummon(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, int idx, string characterId, CharacterSummon characterSummon)
         {
-            string id = ZString.Concat(characterId, "_", idx);
+            string id = ZString.Concat(characterId, "_", (int)characterSummon.type, "_", idx);
             if (insertedIds.Contains(id))
             {
                 LogWarning(LogTag, $"Summon {id}, for character {characterId}, already inserted");
@@ -35,7 +35,7 @@ namespace MultiplayerARPG.MMO
             }
             insertedIds.Add(id);
             ExecuteNonQuerySync(connection, transaction, "INSERT INTO charactersummon (id, characterId, type, dataId, summonRemainsDuration, level, exp, currentHp, currentMp) VALUES (@id, @characterId, @type, @dataId, @summonRemainsDuration, @level, @exp, @currentHp, @currentMp)",
-                new MySqlParameter("@id", characterId + "_" + characterSummon.type + "_" + idx),
+                new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@type", (byte)characterSummon.type),
                 new MySqlParameter("@dataId", characterSummon.dataId),
