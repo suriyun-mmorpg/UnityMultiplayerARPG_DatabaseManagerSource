@@ -248,6 +248,84 @@ namespace MultiplayerARPG.MMO
             connection.Close();
         }
 
+        private void FillCharacterDataBooleans(string tableName, string characterId, IList<CharacterDataBoolean> list)
+        {
+            MySqlConnection connection = NewConnection();
+            OpenConnectionSync(connection);
+            MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                DeleteCharacterDataBooleans(connection, transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataBoolean(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                }
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom boolean of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            connection.Close();
+        }
+
+        private void FillCharacterDataInt32s(string tableName, string characterId, IList<CharacterDataInt32> list)
+        {
+            MySqlConnection connection = NewConnection();
+            OpenConnectionSync(connection);
+            MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                DeleteCharacterDataInt32s(connection, transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataInt32(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                }
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom int32 of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            connection.Close();
+        }
+
+        private void FillCharacterDataFloat32s(string tableName, string characterId, IList<CharacterDataFloat32> list)
+        {
+            MySqlConnection connection = NewConnection();
+            OpenConnectionSync(connection);
+            MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                DeleteCharacterDataFloat32s(connection, transaction, tableName, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < list.Count; ++i)
+                {
+                    CreateCharacterDataFloat32(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                }
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing custom float32 of character: " + characterId + ", table: " + tableName);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            connection.Close();
+        }
+
         private void FillCharacterRelatesData(IPlayerCharacterData characterData)
         {
             FillCharacterAttributes(characterData);
@@ -259,6 +337,18 @@ namespace MultiplayerARPG.MMO
             FillCharacterSkills(characterData);
             FillCharacterSkillUsages(characterData);
             FillCharacterSummons(characterData);
+
+            FillCharacterDataBooleans("character_server_boolean", characterData.Id, characterData.ServerBools);
+            FillCharacterDataInt32s("character_server_int32", characterData.Id, characterData.ServerInts);
+            FillCharacterDataFloat32s("character_server_float32", characterData.Id, characterData.ServerFloats);
+
+            FillCharacterDataBooleans("character_private_boolean", characterData.Id, characterData.PrivateBools);
+            FillCharacterDataInt32s("character_private_int32", characterData.Id, characterData.PrivateInts);
+            FillCharacterDataFloat32s("character_private_float32", characterData.Id, characterData.PrivateFloats);
+
+            FillCharacterDataBooleans("character_public_boolean", characterData.Id, characterData.PublicBools);
+            FillCharacterDataInt32s("character_public_int32", characterData.Id, characterData.PublicInts);
+            FillCharacterDataFloat32s("character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
         public override void CreateCharacter(string userId, IPlayerCharacterData character)
@@ -358,7 +448,10 @@ namespace MultiplayerARPG.MMO
             bool withSummons = true,
             bool withHotkeys = true,
             bool withQuests = true,
-            bool withCurrencies = true)
+            bool withCurrencies = true,
+            bool withServerCustomData = true,
+            bool withPrivateCustomData = true,
+            bool withPublicCustomData = true)
         {
             PlayerCharacterData result = null;
             ExecuteReaderSync((reader) =>
@@ -386,6 +479,15 @@ namespace MultiplayerARPG.MMO
                 List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
                 List<CharacterQuest> quests = new List<CharacterQuest>();
                 List<CharacterCurrency> currencies = new List<CharacterCurrency>();
+                List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
+                List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
+                List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
+                List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
+                List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
                 // Read data
                 if (withEquipWeapons)
                     ReadCharacterEquipWeapons(id, selectableWeaponSets);
@@ -409,6 +511,24 @@ namespace MultiplayerARPG.MMO
                     ReadCharacterQuests(id, quests);
                 if (withCurrencies)
                     ReadCharacterCurrencies(id, currencies);
+                if (withServerCustomData)
+                {
+                    ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
+                    ReadCharacterDataInt32s("character_server_int32", id, serverInts);
+                    ReadCharacterDataFloat32s("character_server_float32", id, serverFloats);
+                }
+                if (withPrivateCustomData)
+                {
+                    ReadCharacterDataBooleans("character_private_boolean", id, privateBools);
+                    ReadCharacterDataInt32s("character_private_int32", id, privateInts);
+                    ReadCharacterDataFloat32s("character_private_float32", id, privateFloats);
+                }
+                if (withPublicCustomData)
+                {
+                    ReadCharacterDataBooleans("character_public_boolean", id, publicBools);
+                    ReadCharacterDataInt32s("character_public_int32", id, publicInts);
+                    ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
+                }
                 // Assign read data
                 if (withEquipWeapons)
                     result.SelectableWeaponSets = selectableWeaponSets;
@@ -432,6 +552,24 @@ namespace MultiplayerARPG.MMO
                     result.Quests = quests;
                 if (withCurrencies)
                     result.Currencies = currencies;
+                if (withServerCustomData)
+                {
+                    result.ServerBools = serverBools;
+                    result.ServerInts = serverInts;
+                    result.ServerFloats = serverFloats;
+                }
+                if (withPrivateCustomData)
+                {
+                    result.PrivateBools = privateBools;
+                    result.PrivateInts = privateInts;
+                    result.PrivateFloats = privateFloats;
+                }
+                if (withPublicCustomData)
+                {
+                    result.PublicBools = publicBools;
+                    result.PublicInts = publicInts;
+                    result.PublicFloats = publicFloats;
+                }
                 // Invoke dev extension methods
                 this.InvokeInstanceDevExtMethods("ReadCharacter",
                     result,
@@ -445,7 +583,10 @@ namespace MultiplayerARPG.MMO
                     withSummons,
                     withHotkeys,
                     withQuests,
-                    withCurrencies);
+                    withCurrencies,
+                    withServerCustomData,
+                    withPrivateCustomData,
+                    withPublicCustomData);
             }
             return result;
         }
@@ -565,6 +706,18 @@ namespace MultiplayerARPG.MMO
                     DeleteCharacterSkills(connection, transaction, id);
                     DeleteCharacterSkillUsages(connection, transaction, id);
                     DeleteCharacterSummons(connection, transaction, id);
+
+                    DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
+                    DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
+                    DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
+
+                    DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
+                    DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
+                    DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
+
+                    DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
+                    DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
+                    DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
                     transaction.Commit();
                 }
                 catch (System.Exception ex)
