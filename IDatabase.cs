@@ -34,7 +34,10 @@ namespace MultiplayerARPG.MMO
             bool withSummons = true,
             bool withHotkeys = true,
             bool withQuests = true,
-            bool withCurrencies = true);
+            bool withCurrencies = true,
+            bool withServerCustomData = true,
+            bool withPrivateCustomData = true,
+            bool withPublicCustomData = true);
         List<PlayerCharacterData> ReadCharacters(string userId);
         void UpdateCharacter(IPlayerCharacterData character);
         void DeleteCharacter(string userId, string id);
