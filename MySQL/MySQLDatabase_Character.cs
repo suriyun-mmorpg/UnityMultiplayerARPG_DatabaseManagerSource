@@ -22,7 +22,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing attributes of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -42,7 +42,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing buffs of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -62,7 +62,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing hotkeys of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -90,7 +90,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -110,7 +110,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing quests of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -130,7 +130,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing currencies of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -150,7 +150,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skills of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -170,7 +170,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -190,7 +190,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -210,7 +210,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom boolean of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -230,7 +230,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom int32 of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
@@ -250,7 +250,7 @@ namespace MultiplayerARPG.MMO
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing custom float32 of character: " + characterId + ", table: " + tableName);
                 LogException(LogTag, ex);
-                throw ex;
+                throw;
             }
         }
 
