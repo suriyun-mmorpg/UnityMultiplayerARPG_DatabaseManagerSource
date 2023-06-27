@@ -34,7 +34,7 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuery(transaction, $"INSERT INTO {tableName} (id, characterId, hashedKey, value)",
+            ExecuteNonQuery(transaction, $"INSERT INTO {tableName} (id, characterId, hashedKey, value) VALUES (@id, @characterId, @hashedKey, @value)",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@hashedKey", characterDataFloat32.hashedKey),
