@@ -369,6 +369,14 @@ namespace MultiplayerARPG.MMO
                 result.LastDeadTime = reader.GetInt64(36);
                 result.UnmuteTime = reader.GetInt64(37);
                 result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(38)).ToUnixTimeSeconds();
+                if (!reader.IsDBNull(39))
+                    result.IsPkOn = reader.GetBoolean(39);
+                if (!reader.IsDBNull(40))
+                    result.LastPkOnTime = reader.GetInt64(40);
+                if (!reader.IsDBNull(41))
+                    result.PkPoint = reader.GetInt32(41);
+                if (!reader.IsDBNull(42))
+                    result.ConsecutivePkKills = reader.GetInt32(42);
                 return true;
             }
             result = null;
@@ -396,13 +404,16 @@ namespace MultiplayerARPG.MMO
             ExecuteReaderSync((reader) =>
             {
                 ReadCharacter(reader, out result);
-            }, "SELECT " +
-                "id, userId, dataId, entityId, factionId, characterName, level, exp, " +
-                "currentHp, currentMp, currentStamina, currentFood, currentWater, " +
-                "equipWeaponSet, statPoint, skillPoint, gold, partyId, guildId, guildRole, sharedGuildExp, " +
-                "currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ," +
-                "respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ," +
-                "mountDataId, iconDataId, frameDataId, titleDataId, lastDeadTime, unmuteTime, updateAt FROM characters WHERE id=@id LIMIT 1",
+            }, @"SELECT
+                c.id, c.userId, c.dataId, c.entityId, c.factionId, c.characterName, c.level, c.exp,
+                c.currentHp, c.currentMp, c.currentStamina, c.currentFood, c.currentWater,
+                c.equipWeaponSet, c.statPoint, c.skillPoint, c.gold, c.partyId, c.guildId, c.guildRole, c.sharedGuildExp,
+                c.currentMapName, c.currentPositionX, c.currentPositionY, c.currentPositionZ, c.currentRotationX, currentRotationY, currentRotationZ,
+                c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
+                c.mountDataId, c.iconDataId, c.frameDataId, c.titleDataId, c.lastDeadTime, c.unmuteTime, c.updateAt,
+                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills
+                FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
+                WHERE c.id=@id LIMIT 1",
                 new MySqlParameter("@id", id));
             // Found character, then read its relates data
             if (result != null)
@@ -559,40 +570,53 @@ namespace MultiplayerARPG.MMO
             MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                ExecuteNonQuerySync(connection, transaction, "UPDATE characters SET " +
-                    "dataId=@dataId, " +
-                    "entityId=@entityId, " +
-                    "factionId=@factionId, " +
-                    "characterName=@characterName, " +
-                    "level=@level, " +
-                    "exp=@exp, " +
-                    "currentHp=@currentHp, " +
-                    "currentMp=@currentMp, " +
-                    "currentStamina=@currentStamina, " +
-                    "currentFood=@currentFood, " +
-                    "currentWater=@currentWater, " +
-                    "equipWeaponSet=@equipWeaponSet, " +
-                    "statPoint=@statPoint, " +
-                    "skillPoint=@skillPoint, " +
-                    "gold=@gold, " +
-                    "currentMapName=@currentMapName, " +
-                    "currentPositionX=@currentPositionX, " +
-                    "currentPositionY=@currentPositionY, " +
-                    "currentPositionZ=@currentPositionZ, " +
-                    "currentRotationX=@currentRotationX, " +
-                    "currentRotationY=@currentRotationY, " +
-                    "currentRotationZ=@currentRotationZ, " +
-                    "respawnMapName=@respawnMapName, " +
-                    "respawnPositionX=@respawnPositionX, " +
-                    "respawnPositionY=@respawnPositionY, " +
-                    "respawnPositionZ=@respawnPositionZ, " +
-                    "mountDataId=@mountDataId, " +
-                    "iconDataId=@iconDataId, " +
-                    "frameDataId=@frameDataId, " +
-                    "titleDataId=@titleDataId, " +
-                    "lastDeadTime=@lastDeadTime, " +
-                    "unmuteTime=@unmuteTime " +
-                    "WHERE id=@id",
+                ExecuteNonQuerySync(connection, transaction, @"INSERT INTO character_pk
+                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills) VALUES
+                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills)
+                    ON DUPLICATE KEY UPDATE
+                    isPkOn = @isPkOn,
+                    lastPkOnTime = @lastPkOnTime,
+                    pkPoint = @pkPoint,
+                    consecutivePkKills = @consecutivePkKills",
+                    new MySqlParameter("@id", character.Id),
+                    new MySqlParameter("@isPkOn", character.IsPkOn),
+                    new MySqlParameter("@lastPkOnTime", character.LastPkOnTime),
+                    new MySqlParameter("@pkPoint", character.PkPoint),
+                    new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills));
+                ExecuteNonQuerySync(connection, transaction, @"UPDATE characters SET
+                    dataId=@dataId,
+                    entityId=@entityId,
+                    factionId=@factionId,
+                    characterName=@characterName,
+                    level=@level,
+                    exp=@exp,
+                    currentHp=@currentHp,
+                    currentMp=@currentMp,
+                    currentStamina=@currentStamina,
+                    currentFood=@currentFood,
+                    currentWater=@currentWater,
+                    equipWeaponSet=@equipWeaponSet,
+                    statPoint=@statPoint,
+                    skillPoint=@skillPoint,
+                    gold=@gold,
+                    currentMapName=@currentMapName,
+                    currentPositionX=@currentPositionX,
+                    currentPositionY=@currentPositionY,
+                    currentPositionZ=@currentPositionZ,
+                    currentRotationX=@currentRotationX,
+                    currentRotationY=@currentRotationY,
+                    currentRotationZ=@currentRotationZ,
+                    respawnMapName=@respawnMapName,
+                    respawnPositionX=@respawnPositionX,
+                    respawnPositionY=@respawnPositionY,
+                    respawnPositionZ=@respawnPositionZ,
+                    mountDataId=@mountDataId,
+                    iconDataId=@iconDataId,
+                    frameDataId=@frameDataId,
+                    titleDataId=@titleDataId,
+                    lastDeadTime=@lastDeadTime,
+                    unmuteTime=@unmuteTime
+                    WHERE id=@id",
                     new MySqlParameter("@dataId", character.DataId),
                     new MySqlParameter("@entityId", character.EntityId),
                     new MySqlParameter("@factionId", character.FactionId),
@@ -654,6 +678,7 @@ namespace MultiplayerARPG.MMO
                 try
                 {
                     ExecuteNonQuerySync(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new MySqlParameter("@characterId", id));
+                    ExecuteNonQuerySync(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new MySqlParameter("@characterId", id));
                     ExecuteNonQuerySync(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new MySqlParameter("@characterId", id));
                     DeleteCharacterAttributes(connection, transaction, id);
                     DeleteCharacterCurrencies(connection, transaction, id);

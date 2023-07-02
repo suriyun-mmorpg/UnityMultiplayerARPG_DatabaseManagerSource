@@ -324,7 +324,9 @@ namespace MultiplayerARPG.MMO
               isPkOn BOOLEAN NOT NULL DEFAULT 0,
               lastPkOnTime INTEGER NOT NULL DEFAULT 0,
               pkPoint INTEGER NOT NULL DEFAULT 0,
-              consecutivePkKills INTEGER NOT NULL DEFAULT 0
+              consecutivePkKills INTEGER NOT NULL DEFAULT 0,
+              highestPkPoint INTEGER NOT NULL DEFAULT 0,
+              highestConsecutivePkKills INTEGER NOT NULL DEFAULT 0
             )");
 
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS summonbuffs (
