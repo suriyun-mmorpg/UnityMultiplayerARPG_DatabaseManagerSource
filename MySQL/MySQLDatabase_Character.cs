@@ -377,6 +377,10 @@ namespace MultiplayerARPG.MMO
                     result.PkPoint = reader.GetInt32(41);
                 if (!reader.IsDBNull(42))
                     result.ConsecutivePkKills = reader.GetInt32(42);
+                if (!reader.IsDBNull(43))
+                    result.HighestPkPoint = reader.GetInt32(43);
+                if (!reader.IsDBNull(44))
+                    result.HighestConsecutivePkKills = reader.GetInt32(44);
                 return true;
             }
             result = null;
@@ -411,7 +415,7 @@ namespace MultiplayerARPG.MMO
                 c.currentMapName, c.currentPositionX, c.currentPositionY, c.currentPositionZ, c.currentRotationX, currentRotationY, currentRotationZ,
                 c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
                 c.mountDataId, c.iconDataId, c.frameDataId, c.titleDataId, c.lastDeadTime, c.unmuteTime, c.updateAt,
-                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills
+                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills
                 FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
                 WHERE c.id=@id LIMIT 1",
                 new MySqlParameter("@id", id));
@@ -571,18 +575,22 @@ namespace MultiplayerARPG.MMO
             try
             {
                 ExecuteNonQuerySync(connection, transaction, @"INSERT INTO character_pk
-                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills) VALUES
-                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills)
+                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
+                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
                     ON DUPLICATE KEY UPDATE
                     isPkOn = @isPkOn,
                     lastPkOnTime = @lastPkOnTime,
                     pkPoint = @pkPoint,
-                    consecutivePkKills = @consecutivePkKills",
+                    consecutivePkKills = @consecutivePkKills,
+                    highestPkPoint = @highestPkPoint,
+                    highestConsecutivePkKills = @highestConsecutivePkKills",
                     new MySqlParameter("@id", character.Id),
                     new MySqlParameter("@isPkOn", character.IsPkOn),
                     new MySqlParameter("@lastPkOnTime", character.LastPkOnTime),
                     new MySqlParameter("@pkPoint", character.PkPoint),
-                    new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills));
+                    new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
+                    new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
+                    new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
                 ExecuteNonQuerySync(connection, transaction, @"UPDATE characters SET
                     dataId=@dataId,
                     entityId=@entityId,
