@@ -318,6 +318,15 @@ namespace MultiplayerARPG.MMO
               value REAL NOT NULL DEFAULT 0
             )");
 
+
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS character_pk (
+              id TEXT NOT NULL PRIMARY KEY,
+              isPkOn BOOLEAN NOT NULL DEFAULT 0,
+              lastPkOnTime INTEGER NOT NULL DEFAULT 0,
+              pkPoint INTEGER NOT NULL DEFAULT 0,
+              consecutivePkKills INTEGER NOT NULL DEFAULT 0
+            )");
+
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS summonbuffs (
               id TEXT NOT NULL PRIMARY KEY,
               characterId TEXT NOT NULL,
