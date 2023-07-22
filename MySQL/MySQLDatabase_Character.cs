@@ -256,8 +256,12 @@ namespace MultiplayerARPG.MMO
 
         private void FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
+            FillCharacterAttributes(connection, transaction, characterData);
+            FillCharacterBuffs(connection, transaction, characterData);
+            FillCharacterHotkeys(connection, transaction, characterData);
             FillCharacterItems(connection, transaction, characterData);
             FillCharacterQuests(connection, transaction, characterData);
+            FillCharacterCurrencies(connection, transaction, characterData);
             FillCharacterSkills(connection, transaction, characterData);
             FillCharacterSkillUsages(connection, transaction, characterData);
             FillCharacterSummons(connection, transaction, characterData);
