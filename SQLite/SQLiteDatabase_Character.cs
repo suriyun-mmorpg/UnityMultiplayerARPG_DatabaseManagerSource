@@ -261,8 +261,12 @@ namespace MultiplayerARPG.MMO
 
         private void FillCharacterRelatesData(SqliteTransaction transaction, IPlayerCharacterData characterData)
         {
+            FillCharacterAttributes(transaction, characterData);
+            FillCharacterBuffs(transaction, characterData);
+            FillCharacterHotkeys(transaction, characterData);
             FillCharacterItems(transaction, characterData);
             FillCharacterQuests(transaction, characterData);
+            FillCharacterCurrencies(transaction, characterData);
             FillCharacterSkills(transaction, characterData);
             FillCharacterSkillUsages(transaction, characterData);
             FillCharacterSummons(transaction, characterData);
