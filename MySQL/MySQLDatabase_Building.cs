@@ -29,12 +29,13 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override void CreateBuilding(string mapName, IBuildingSaveData building)
+        public override void CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             MySqlConnection connection = NewConnection();
             OpenConnectionSync(connection);
-            ExecuteNonQuerySync(connection, null, "INSERT INTO buildings (id, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+            ExecuteNonQuerySync(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
                 new MySqlParameter("@id", building.Id),
+                new MySqlParameter("@channel", channel),
                 new MySqlParameter("@parentId", building.ParentId),
                 new MySqlParameter("@entityId", building.EntityId),
                 new MySqlParameter("@currentHp", building.CurrentHp),
@@ -52,7 +53,7 @@ namespace MultiplayerARPG.MMO
             connection.Close();
         }
 
-        public override List<BuildingSaveData> ReadBuildings(string mapName)
+        public override List<BuildingSaveData> ReadBuildings(string channel, string mapName)
         {
             List<BuildingSaveData> result = new List<BuildingSaveData>();
             ExecuteReaderSync((reader) =>
@@ -62,11 +63,13 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempBuilding);
                 }
-            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE mapName=@mapName", new MySqlParameter("@mapName", mapName));
+            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel, mapName=@mapName",
+                new MySqlParameter("@channel", channel),
+                new MySqlParameter("@mapName", mapName));
             return result;
         }
 
-        public override void UpdateBuilding(string mapName, IBuildingSaveData building)
+        public override void UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             MySqlConnection connection = NewConnection();
             OpenConnectionSync(connection);
@@ -86,7 +89,7 @@ namespace MultiplayerARPG.MMO
                 "rotationX=@rotationX, " +
                 "rotationY=@rotationY, " +
                 "rotationZ=@rotationZ " +
-                "WHERE id=@id AND mapName=@mapName",
+                "WHERE id=@id AND channel=@channel AND mapName=@mapName",
                 new MySqlParameter("@id", building.Id),
                 new MySqlParameter("@parentId", building.ParentId),
                 new MySqlParameter("@entityId", building.EntityId),
@@ -103,15 +106,19 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@rotationX", building.Rotation.x),
                 new MySqlParameter("@rotationY", building.Rotation.y),
                 new MySqlParameter("@rotationZ", building.Rotation.z),
+                new MySqlParameter("@channel", channel),
                 new MySqlParameter("@mapName", mapName));
             connection.Close();
         }
 
-        public override void DeleteBuilding(string mapName, string id)
+        public override void DeleteBuilding(string channel, string mapName, string id)
         {
             MySqlConnection connection = NewConnection();
             OpenConnectionSync(connection);
-            ExecuteNonQuerySync(connection, null, "DELETE FROM buildings WHERE id=@id AND mapName=@mapName", new MySqlParameter("@id", id), new MySqlParameter("@mapName", mapName));
+            ExecuteNonQuerySync(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                new MySqlParameter("@id", id),
+                new MySqlParameter("@channel", channel),
+                new MySqlParameter("@mapName", mapName));
             connection.Close();
         }
     }

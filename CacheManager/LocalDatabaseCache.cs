@@ -238,47 +238,53 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public async UniTask<bool> SetBuilding(string mapName, BuildingSaveData building)
+        public async UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building)
         {
             await UniTask.Yield();
-            if (!_cachedBuilding.ContainsKey(mapName))
-                _cachedBuilding[mapName] = new ConcurrentDictionary<string, BuildingSaveData>();
-            _cachedBuilding[mapName][building.Id] = building;
+            string key = $"{channel}_{mapName}";
+            if (!_cachedBuilding.ContainsKey(key))
+                _cachedBuilding[key] = new ConcurrentDictionary<string, BuildingSaveData>();
+            _cachedBuilding[key][building.Id] = building;
             return true;
         }
-        public async UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string mapName, string buildingId)
+        public async UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string channel, string mapName, string buildingId)
         {
             await UniTask.Yield();
-            if (_cachedBuilding.TryGetValue(mapName, out var buildings) && buildings.TryGetValue(buildingId, out var building))
+            string key = $"{channel}_{mapName}";
+            if (_cachedBuilding.TryGetValue(key, out var buildings) && buildings.TryGetValue(buildingId, out var building))
                 return new DatabaseCacheResult<BuildingSaveData>(building);
             return default;
         }
-        public async UniTask<bool> RemoveBuilding(string mapName, string buildingId)
+        public async UniTask<bool> RemoveBuilding(string channel, string mapName, string buildingId)
         {
             await UniTask.Yield();
-            return _cachedBuilding.TryGetValue(mapName, out var buildings) && buildings.TryRemove(buildingId, out _);
+            string key = $"{channel}_{mapName}";
+            return _cachedBuilding.TryGetValue(key, out var buildings) && buildings.TryRemove(buildingId, out _);
         }
 
-        public async UniTask<bool> SetBuildings(string mapName, IEnumerable<BuildingSaveData> buildings)
+        public async UniTask<bool> SetBuildings(string channel, string mapName, IEnumerable<BuildingSaveData> buildings)
         {
             await UniTask.Yield();
-            if (!_cachedBuilding.ContainsKey(mapName))
-                _cachedBuilding[mapName] = new ConcurrentDictionary<string, BuildingSaveData>();
+            string key = $"{channel}_{mapName}";
+            if (!_cachedBuilding.ContainsKey(key))
+                _cachedBuilding[key] = new ConcurrentDictionary<string, BuildingSaveData>();
             foreach (BuildingSaveData building in buildings)
-                _cachedBuilding[mapName][building.Id] = building;
+                _cachedBuilding[key][building.Id] = building;
             return true;
         }
-        public async UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string mapName)
+        public async UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string channel, string mapName)
         {
             await UniTask.Yield();
-            if (_cachedBuilding.TryGetValue(mapName, out var buildings))
+            string key = $"{channel}_{mapName}";
+            if (_cachedBuilding.TryGetValue(key, out var buildings))
                 return new DatabaseCacheResult<IEnumerable<BuildingSaveData>>(buildings.Values);
             return default;
         }
-        public async UniTask<bool> RemoveBuildings(string mapName)
+        public async UniTask<bool> RemoveBuildings(string channel, string mapName)
         {
             await UniTask.Yield();
-            return _cachedBuilding.TryRemove(mapName, out _);
+            string key = $"{channel}_{mapName}";
+            return _cachedBuilding.TryRemove(key, out _);
         }
 
         public async UniTask<bool> SetParty(PartyData party)

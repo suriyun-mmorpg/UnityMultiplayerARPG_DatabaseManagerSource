@@ -47,13 +47,13 @@ namespace MultiplayerARPG.MMO
         UniTask<bool> SetSocialCharacterGuildId(string characterId, int guildId);
         UniTask<bool> SetSocialCharacterGuildIdAndRole(string characterId, int guildId, byte guildRole);
 
-        UniTask<bool> SetBuilding(string mapName, BuildingSaveData building);
-        UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string mapName, string buildingId);
-        UniTask<bool> RemoveBuilding(string mapName, string buildingId);
+        UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building);
+        UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string channel, string mapName, string buildingId);
+        UniTask<bool> RemoveBuilding(string channel, string mapName, string buildingId);
 
-        UniTask<bool> SetBuildings(string mapName, IEnumerable<BuildingSaveData> buildings);
-        UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string mapName);
-        UniTask<bool> RemoveBuildings(string mapName);
+        UniTask<bool> SetBuildings(string channel, string mapName, IEnumerable<BuildingSaveData> buildings);
+        UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string channel, string mapName);
+        UniTask<bool> RemoveBuildings(string channel, string mapName);
 
         UniTask<bool> SetParty(PartyData party);
         UniTask<DatabaseCacheResult<PartyData>> GetParty(int id);

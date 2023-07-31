@@ -34,10 +34,11 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override void CreateBuilding(string mapName, IBuildingSaveData building)
+        public override void CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
-            ExecuteNonQuery("INSERT INTO buildings (id, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+            ExecuteNonQuery("INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
                 new SqliteParameter("@id", building.Id),
+                new SqliteParameter("@channel", channel),
                 new SqliteParameter("@parentId", building.ParentId),
                 new SqliteParameter("@entityId", building.EntityId),
                 new SqliteParameter("@currentHp", building.CurrentHp),
@@ -54,7 +55,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@extraData", building.ExtraData));
         }
 
-        public override List<BuildingSaveData> ReadBuildings(string mapName)
+        public override List<BuildingSaveData> ReadBuildings(string channel, string mapName)
         {
             List<BuildingSaveData> result = new List<BuildingSaveData>();
             ExecuteReader((reader) =>
@@ -64,11 +65,13 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempBuilding);
                 }
-            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE mapName=@mapName", new SqliteParameter("@mapName", mapName));
+            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel, mapName=@mapName",
+                new SqliteParameter("@channel", channel),
+                new SqliteParameter("@mapName", mapName));
             return result;
         }
 
-        public override void UpdateBuilding(string mapName, IBuildingSaveData building)
+        public override void UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("UPDATE buildings SET " +
                 "parentId=@parentId, " +
@@ -86,7 +89,7 @@ namespace MultiplayerARPG.MMO
                 "rotationX=@rotationX, " +
                 "rotationY=@rotationY, " +
                 "rotationZ=@rotationZ " +
-                "WHERE id=@id AND mapName=@mapName",
+                "WHERE id=@id AND channel=@channel AND mapName=@mapName",
                 new SqliteParameter("@id", building.Id),
                 new SqliteParameter("@parentId", building.ParentId),
                 new SqliteParameter("@entityId", building.EntityId),
@@ -103,12 +106,16 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@rotationX", building.Rotation.x),
                 new SqliteParameter("@rotationY", building.Rotation.y),
                 new SqliteParameter("@rotationZ", building.Rotation.z),
+                new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
         }
 
-        public override void DeleteBuilding(string mapName, string id)
+        public override void DeleteBuilding(string channel, string mapName, string id)
         {
-            ExecuteNonQuery("DELETE FROM buildings WHERE id=@id AND mapName=@mapName", new SqliteParameter("@id", id), new SqliteParameter("@mapName", mapName));
+            ExecuteNonQuery("DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                new SqliteParameter("@id", id),
+                new SqliteParameter("@channel", channel),
+                new SqliteParameter("@mapName", mapName));
         }
     }
 }

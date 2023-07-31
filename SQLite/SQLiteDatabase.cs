@@ -368,6 +368,7 @@ namespace MultiplayerARPG.MMO
 
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS buildings (
               id TEXT NOT NULL PRIMARY KEY,
+              channel TEXT NOT NULL DEFAULT 'default',
               parentId TEXT NOT NULL,
               entityId INGETER NOT NULL,
               currentHp INTEGER NOT NULL DEFAULT 0,

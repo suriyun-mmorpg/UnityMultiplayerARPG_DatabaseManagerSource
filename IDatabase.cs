@@ -52,10 +52,10 @@ namespace MultiplayerARPG.MMO
         string GetIdByCharacterName(string characterName);
         string GetUserIdByCharacterName(string characterName);
 
-        void CreateBuilding(string mapName, IBuildingSaveData saveData);
-        List<BuildingSaveData> ReadBuildings(string mapName);
-        void UpdateBuilding(string mapName, IBuildingSaveData building);
-        void DeleteBuilding(string mapName, string id);
+        void CreateBuilding(string channel, string mapName, IBuildingSaveData saveData);
+        List<BuildingSaveData> ReadBuildings(string channel, string mapName);
+        void UpdateBuilding(string channel, string mapName, IBuildingSaveData building);
+        void DeleteBuilding(string channel, string mapName, string id);
 
         int CreateParty(bool shareExp, bool shareItem, string leaderId);
         PartyData ReadParty(int id);
