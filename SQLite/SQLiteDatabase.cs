@@ -9,10 +9,10 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using System;
+using Cysharp.Threading.Tasks;
 #endif
 
 namespace MultiplayerARPG.MMO
@@ -599,7 +599,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        public override string ValidateUserLogin(string username, string password)
+        public override UniTask<string> ValidateUserLogin(string username, string password)
         {
             string id = string.Empty;
             ExecuteReader((reader) =>
@@ -615,18 +615,18 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@username", username),
                 new SqliteParameter("@authType", AUTH_TYPE_NORMAL));
 
-            return id;
+            return new UniTask<string>(id);
         }
 
-        public override bool ValidateAccessToken(string userId, string accessToken)
+        public override UniTask<bool> ValidateAccessToken(string userId, string accessToken)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE id=@id AND accessToken=@accessToken",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@accessToken", accessToken));
-            return (result != null ? (long)result : 0) > 0;
+            return new UniTask<bool>((result != null ? (long)result : 0) > 0);
         }
 
-        public override byte GetUserLevel(string userId)
+        public override UniTask<byte> GetUserLevel(string userId)
         {
             byte userLevel = 0;
             ExecuteReader((reader) =>
@@ -635,10 +635,10 @@ namespace MultiplayerARPG.MMO
                     userLevel = (byte)reader.GetInt32(0);
             }, "SELECT userLevel FROM userlogin WHERE id=@id LIMIT 1",
                 new SqliteParameter("@id", userId));
-            return userLevel;
+            return new UniTask<byte>(userLevel);
         }
 
-        public override int GetGold(string userId)
+        public override UniTask<int> GetGold(string userId)
         {
             int gold = 0;
             ExecuteReader((reader) =>
@@ -647,17 +647,18 @@ namespace MultiplayerARPG.MMO
                     gold = reader.GetInt32(0);
             }, "SELECT gold FROM userlogin WHERE id=@id LIMIT 1",
                 new SqliteParameter("@id", userId));
-            return gold;
+            return new UniTask<int>(gold);
         }
 
-        public override void UpdateGold(string userId, int gold)
+        public override UniTaskVoid UpdateGold(string userId, int gold)
         {
             ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@gold", gold));
+            return new UniTaskVoid();
         }
 
-        public override int GetCash(string userId)
+        public override UniTask<int> GetCash(string userId)
         {
             int cash = 0;
             ExecuteReader((reader) =>
@@ -666,24 +667,26 @@ namespace MultiplayerARPG.MMO
                     cash = reader.GetInt32(0);
             }, "SELECT cash FROM userlogin WHERE id=@id LIMIT 1",
                 new SqliteParameter("@id", userId));
-            return cash;
+            return new UniTask<int>(cash);
         }
 
-        public override void UpdateCash(string userId, int cash)
+        public override UniTaskVoid UpdateCash(string userId, int cash)
         {
             ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@cash", cash));
+            return new UniTaskVoid();
         }
 
-        public override void UpdateAccessToken(string userId, string accessToken)
+        public override UniTaskVoid UpdateAccessToken(string userId, string accessToken)
         {
             ExecuteNonQuery("UPDATE userlogin SET accessToken=@accessToken WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@accessToken", accessToken));
+            return new UniTaskVoid();
         }
 
-        public override void CreateUserLogin(string username, string password, string email)
+        public override UniTaskVoid CreateUserLogin(string username, string password, string email)
         {
             ExecuteNonQuery("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
                 new SqliteParameter("@id", _userLoginManager.GenerateNewId()),
@@ -691,16 +694,17 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@password", _userLoginManager.GetHashedPassword(password)),
                 new SqliteParameter("@email", email),
                 new SqliteParameter("@authType", AUTH_TYPE_NORMAL));
+            return new UniTaskVoid();
         }
 
-        public override long FindUsername(string username)
+        public override UniTask<long> FindUsername(string username)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE username LIKE @username",
                 new SqliteParameter("@username", username));
-            return result != null ? (long)result : 0;
+            return new UniTask<long>(result != null ? (long)result : 0);
         }
 
-        public override long GetUserUnbanTime(string userId)
+        public override UniTask<long> GetUserUnbanTime(string userId)
         {
             long unbanTime = 0;
             ExecuteReader((reader) =>
@@ -711,10 +715,10 @@ namespace MultiplayerARPG.MMO
                 }
             }, "SELECT unbanTime FROM userlogin WHERE id=@id LIMIT 1",
                 new SqliteParameter("@id", userId));
-            return unbanTime;
+            return new UniTask<long>(unbanTime);
         }
 
-        public override void SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
+        public override UniTaskVoid SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
         {
             string userId = string.Empty;
             ExecuteReader((reader) =>
@@ -726,34 +730,36 @@ namespace MultiplayerARPG.MMO
             }, "SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new SqliteParameter("@characterName", characterName));
             if (string.IsNullOrEmpty(userId))
-                return;
+                return new UniTaskVoid();
             ExecuteNonQuery("UPDATE userlogin SET unbanTime=@unbanTime WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@unbanTime", unbanTime));
+            return new UniTaskVoid();
         }
 
-        public override void SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
+        public override UniTaskVoid SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
             ExecuteNonQuery("UPDATE characters SET unmuteTime=@unmuteTime WHERE characterName LIKE @characterName",
                 new SqliteParameter("@characterName", characterName),
                 new SqliteParameter("@unmuteTime", unmuteTime));
+            return new UniTaskVoid();
         }
 
-        public override bool ValidateEmailVerification(string userId)
+        public override UniTask<bool> ValidateEmailVerification(string userId)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE userId=@userId AND isEmailVerified=1",
                 new SqliteParameter("@userId", userId));
-            return (result != null ? (long)result : 0) > 0;
+            return new UniTask<bool>((result != null ? (long)result : 0) > 0);
         }
 
-        public override long FindEmail(string email)
+        public override UniTask<long> FindEmail(string email)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE email LIKE @email",
                 new SqliteParameter("@email", email));
-            return result != null ? (long)result : 0;
+            return new UniTask<long>(result != null ? (long)result : 0);
         }
 
-        public override void UpdateUserCount(int userCount)
+        public override UniTaskVoid UpdateUserCount(int userCount)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM statistic WHERE 1");
             long count = result != null ? (long)result : 0;
@@ -767,6 +773,7 @@ namespace MultiplayerARPG.MMO
                 ExecuteNonQuery("INSERT INTO statistic (userCount) VALUES(@userCount);",
                     new SqliteParameter("@userCount", userCount));
             }
+            return new UniTaskVoid();
         }
 #endif
         }

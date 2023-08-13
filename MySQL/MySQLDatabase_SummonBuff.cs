@@ -1,4 +1,5 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
 using System.Collections.Generic;
 
@@ -6,7 +7,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private void CreateSummonBuff(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff summonBuff)
+        public async UniTask CreateSummonBuff(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff summonBuff)
         {
             string id = summonBuff.id;
             if (insertedIds.Contains(id))
@@ -15,7 +16,7 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO summonbuffs (id, characterId, buffId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @buffId, @type, @dataId, @level, @buffRemainsDuration)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO summonbuffs (id, characterId, buffId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @buffId, @type, @dataId, @level, @buffRemainsDuration)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@buffId", summonBuff.id),
@@ -41,15 +42,15 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void DeleteSummonBuff(MySqlConnection connection, MySqlTransaction transaction, string characterId)
+        public async UniTask DeleteSummonBuff(MySqlConnection connection, MySqlTransaction transaction, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM summonbuffs WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM summonbuffs WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
 
-        public override List<CharacterBuff> GetSummonBuffs(string characterId)
+        public override async UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId)
         {
             List<CharacterBuff> result = new List<CharacterBuff>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterBuff tempBuff;
                 while (ReadSummonBuff(reader, out tempBuff))
@@ -61,19 +62,19 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override void SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
+        public override async UniTaskVoid SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                DeleteSummonBuff(connection, transaction, characterId);
+                await DeleteSummonBuff(connection, transaction, characterId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < summonBuffs.Count; ++i)
                 {
-                    CreateSummonBuff(connection, transaction, insertedIds, characterId, summonBuffs[i]);
+                    await CreateSummonBuff(connection, transaction, insertedIds, characterId, summonBuffs[i]);
                 }
                 transaction.Commit();
             }
@@ -83,8 +84,6 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 transaction.Rollback();
             }
-            transaction.Dispose();
-            connection.Close();
         }
     }
 }

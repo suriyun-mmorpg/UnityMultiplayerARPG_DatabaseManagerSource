@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -61,7 +62,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override List<CharacterItem> ReadStorageItems(StorageType storageType, string storageOwnerId)
+        public override UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
         {
             List<CharacterItem> result = new List<CharacterItem>();
             ExecuteReader((reader) =>
@@ -74,10 +75,10 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
                 new SqliteParameter("@storageType", (byte)storageType),
                 new SqliteParameter("@storageOwnerId", storageOwnerId));
-            return result;
+            return new UniTask<List<CharacterItem>>(result);
         }
 
-        public override void UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override UniTaskVoid UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -98,6 +99,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
+            return new UniTaskVoid();
         }
 
         public void DeleteStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId)

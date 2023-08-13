@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -51,7 +52,7 @@ namespace MultiplayerARPG.MMO
             ExecuteNonQuery(transaction, "DELETE FROM summonbuffs WHERE characterId=@characterId", new SqliteParameter("@characterId", characterId));
         }
 
-        public override List<CharacterBuff> GetSummonBuffs(string characterId)
+        public override UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId)
         {
             List<CharacterBuff> result = new List<CharacterBuff>();
             ExecuteReader((reader) =>
@@ -63,10 +64,10 @@ namespace MultiplayerARPG.MMO
                 }
             }, "SELECT buffId, type, dataId, level, buffRemainsDuration FROM summonbuffs WHERE characterId=@characterId ORDER BY buffRemainsDuration ASC",
                 new SqliteParameter("@characterId", characterId));
-            return result;
+            return new UniTask<List<CharacterBuff>>(result);
         }
 
-        public override void SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
+        public override UniTaskVoid SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -87,6 +88,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
+            return new UniTaskVoid();
         }
     }
 }

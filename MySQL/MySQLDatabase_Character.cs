@@ -1,21 +1,22 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private void FillCharacterAttributes(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterAttributes(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterAttributes(connection, transaction, characterData.Id);
+                await DeleteCharacterAttributes(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Attributes.Count; ++i)
                 {
-                    CreateCharacterAttribute(connection, transaction, insertedIds, characterData.Id, characterData.Attributes[i]);
+                    await CreateCharacterAttribute(connection, transaction, insertedIds, characterData.Id, characterData.Attributes[i]);
                 }
             }
             catch (System.Exception ex)
@@ -26,16 +27,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterBuffs(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterBuffs(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterBuffs(connection, transaction, characterData.Id);
+                await DeleteCharacterBuffs(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Buffs.Count; ++i)
                 {
-                    CreateCharacterBuff(connection, transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
+                    await CreateCharacterBuff(connection, transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
                 }
             }
             catch (System.Exception ex)
@@ -46,16 +47,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterHotkeys(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterHotkeys(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterHotkeys(connection, transaction, characterData.Id);
+                await DeleteCharacterHotkeys(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Hotkeys.Count; ++i)
                 {
-                    CreateCharacterHotkey(connection, transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
+                    await CreateCharacterHotkey(connection, transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
                 }
             }
             catch (System.Exception ex)
@@ -66,24 +67,24 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterItems(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterItems(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterItems(connection, transaction, characterData.Id);
+                await DeleteCharacterItems(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.SelectableWeaponSets.Count; ++i)
                 {
-                    CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
+                    await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
                 }
                 for (i = 0; i < characterData.EquipItems.Count; ++i)
                 {
-                    CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.EquipItems[i]);
+                    await CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.EquipItems[i]);
                 }
                 for (i = 0; i < characterData.NonEquipItems.Count; ++i)
                 {
-                    CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
+                    await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
                 }
             }
             catch (System.Exception ex)
@@ -94,16 +95,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterQuests(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterQuests(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterQuests(connection, transaction, characterData.Id);
+                await DeleteCharacterQuests(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Quests.Count; ++i)
                 {
-                    CreateCharacterQuest(connection, transaction, insertedIds, characterData.Id, characterData.Quests[i]);
+                    await CreateCharacterQuest(connection, transaction, insertedIds, characterData.Id, characterData.Quests[i]);
                 }
             }
             catch (System.Exception ex)
@@ -114,16 +115,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterCurrencies(connection, transaction, characterData.Id);
+                await DeleteCharacterCurrencies(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Currencies.Count; ++i)
                 {
-                    CreateCharacterCurrency(connection, transaction, insertedIds, characterData.Id, characterData.Currencies[i]);
+                    await CreateCharacterCurrency(connection, transaction, insertedIds, characterData.Id, characterData.Currencies[i]);
                 }
             }
             catch (System.Exception ex)
@@ -134,16 +135,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterSkills(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterSkills(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterSkills(connection, transaction, characterData.Id);
+                await DeleteCharacterSkills(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Skills.Count; ++i)
                 {
-                    CreateCharacterSkill(connection, transaction, insertedIds, characterData.Id, characterData.Skills[i]);
+                    await CreateCharacterSkill(connection, transaction, insertedIds, characterData.Id, characterData.Skills[i]);
                 }
             }
             catch (System.Exception ex)
@@ -154,16 +155,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterSkillUsages(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterSkillUsages(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterSkillUsages(connection, transaction, characterData.Id);
+                await DeleteCharacterSkillUsages(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.SkillUsages.Count; ++i)
                 {
-                    CreateCharacterSkillUsage(connection, transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
+                    await CreateCharacterSkillUsage(connection, transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
                 }
             }
             catch (System.Exception ex)
@@ -174,16 +175,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterSummons(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterSummons(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
             try
             {
-                DeleteCharacterSummons(connection, transaction, characterData.Id);
+                await DeleteCharacterSummons(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterData.Summons.Count; ++i)
                 {
-                    CreateCharacterSummon(connection, transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
+                    await CreateCharacterSummon(connection, transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
                 }
             }
             catch (System.Exception ex)
@@ -194,16 +195,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterDataBooleans(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> list)
+        private async UniTask FillCharacterDataBooleans(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> list)
         {
             try
             {
-                DeleteCharacterDataBooleans(connection, transaction, tableName, characterId);
+                await DeleteCharacterDataBooleans(connection, transaction, tableName, characterId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < list.Count; ++i)
                 {
-                    CreateCharacterDataBoolean(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                    await CreateCharacterDataBoolean(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
             }
             catch (System.Exception ex)
@@ -214,16 +215,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterDataInt32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> list)
+        private async UniTask FillCharacterDataInt32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> list)
         {
             try
             {
-                DeleteCharacterDataInt32s(connection, transaction, tableName, characterId);
+                await DeleteCharacterDataInt32s(connection, transaction, tableName, characterId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < list.Count; ++i)
                 {
-                    CreateCharacterDataInt32(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                    await CreateCharacterDataInt32(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
             }
             catch (System.Exception ex)
@@ -234,16 +235,16 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterDataFloat32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataFloat32> list)
+        private async UniTask FillCharacterDataFloat32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId, IList<CharacterDataFloat32> list)
         {
             try
             {
-                DeleteCharacterDataFloat32s(connection, transaction, tableName, characterId);
+                await DeleteCharacterDataFloat32s(connection, transaction, tableName, characterId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < list.Count; ++i)
                 {
-                    CreateCharacterDataFloat32(connection, transaction, tableName, insertedIds, characterId, list[i]);
+                    await CreateCharacterDataFloat32(connection, transaction, tableName, insertedIds, characterId, list[i]);
                 }
             }
             catch (System.Exception ex)
@@ -254,39 +255,39 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
-            FillCharacterAttributes(connection, transaction, characterData);
-            FillCharacterBuffs(connection, transaction, characterData);
-            FillCharacterHotkeys(connection, transaction, characterData);
-            FillCharacterItems(connection, transaction, characterData);
-            FillCharacterQuests(connection, transaction, characterData);
-            FillCharacterCurrencies(connection, transaction, characterData);
-            FillCharacterSkills(connection, transaction, characterData);
-            FillCharacterSkillUsages(connection, transaction, characterData);
-            FillCharacterSummons(connection, transaction, characterData);
+            await FillCharacterAttributes(connection, transaction, characterData);
+            await FillCharacterBuffs(connection, transaction, characterData);
+            await FillCharacterHotkeys(connection, transaction, characterData);
+            await FillCharacterItems(connection, transaction, characterData);
+            await FillCharacterQuests(connection, transaction, characterData);
+            await FillCharacterCurrencies(connection, transaction, characterData);
+            await FillCharacterSkills(connection, transaction, characterData);
+            await FillCharacterSkillUsages(connection, transaction, characterData);
+            await FillCharacterSummons(connection, transaction, characterData);
 
-            FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
-            FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
-            FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+            await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+            await FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
 
-            FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
-            FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
-            FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            await FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+            await FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+            await FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
 
-            FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
-            FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
-            FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+            await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+            await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+            await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
-        public override void CreateCharacter(string userId, IPlayerCharacterData character)
+        public override async UniTaskVoid CreateCharacter(string userId, IPlayerCharacterData character)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                ExecuteNonQuerySync(connection, transaction, "INSERT INTO characters " +
+                await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
                     "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
                     "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
                     new MySqlParameter("@id", character.Id),
@@ -321,18 +322,16 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@iconDataId", character.IconDataId),
                     new MySqlParameter("@frameDataId", character.FrameDataId),
                     new MySqlParameter("@titleDataId", character.TitleDataId));
-                FillCharacterRelatesData(connection, transaction, character);
-                transaction.Commit();
+                await FillCharacterRelatesData(connection, transaction, character);
+                await transaction.CommitAsync();
                 this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                await transaction.RollbackAsync();
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
         private bool ReadCharacter(MySqlDataReader reader, out PlayerCharacterData result)
@@ -391,7 +390,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override PlayerCharacterData ReadCharacter(
+        public override async UniTask<PlayerCharacterData> ReadCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -409,7 +408,7 @@ namespace MultiplayerARPG.MMO
             bool withPublicCustomData = true)
         {
             PlayerCharacterData result = null;
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 ReadCharacter(reader, out result);
             }, @"SELECT
@@ -452,44 +451,44 @@ namespace MultiplayerARPG.MMO
 
                 // Read data
                 if (withEquipWeapons)
-                    ReadCharacterEquipWeapons(id, selectableWeaponSets);
+                    await ReadCharacterEquipWeapons(id, selectableWeaponSets);
                 if (withAttributes)
-                    ReadCharacterAttributes(id, attributes);
+                    await ReadCharacterAttributes(id, attributes);
                 if (withSkills)
-                    ReadCharacterSkills(id, skills);
+                    await ReadCharacterSkills(id, skills);
                 if (withSkillUsages)
-                    ReadCharacterSkillUsages(id, skillUsages);
+                    await ReadCharacterSkillUsages(id, skillUsages);
                 if (withBuffs)
-                    ReadCharacterBuffs(id, buffs);
+                    await ReadCharacterBuffs(id, buffs);
                 if (withEquipItems)
-                    ReadCharacterEquipItems(id, equipItems);
+                    await ReadCharacterEquipItems(id, equipItems);
                 if (withNonEquipItems)
-                    ReadCharacterNonEquipItems(id, nonEquipItems);
+                    await ReadCharacterNonEquipItems(id, nonEquipItems);
                 if (withSummons)
-                    ReadCharacterSummons(id, summons);
+                    await ReadCharacterSummons(id, summons);
                 if (withHotkeys)
-                    ReadCharacterHotkeys(id, hotkeys);
+                    await ReadCharacterHotkeys(id, hotkeys);
                 if (withQuests)
-                    ReadCharacterQuests(id, quests);
+                    await ReadCharacterQuests(id, quests);
                 if (withCurrencies)
-                    ReadCharacterCurrencies(id, currencies);
+                    await ReadCharacterCurrencies(id, currencies);
                 if (withServerCustomData)
                 {
-                    ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
-                    ReadCharacterDataInt32s("character_server_int32", id, serverInts);
-                    ReadCharacterDataFloat32s("character_server_float32", id, serverFloats);
+                    await ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
+                    await ReadCharacterDataInt32s("character_server_int32", id, serverInts);
+                    await ReadCharacterDataFloat32s("character_server_float32", id, serverFloats);
                 }
                 if (withPrivateCustomData)
                 {
-                    ReadCharacterDataBooleans("character_private_boolean", id, privateBools);
-                    ReadCharacterDataInt32s("character_private_int32", id, privateInts);
-                    ReadCharacterDataFloat32s("character_private_float32", id, privateFloats);
+                    await ReadCharacterDataBooleans("character_private_boolean", id, privateBools);
+                    await ReadCharacterDataInt32s("character_private_int32", id, privateInts);
+                    await ReadCharacterDataFloat32s("character_private_float32", id, privateFloats);
                 }
                 if (withPublicCustomData)
                 {
-                    ReadCharacterDataBooleans("character_public_boolean", id, publicBools);
-                    ReadCharacterDataInt32s("character_public_int32", id, publicInts);
-                    ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
+                    await ReadCharacterDataBooleans("character_public_boolean", id, publicBools);
+                    await ReadCharacterDataInt32s("character_public_int32", id, publicInts);
+                    await ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
                 }
                 // Assign read data
                 if (withEquipWeapons)
@@ -553,11 +552,11 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override List<PlayerCharacterData> ReadCharacters(string userId)
+        public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
         {
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             List<string> characterIds = new List<string>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 while (reader.Read())
                 {
@@ -566,19 +565,19 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new MySqlParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
 
-        public override void UpdateCharacter(IPlayerCharacterData character)
+        public override async UniTaskVoid UpdateCharacter(IPlayerCharacterData character)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                ExecuteNonQuerySync(connection, transaction, @"INSERT INTO character_pk
+                await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
                     (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
                     (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
                     ON DUPLICATE KEY UPDATE
@@ -595,7 +594,7 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
                     new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
                     new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-                ExecuteNonQuerySync(connection, transaction, @"UPDATE characters SET
+                await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
                     dataId=@dataId,
                     entityId=@entityId,
                     factionId=@factionId,
@@ -662,57 +661,55 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@lastDeadTime", character.LastDeadTime),
                     new MySqlParameter("@unmuteTime", character.UnmuteTime),
                     new MySqlParameter("@id", character.Id));
-                FillCharacterRelatesData(connection, transaction, character);
-                transaction.Commit();
+                await FillCharacterRelatesData(connection, transaction, character);
+                await transaction.CommitAsync();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                await transaction.RollbackAsync();
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        public override void DeleteCharacter(string userId, string id)
+        public override async UniTaskVoid DeleteCharacter(string userId, string id)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@userId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                MySqlConnection connection = NewConnection();
-                OpenConnectionSync(connection);
-                MySqlTransaction transaction = connection.BeginTransaction();
+                using MySqlConnection connection = NewConnection();
+                await OpenConnection(connection);
+                using MySqlTransaction transaction = connection.BeginTransaction();
                 try
                 {
-                    ExecuteNonQuerySync(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new MySqlParameter("@characterId", id));
-                    ExecuteNonQuerySync(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new MySqlParameter("@characterId", id));
-                    ExecuteNonQuerySync(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new MySqlParameter("@characterId", id));
-                    DeleteCharacterAttributes(connection, transaction, id);
-                    DeleteCharacterCurrencies(connection, transaction, id);
-                    DeleteCharacterBuffs(connection, transaction, id);
-                    DeleteCharacterHotkeys(connection, transaction, id);
-                    DeleteCharacterItems(connection, transaction, id);
-                    DeleteCharacterQuests(connection, transaction, id);
-                    DeleteCharacterSkills(connection, transaction, id);
-                    DeleteCharacterSkillUsages(connection, transaction, id);
-                    DeleteCharacterSummons(connection, transaction, id);
+                    await ExecuteNonQuery(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new MySqlParameter("@characterId", id));
+                    await ExecuteNonQuery(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new MySqlParameter("@characterId", id));
+                    await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new MySqlParameter("@characterId", id));
+                    await DeleteCharacterAttributes(connection, transaction, id);
+                    await DeleteCharacterCurrencies(connection, transaction, id);
+                    await DeleteCharacterBuffs(connection, transaction, id);
+                    await DeleteCharacterHotkeys(connection, transaction, id);
+                    await DeleteCharacterItems(connection, transaction, id);
+                    await DeleteCharacterQuests(connection, transaction, id);
+                    await DeleteCharacterSkills(connection, transaction, id);
+                    await DeleteCharacterSkillUsages(connection, transaction, id);
+                    await DeleteCharacterSummons(connection, transaction, id);
 
-                    DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
-                    DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
-                    DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
+                    await DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
+                    await DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
+                    await DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
 
-                    DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
-                    DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
-                    DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
+                    await DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
+                    await DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
+                    await DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
 
-                    DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
-                    DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
-                    DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
+                    await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
+                    await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
+                    await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
                     transaction.Commit();
                 }
                 catch (System.Exception ex)
@@ -721,38 +718,36 @@ namespace MultiplayerARPG.MMO
                     LogException(LogTag, ex);
                     transaction.Rollback();
                 }
-                transaction.Dispose();
-                connection.Close();
                 this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
             }
         }
 
-        public override long FindCharacterName(string characterName)
+        public override async UniTask<long> FindCharacterName(string characterName)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM characters WHERE characterName LIKE @characterName",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE characterName LIKE @characterName",
                 new MySqlParameter("@characterName", characterName));
             return result != null ? (long)result : 0;
         }
 
-        public override string GetIdByCharacterName(string characterName)
+        public override async UniTask<string> GetIdByCharacterName(string characterName)
         {
-            object result = ExecuteScalarSync("SELECT id FROM characters WHERE characterName LIKE @characterName LIMIT 1",
+            object result = await ExecuteScalar("SELECT id FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new MySqlParameter("@characterName", characterName));
             return result != null ? (string)result : string.Empty;
         }
 
-        public override string GetUserIdByCharacterName(string characterName)
+        public override async UniTask<string> GetUserIdByCharacterName(string characterName)
         {
-            object result = ExecuteScalarSync("SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
+            object result = await ExecuteScalar("SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new MySqlParameter("@characterName", characterName));
             return result != null ? (string)result : string.Empty;
         }
 
-        public override List<SocialCharacterData> FindCharacters(string finderId, string characterName, int skip, int limit)
+        public override async UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit)
         {
             string excludeIdsQuery = "(id!='" + finderId + "'";
             // Exclude friend, requested characters
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 while (reader.Read())
                 {
@@ -761,7 +756,7 @@ namespace MultiplayerARPG.MMO
             }, "SELECT characterId2 FROM friend WHERE characterId1='" + finderId + "'");
             excludeIdsQuery += ")";
             List<SocialCharacterData> result = new List<SocialCharacterData>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 SocialCharacterData socialCharacterData;
                 while (reader.Read())
@@ -779,33 +774,50 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override void CreateFriend(string id1, string id2, byte state)
+        public override async UniTaskVoid CreateFriend(string id1, string id2, byte state)
         {
-            DeleteFriend(id1, id2);
-            ExecuteNonQuerySync("INSERT INTO friend " +
-                "(characterId1, characterId2, state) VALUES " +
-                "(@characterId1, @characterId2, @state)",
-                new MySqlParameter("@characterId1", id1),
-                new MySqlParameter("@characterId2", id2),
-                new MySqlParameter("@state", state));
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE " +
+                   "characterId1 LIKE @characterId1 AND " +
+                   "characterId2 LIKE @characterId2",
+                   new MySqlParameter("@characterId1", id1),
+                   new MySqlParameter("@characterId2", id2));
+                await ExecuteNonQuery(connection, transaction, "INSERT INTO friend " +
+                    "(characterId1, characterId2, state) VALUES " +
+                    "(@characterId1, @characterId2, @state)",
+                    new MySqlParameter("@characterId1", id1),
+                    new MySqlParameter("@characterId2", id2),
+                    new MySqlParameter("@state", state));
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while creating friend: " + id1 + " " + id2);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+            }
         }
 
-        public override void DeleteFriend(string id1, string id2)
+        public override async UniTaskVoid DeleteFriend(string id1, string id2)
         {
-            ExecuteNonQuerySync("DELETE FROM friend WHERE " +
+            await ExecuteNonQuery("DELETE FROM friend WHERE " +
                "characterId1 LIKE @characterId1 AND " +
                "characterId2 LIKE @characterId2",
                new MySqlParameter("@characterId1", id1),
                new MySqlParameter("@characterId2", id2));
         }
 
-        public override List<SocialCharacterData> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
+        public override async UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
         {
             List<SocialCharacterData> result = new List<SocialCharacterData>();
             List<string> characterIds = new List<string>();
             if (readById2)
             {
-                ExecuteReaderSync((reader) =>
+                await ExecuteReader((reader) =>
                 {
                     while (reader.Read())
                     {
@@ -816,7 +828,7 @@ namespace MultiplayerARPG.MMO
             }
             else
             {
-                ExecuteReaderSync((reader) =>
+                await ExecuteReader((reader) =>
                 {
                     while (reader.Read())
                     {
@@ -828,7 +840,7 @@ namespace MultiplayerARPG.MMO
             SocialCharacterData socialCharacterData;
             foreach (string characterId in characterIds)
             {
-                ExecuteReaderSync((reader) =>
+                await ExecuteReader((reader) =>
                 {
                     while (reader.Read())
                     {
@@ -846,9 +858,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override int GetFriendRequestNotification(string characterId)
+        public override async UniTask<int> GetFriendRequestNotification(string characterId)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM friend WHERE characterId2=@characterId AND state=1",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM friend WHERE characterId2=@characterId AND state=1",
                 new MySqlParameter("@characterId", characterId));
             return (int)(long)result;
         }

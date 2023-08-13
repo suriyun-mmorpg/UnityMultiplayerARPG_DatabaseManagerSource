@@ -1,7 +1,8 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -20,7 +21,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void CreateCharacterAttribute(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterAttribute characterAttribute)
+        public async UniTask CreateCharacterAttribute(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterAttribute characterAttribute)
         {
             string id = ZString.Concat(characterId, "_", characterAttribute.dataId);
             if (insertedIds.Contains(id))
@@ -29,18 +30,18 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO characterattribute (id, characterId, dataId, amount) VALUES (@id, @characterId, @dataId, @amount)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterattribute (id, characterId, dataId, amount) VALUES (@id, @characterId, @dataId, @amount)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@dataId", characterAttribute.dataId),
                 new MySqlParameter("@amount", characterAttribute.amount));
         }
 
-        public List<CharacterAttribute> ReadCharacterAttributes(string characterId, List<CharacterAttribute> result = null)
+        public async UniTask<List<CharacterAttribute>> ReadCharacterAttributes(string characterId, List<CharacterAttribute> result = null)
         {
             if (result == null)
                 result = new List<CharacterAttribute>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterAttribute tempAttribute;
                 while (ReadCharacterAttribute(reader, out tempAttribute))
@@ -52,9 +53,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public void DeleteCharacterAttributes(MySqlConnection connection, MySqlTransaction transaction, string characterId)
+        public async UniTask DeleteCharacterAttributes(MySqlConnection connection, MySqlTransaction transaction, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM characterattribute WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM characterattribute WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
     }
 }

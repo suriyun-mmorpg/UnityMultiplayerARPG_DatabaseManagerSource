@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -284,7 +285,7 @@ namespace MultiplayerARPG.MMO
             FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
-        public override void CreateCharacter(string userId, IPlayerCharacterData character)
+        public override UniTaskVoid CreateCharacter(string userId, IPlayerCharacterData character)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -335,6 +336,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
+            return new UniTaskVoid();
         }
 
         private bool ReadCharacter(SqliteDataReader reader, out PlayerCharacterData result)
@@ -393,7 +395,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override PlayerCharacterData ReadCharacter(
+        public override UniTask<PlayerCharacterData> ReadCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -552,10 +554,10 @@ namespace MultiplayerARPG.MMO
                     withPrivateCustomData,
                     withPublicCustomData);
             }
-            return result;
+            return new UniTask<PlayerCharacterData>(result);
         }
 
-        public override List<PlayerCharacterData> ReadCharacters(string userId)
+        public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
         {
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             List<string> characterIds = new List<string>();
@@ -568,12 +570,12 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new SqliteParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
 
-        public override void UpdateCharacter(IPlayerCharacterData character)
+        public override UniTaskVoid UpdateCharacter(IPlayerCharacterData character)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -673,9 +675,10 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
+            return new UniTaskVoid();
         }
 
-        public override void DeleteCharacter(string userId, string id)
+        public override UniTaskVoid DeleteCharacter(string userId, string id)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
                 new SqliteParameter("@id", id),
@@ -721,30 +724,31 @@ namespace MultiplayerARPG.MMO
                 transaction.Dispose();
                 this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
             }
+            return new UniTaskVoid();
         }
 
-        public override long FindCharacterName(string characterName)
+        public override UniTask<long> FindCharacterName(string characterName)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM characters WHERE characterName LIKE @characterName",
                 new SqliteParameter("@characterName", characterName));
-            return result != null ? (long)result : 0;
+            return new UniTask<long>(result != null ? (long)result : 0);
         }
 
-        public override string GetIdByCharacterName(string characterName)
+        public override UniTask<string> GetIdByCharacterName(string characterName)
         {
             object result = ExecuteScalar("SELECT id FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new SqliteParameter("@characterName", characterName));
-            return result != null ? (string)result : string.Empty;
+            return new UniTask<string>(result != null ? (string)result : string.Empty);
         }
 
-        public override string GetUserIdByCharacterName(string characterName)
+        public override UniTask<string> GetUserIdByCharacterName(string characterName)
         {
             object result = ExecuteScalar("SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new SqliteParameter("@characterName", characterName));
-            return result != null ? (string)result : string.Empty;
+            return new UniTask<string>(result != null ? (string)result : string.Empty);
         }
 
-        public override List<SocialCharacterData> FindCharacters(string finderId, string characterName, int skip, int limit)
+        public override UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit)
         {
             string excludeIdsQuery = "(id!='" + finderId + "'";
             // Exclude friend, requested characters
@@ -772,10 +776,10 @@ namespace MultiplayerARPG.MMO
                 }
             }, "SELECT id, dataId, characterName, level FROM characters WHERE characterName LIKE @characterName AND " + excludeIdsQuery + " LIMIT " + skip + ", " + limit,
                 new SqliteParameter("@characterName", "%" + characterName + "%"));
-            return result;
+            return new UniTask<List<SocialCharacterData>>(result);
         }
 
-        public override void CreateFriend(string id1, string id2, byte state)
+        public override UniTaskVoid CreateFriend(string id1, string id2, byte state)
         {
             DeleteFriend(id1, id2);
             ExecuteNonQuery("INSERT INTO friend " +
@@ -784,18 +788,20 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@characterId1", id1),
                 new SqliteParameter("@characterId2", id2),
                 new SqliteParameter("@state", (int)state));
+            return new UniTaskVoid();
         }
 
-        public override void DeleteFriend(string id1, string id2)
+        public override UniTaskVoid DeleteFriend(string id1, string id2)
         {
             ExecuteNonQuery("DELETE FROM friend WHERE " +
                 "characterId1 LIKE @characterId1 AND " +
                 "characterId2 LIKE @characterId2",
                 new SqliteParameter("@characterId1", id1),
                 new SqliteParameter("@characterId2", id2));
+            return new UniTaskVoid();
         }
 
-        public override List<SocialCharacterData> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
+        public override UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
         {
             List<SocialCharacterData> result = new List<SocialCharacterData>();
             List<string> characterIds = new List<string>();
@@ -839,14 +845,14 @@ namespace MultiplayerARPG.MMO
                 }, "SELECT id, dataId, characterName, level FROM characters WHERE id LIKE @id",
                     new SqliteParameter("@id", characterId));
             }
-            return result;
+            return new UniTask<List<SocialCharacterData>>(result);
         }
 
-        public override int GetFriendRequestNotification(string characterId)
+        public override UniTask<int> GetFriendRequestNotification(string characterId)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM friend WHERE characterId2=@characterId AND state=1",
                 new SqliteParameter("@characterId", characterId));
-            return (int)(long)result;
+            return new UniTask<int>((int)(long)result);
         }
     }
 }

@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 
@@ -12,7 +13,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        public override List<MailListEntry> MailList(string userId, bool onlyNewMails)
+        public override UniTask<List<MailListEntry>> MailList(string userId, bool onlyNewMails)
         {
             List<MailListEntry> result = new List<MailListEntry>();
             ExecuteReader((reader) =>
@@ -47,10 +48,10 @@ namespace MultiplayerARPG.MMO
                 }
             }, "SELECT id, senderName, title, gold, cash, currencies, items, isRead, isClaim, sentTimestamp FROM mail WHERE receiverId LIKE @receiverId AND isDelete=0 ORDER BY isRead ASC, sentTimestamp DESC",
                 new SqliteParameter("@receiverId", userId));
-            return result;
+            return new UniTask<List<MailListEntry>>(result);
         }
 
-        public override Mail GetMail(string mailId, string userId)
+        public override UniTask<Mail> GetMail(string mailId, string userId)
         {
             Mail result = new Mail();
             ExecuteReader((reader) =>
@@ -79,10 +80,10 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id, eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, isRead, readTimestamp, isClaim, claimTimestamp, sentTimestamp FROM mail WHERE id=@id AND receiverId LIKE @receiverId AND isDelete=0",
                 new SqliteParameter("@id", mailId),
                 new SqliteParameter("@receiverId", userId));
-            return result;
+            return new UniTask<Mail>(result);
         }
 
-        public override long UpdateReadMailState(string mailId, string userId)
+        public override UniTask<long> UpdateReadMailState(string mailId, string userId)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId LIKE @receiverId",
                 new SqliteParameter("@id", mailId),
@@ -94,10 +95,10 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
-            return count;
+            return new UniTask<long>(count);
         }
 
-        public override long UpdateClaimMailItemsState(string mailId, string userId)
+        public override UniTask<long> UpdateClaimMailItemsState(string mailId, string userId)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId LIKE @receiverId",
                 new SqliteParameter("@id", mailId),
@@ -109,10 +110,10 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
-            return count;
+            return new UniTask<long>(count);
         }
 
-        public override long UpdateDeleteMailState(string mailId, string userId)
+        public override UniTask<long> UpdateDeleteMailState(string mailId, string userId)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId LIKE @receiverId",
                 new SqliteParameter("@id", mailId),
@@ -124,12 +125,12 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
-            return count;
+            return new UniTask<long>(count);
         }
 
-        public override int CreateMail(Mail mail)
+        public override UniTask<int> CreateMail(Mail mail)
         {
-            return ExecuteNonQuery("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, sentTimestamp) " +
+            return new UniTask<int>(ExecuteNonQuery("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, sentTimestamp) " +
                 "VALUES (@eventId, @senderId, @senderName, @receiverId, @title, @content, @gold, @cash, @currencies, @items, datetime('now', 'localtime'))",
                     new SqliteParameter("@eventId", mail.EventId),
                     new SqliteParameter("@senderId", mail.SenderId),
@@ -140,10 +141,10 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@gold", mail.Gold),
                     new SqliteParameter("@cash", mail.Cash),
                     new SqliteParameter("@currencies", mail.WriteCurrencies()),
-                    new SqliteParameter("@items", mail.WriteItems()));
+                    new SqliteParameter("@items", mail.WriteItems())));
         }
 
-        public override int GetMailNotification(string userId)
+        public override UniTask<int> GetMailNotification(string userId)
         {
             int count = 0;
             ExecuteReader((reader) =>
@@ -163,7 +164,7 @@ namespace MultiplayerARPG.MMO
                 }
             }, "SELECT gold, cash, currencies, items, isRead, isClaim FROM mail WHERE receiverId=@receiverId AND isDelete=0",
                 new SqliteParameter("@receiverId", userId));
-            return count;
+            return new UniTask<int>(count);
         }
     }
 }

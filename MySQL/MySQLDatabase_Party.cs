@@ -1,14 +1,15 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        public override int CreateParty(bool shareExp, bool shareItem, string leaderId)
+        public override async UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId)
         {
             int id = 0;
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 if (reader.Read())
                     id = reader.GetInt32(0);
@@ -19,17 +20,17 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@leaderId", leaderId));
             if (id > 0)
             {
-                ExecuteNonQuerySync("UPDATE characters SET partyId=@id WHERE id=@leaderId",
+                await ExecuteNonQuery("UPDATE characters SET partyId=@id WHERE id=@leaderId",
                     new MySqlParameter("@id", id),
                     new MySqlParameter("@leaderId", leaderId));
             }
             return id;
         }
 
-        public override PartyData ReadParty(int id)
+        public override async UniTask<PartyData> ReadParty(int id)
         {
             PartyData result = null;
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 if (reader.Read())
                 {
@@ -44,7 +45,7 @@ namespace MultiplayerARPG.MMO
             if (result != null)
             {
                 // Party members
-                ExecuteReaderSync((reader) =>
+                await ExecuteReader((reader) =>
                 {
                     SocialCharacterData partyMemberData;
                     while (reader.Read())
@@ -63,31 +64,31 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override void UpdatePartyLeader(int id, string leaderId)
+        public override async UniTaskVoid UpdatePartyLeader(int id, string leaderId)
         {
-            ExecuteNonQuerySync("UPDATE party SET leaderId=@leaderId WHERE id=@id",
+            await ExecuteNonQuery("UPDATE party SET leaderId=@leaderId WHERE id=@id",
                 new MySqlParameter("@leaderId", leaderId),
                 new MySqlParameter("@id", id));
         }
 
-        public override void UpdateParty(int id, bool shareExp, bool shareItem)
+        public override async UniTaskVoid UpdateParty(int id, bool shareExp, bool shareItem)
         {
-            ExecuteNonQuerySync("UPDATE party SET shareExp=@shareExp, shareItem=@shareItem WHERE id=@id",
+            await ExecuteNonQuery("UPDATE party SET shareExp=@shareExp, shareItem=@shareItem WHERE id=@id",
                 new MySqlParameter("@shareExp", shareExp),
                 new MySqlParameter("@shareItem", shareItem),
                 new MySqlParameter("@id", id));
         }
 
-        public override void DeleteParty(int id)
+        public override async UniTaskVoid DeleteParty(int id)
         {
-            ExecuteNonQuerySync("DELETE FROM party WHERE id=@id;" +
+            await ExecuteNonQuery("DELETE FROM party WHERE id=@id;" +
                 "UPDATE characters SET partyId=0 WHERE partyId=@id;",
                 new MySqlParameter("@id", id));
         }
 
-        public override void UpdateCharacterParty(string characterId, int partyId)
+        public override async UniTaskVoid UpdateCharacterParty(string characterId, int partyId)
         {
-            ExecuteNonQuerySync("UPDATE characters SET partyId=@partyId WHERE id=@characterId",
+            await ExecuteNonQuery("UPDATE characters SET partyId=@partyId WHERE id=@characterId",
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@partyId", partyId));
         }

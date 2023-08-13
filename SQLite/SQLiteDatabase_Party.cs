@@ -5,11 +5,13 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
+
 namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        public override int CreateParty(bool shareExp, bool shareItem, string leaderId)
+        public override UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId)
         {
             int id = 0;
             ExecuteReader((reader) =>
@@ -27,10 +29,10 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@id", id),
                     new SqliteParameter("@leaderId", leaderId));
             }
-            return id;
+            return new UniTask<int>(id);
         }
 
-        public override PartyData ReadParty(int id)
+        public override UniTask<PartyData> ReadParty(int id)
         {
             PartyData result = null;
             ExecuteReader((reader) =>
@@ -62,36 +64,40 @@ namespace MultiplayerARPG.MMO
                 }, "SELECT id, dataId, characterName, level FROM characters WHERE partyId=@id",
                     new SqliteParameter("@id", id));
             }
-            return result;
+            return new UniTask<PartyData>(result);
         }
 
-        public override void UpdatePartyLeader(int id, string leaderId)
+        public override UniTaskVoid UpdatePartyLeader(int id, string leaderId)
         {
             ExecuteNonQuery("UPDATE party SET leaderId=@leaderId WHERE id=@id",
                 new SqliteParameter("@leaderId", leaderId),
                 new SqliteParameter("@id", id));
+            return new UniTaskVoid();
         }
 
-        public override void UpdateParty(int id, bool shareExp, bool shareItem)
+        public override UniTaskVoid UpdateParty(int id, bool shareExp, bool shareItem)
         {
             ExecuteNonQuery("UPDATE party SET shareExp=@shareExp, shareItem=@shareItem WHERE id=@id",
                 new SqliteParameter("@shareExp", shareExp),
                 new SqliteParameter("@shareItem", shareItem),
                 new SqliteParameter("@id", id));
+            return new UniTaskVoid();
         }
 
-        public override void DeleteParty(int id)
+        public override UniTaskVoid DeleteParty(int id)
         {
             ExecuteNonQuery("DELETE FROM party WHERE id=@id;" +
                 "UPDATE characters SET partyId=0 WHERE partyId=@id;",
                 new SqliteParameter("@id", id));
+            return new UniTaskVoid();
         }
 
-        public override void UpdateCharacterParty(string characterId, int partyId)
+        public override UniTaskVoid UpdateCharacterParty(string characterId, int partyId)
         {
             ExecuteNonQuery("UPDATE characters SET partyId=@partyId WHERE id=@characterId",
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@partyId", partyId));
+            return new UniTaskVoid();
         }
     }
 }

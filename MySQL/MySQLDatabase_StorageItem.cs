@@ -1,12 +1,13 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private void CreateStorageItem(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, int idx, StorageType storageType, string storageOwnerId, CharacterItem characterItem)
+        public async UniTask CreateStorageItem(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, int idx, StorageType storageType, string storageOwnerId, CharacterItem characterItem)
         {
             string id = characterItem.id;
             if (insertedIds.Contains(id))
@@ -17,7 +18,7 @@ namespace MultiplayerARPG.MMO
             if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@idx", idx),
                 new MySqlParameter("@storageType", (byte)storageType),
@@ -56,10 +57,10 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override List<CharacterItem> ReadStorageItems(StorageType storageType, string storageOwnerId)
+        public override async UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
         {
             List<CharacterItem> result = new List<CharacterItem>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterItem tempInventory;
                 while (ReadStorageItem(reader, out tempInventory))
@@ -72,19 +73,19 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override void UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override async UniTaskVoid UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            MySqlTransaction transaction = connection.BeginTransaction();
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
             try
             {
-                DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
+                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
                 for (i = 0; i < characterItems.Count; ++i)
                 {
-                    CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
+                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
                 }
                 transaction.Commit();
             }
@@ -94,13 +95,11 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 transaction.Rollback();
             }
-            transaction.Dispose();
-            connection.Close();
         }
 
-        public void DeleteStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId)
+        public async UniTask DeleteStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
                 new MySqlParameter("@storageType", (byte)storageType),
                 new MySqlParameter("@storageOwnerId", storageOwnerId));
         }

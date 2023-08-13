@@ -1,6 +1,7 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -29,11 +30,11 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override void CreateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override async UniTaskVoid CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            ExecuteNonQuerySync(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
                 new MySqlParameter("@id", building.Id),
                 new MySqlParameter("@channel", channel),
                 new MySqlParameter("@parentId", building.ParentId),
@@ -50,13 +51,12 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@creatorId", building.CreatorId),
                 new MySqlParameter("@creatorName", building.CreatorName),
                 new MySqlParameter("@extraData", building.ExtraData));
-            connection.Close();
         }
 
-        public override List<BuildingSaveData> ReadBuildings(string channel, string mapName)
+        public override async UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
         {
             List<BuildingSaveData> result = new List<BuildingSaveData>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 BuildingSaveData tempBuilding;
                 while (ReadBuilding(reader, out tempBuilding))
@@ -69,11 +69,11 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override void UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override async UniTaskVoid UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            ExecuteNonQuerySync(connection, null, "UPDATE buildings SET " +
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            await ExecuteNonQuery(connection, null, "UPDATE buildings SET " +
                 "parentId=@parentId, " +
                 "entityId=@entityId, " +
                 "currentHp=@currentHp, " +
@@ -108,18 +108,16 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@rotationZ", building.Rotation.z),
                 new MySqlParameter("@channel", channel),
                 new MySqlParameter("@mapName", mapName));
-            connection.Close();
         }
 
-        public override void DeleteBuilding(string channel, string mapName, string id)
+        public override async UniTaskVoid DeleteBuilding(string channel, string mapName, string id)
         {
-            MySqlConnection connection = NewConnection();
-            OpenConnectionSync(connection);
-            ExecuteNonQuerySync(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@channel", channel),
                 new MySqlParameter("@mapName", mapName));
-            connection.Close();
         }
     }
 }

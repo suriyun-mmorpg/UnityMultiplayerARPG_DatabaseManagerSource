@@ -1,16 +1,17 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
 using System;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        public override List<MailListEntry> MailList(string userId, bool onlyNewMails)
+        public override async UniTask<List<MailListEntry>> MailList(string userId, bool onlyNewMails)
         {
             List<MailListEntry> result = new List<MailListEntry>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 MailListEntry tempMail;
                 while (reader.Read())
@@ -45,10 +46,10 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override Mail GetMail(string mailId, string userId)
+        public override async UniTask<Mail> GetMail(string mailId, string userId)
         {
             Mail result = new Mail();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 if (reader.Read())
                 {
@@ -77,54 +78,54 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override long UpdateReadMailState(string mailId, string userId)
+        public override async UniTask<long> UpdateReadMailState(string mailId, string userId)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
                 new MySqlParameter("@id", mailId),
                 new MySqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuerySync("UPDATE mail SET isRead=1, readTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isRead=0",
+                await ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isRead=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }
             return count;
         }
 
-        public override long UpdateClaimMailItemsState(string mailId, string userId)
+        public override async UniTask<long> UpdateClaimMailItemsState(string mailId, string userId)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
                 new MySqlParameter("@id", mailId),
                 new MySqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuerySync("UPDATE mail SET isClaim=1, claimTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
+                await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }
             return count;
         }
 
-        public override long UpdateDeleteMailState(string mailId, string userId)
+        public override async UniTask<long> UpdateDeleteMailState(string mailId, string userId)
         {
-            object result = ExecuteScalarSync("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
                 new MySqlParameter("@id", mailId),
                 new MySqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuerySync("UPDATE mail SET isDelete=1, deleteTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
+                await ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }
             return count;
         }
 
-        public override int CreateMail(Mail mail)
+        public override async UniTask<int> CreateMail(Mail mail)
         {
-            return ExecuteNonQuerySync("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items) " +
+            return await ExecuteNonQuery("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items) " +
                 "VALUES (@eventId, @senderId, @senderName, @receiverId, @title, @content, @gold, @cash, @currencies, @items)",
                     new MySqlParameter("@eventId", mail.EventId),
                     new MySqlParameter("@senderId", mail.SenderId),
@@ -138,10 +139,10 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@items", mail.WriteItems()));
         }
 
-        public override int GetMailNotification(string userId)
+        public override async UniTask<int> GetMailNotification(string userId)
         {
             int count = 0;
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 while (reader.Read())
                 {

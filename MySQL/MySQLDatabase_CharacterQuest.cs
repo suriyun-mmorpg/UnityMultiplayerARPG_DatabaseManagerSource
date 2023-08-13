@@ -1,7 +1,8 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -23,7 +24,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void CreateCharacterQuest(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterQuest characterQuest)
+        public async UniTask CreateCharacterQuest(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterQuest characterQuest)
         {
             string id = ZString.Concat(characterId, "_", characterQuest.dataId);
             if (insertedIds.Contains(id))
@@ -32,7 +33,7 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO characterquest (id, characterId, dataId, isComplete, isTracking, killedMonsters, completedTasks) VALUES (@id, @characterId, @dataId, @isComplete, @isTracking, @killedMonsters, @completedTasks)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterquest (id, characterId, dataId, isComplete, isTracking, killedMonsters, completedTasks) VALUES (@id, @characterId, @dataId, @isComplete, @isTracking, @killedMonsters, @completedTasks)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@dataId", characterQuest.dataId),
@@ -42,11 +43,11 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@completedTasks", characterQuest.WriteCompletedTasks()));
         }
 
-        public List<CharacterQuest> ReadCharacterQuests(string characterId, List<CharacterQuest> result = null)
+        public async UniTask<List<CharacterQuest>> ReadCharacterQuests(string characterId, List<CharacterQuest> result = null)
         {
             if (result == null)
                 result = new List<CharacterQuest>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterQuest tempQuest;
                 while (ReadCharacterQuest(reader, out tempQuest))
@@ -58,9 +59,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public void DeleteCharacterQuests(MySqlConnection connection, MySqlTransaction transaction, string characterId)
+        public async UniTask DeleteCharacterQuests(MySqlConnection connection, MySqlTransaction transaction, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM characterquest WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM characterquest WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
     }
 }

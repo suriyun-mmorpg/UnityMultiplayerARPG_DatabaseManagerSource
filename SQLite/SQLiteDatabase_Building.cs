@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -34,7 +35,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override void CreateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override UniTaskVoid CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
                 new SqliteParameter("@id", building.Id),
@@ -53,9 +54,10 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@creatorId", building.CreatorId),
                 new SqliteParameter("@creatorName", building.CreatorName),
                 new SqliteParameter("@extraData", building.ExtraData));
+            return new UniTaskVoid();
         }
 
-        public override List<BuildingSaveData> ReadBuildings(string channel, string mapName)
+        public override UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
         {
             List<BuildingSaveData> result = new List<BuildingSaveData>();
             ExecuteReader((reader) =>
@@ -68,10 +70,10 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel AND mapName=@mapName",
                 new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
-            return result;
+            return new UniTask<List<BuildingSaveData>>(result);
         }
 
-        public override void UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override UniTaskVoid UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("UPDATE buildings SET " +
                 "parentId=@parentId, " +
@@ -108,14 +110,16 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@rotationZ", building.Rotation.z),
                 new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
+            return new UniTaskVoid();
         }
 
-        public override void DeleteBuilding(string channel, string mapName, string id)
+        public override UniTaskVoid DeleteBuilding(string channel, string mapName, string id)
         {
             ExecuteNonQuery("DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
+            return new UniTaskVoid();
         }
     }
 }

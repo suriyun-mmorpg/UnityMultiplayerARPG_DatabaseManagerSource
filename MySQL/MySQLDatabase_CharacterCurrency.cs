@@ -1,7 +1,8 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -20,7 +21,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void CreateCharacterCurrency(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterCurrency characterCurrency)
+        public async UniTask CreateCharacterCurrency(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterCurrency characterCurrency)
         {
             string id = ZString.Concat(characterId, "_", characterCurrency.dataId);
             if (insertedIds.Contains(id))
@@ -29,18 +30,18 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO charactercurrency (id, characterId, dataId, amount) VALUES (@id, @characterId, @dataId, @amount)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO charactercurrency (id, characterId, dataId, amount) VALUES (@id, @characterId, @dataId, @amount)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@dataId", characterCurrency.dataId),
                 new MySqlParameter("@amount", characterCurrency.amount));
         }
 
-        public List<CharacterCurrency> ReadCharacterCurrencies(string characterId, List<CharacterCurrency> result = null)
+        public async UniTask<List<CharacterCurrency>> ReadCharacterCurrencies(string characterId, List<CharacterCurrency> result = null)
         {
             if (result == null)
                 result = new List<CharacterCurrency>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterCurrency tempCurrency;
                 while (ReadCharacterCurrency(reader, out tempCurrency))
@@ -52,9 +53,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public void DeleteCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, string characterId)
+        public async UniTask DeleteCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM charactercurrency WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM charactercurrency WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
     }
 }

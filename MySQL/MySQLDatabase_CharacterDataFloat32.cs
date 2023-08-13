@@ -1,7 +1,8 @@
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -20,7 +21,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void CreateCharacterDataFloat32(MySqlConnection connection, MySqlTransaction transaction, string tableName, HashSet<string> insertedIds, string characterId, CharacterDataFloat32 characterDataFloat32)
+        public async UniTask CreateCharacterDataFloat32(MySqlConnection connection, MySqlTransaction transaction, string tableName, HashSet<string> insertedIds, string characterId, CharacterDataFloat32 characterDataFloat32)
         {
             string id = ZString.Concat(characterId, "_", characterDataFloat32.hashedKey);
             if (insertedIds.Contains(id))
@@ -29,18 +30,18 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, $"INSERT INTO {tableName} (id, characterId, hashedKey, value) VALUES (@id, @characterId, @hashedKey, @value)",
+            await ExecuteNonQuery(connection, transaction, $"INSERT INTO {tableName} (id, characterId, hashedKey, value) VALUES (@id, @characterId, @hashedKey, @value)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@hashedKey", characterDataFloat32.hashedKey),
                 new MySqlParameter("@value", characterDataFloat32.value));
         }
 
-        public List<CharacterDataFloat32> ReadCharacterDataFloat32s(string tableName, string characterId, List<CharacterDataFloat32> result = null)
+        public async UniTask<List<CharacterDataFloat32>> ReadCharacterDataFloat32s(string tableName, string characterId, List<CharacterDataFloat32> result = null)
         {
             if (result == null)
                 result = new List<CharacterDataFloat32>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterDataFloat32 tempData;
                 while (ReadCharacterDataFloat32(reader, out tempData))
@@ -52,9 +53,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public void DeleteCharacterDataFloat32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId)
+        public async UniTask DeleteCharacterDataFloat32s(MySqlConnection connection, MySqlTransaction transaction, string tableName, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, $"DELETE FROM {tableName} WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, $"DELETE FROM {tableName} WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
     }
 }

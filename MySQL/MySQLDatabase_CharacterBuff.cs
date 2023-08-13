@@ -1,7 +1,7 @@
 ﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
-using System.Collections.Generic;
-using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MySqlConnector;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -23,7 +23,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public void CreateCharacterBuff(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff characterBuff)
+        public async UniTask CreateCharacterBuff(MySqlConnection connection, MySqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff characterBuff)
         {
             string id = characterBuff.id;
             if (insertedIds.Contains(id))
@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuerySync(connection, transaction, "INSERT INTO characterbuff (id, characterId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @type, @dataId, @level, @buffRemainsDuration)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterbuff (id, characterId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @type, @dataId, @level, @buffRemainsDuration)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@type", (byte)characterBuff.type),
@@ -41,11 +41,11 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@buffRemainsDuration", characterBuff.buffRemainsDuration));
         }
 
-        public List<CharacterBuff> ReadCharacterBuffs(string characterId, List<CharacterBuff> result = null)
+        public async UniTask<List<CharacterBuff>> ReadCharacterBuffs(string characterId, List<CharacterBuff> result = null)
         {
             if (result == null)
                 result = new List<CharacterBuff>();
-            ExecuteReaderSync((reader) =>
+            await ExecuteReader((reader) =>
             {
                 CharacterBuff tempBuff;
                 while (ReadCharacterBuff(reader, out tempBuff))
@@ -57,9 +57,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public void DeleteCharacterBuffs(MySqlConnection connection, MySqlTransaction transaction, string characterId)
+        public async UniTask DeleteCharacterBuffs(MySqlConnection connection, MySqlTransaction transaction, string characterId)
         {
-            ExecuteNonQuerySync(connection, transaction, "DELETE FROM characterbuff WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM characterbuff WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
     }
 }
