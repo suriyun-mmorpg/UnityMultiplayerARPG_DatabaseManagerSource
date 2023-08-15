@@ -1,10 +1,10 @@
 ﻿#if UNITY_2017_1_OR_NEWER
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 #endif
 
 namespace MultiplayerARPG.MMO
