@@ -66,30 +66,6 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@characterId", characterId));
             return new UniTask<List<CharacterBuff>>(result);
         }
-
-        public override UniTask UpdateSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
-        {
-            SqliteTransaction transaction = _connection.BeginTransaction();
-            try
-            {
-                DeleteSummonBuff(transaction, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < summonBuffs.Count; ++i)
-                {
-                    CreateSummonBuff(transaction, insertedIds, characterId, summonBuffs[i]);
-                }
-                transaction.Commit();
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing buffs of summon: " + characterId);
-                LogException(LogTag, ex);
-                transaction.Rollback();
-            }
-            transaction.Dispose();
-            return new UniTask();
-        }
     }
 }
 #endif

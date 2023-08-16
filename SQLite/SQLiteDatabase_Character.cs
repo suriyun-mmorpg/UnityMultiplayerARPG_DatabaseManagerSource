@@ -260,7 +260,49 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterRelatesData(SqliteTransaction transaction, IPlayerCharacterData characterData)
+        private void FillSummonBuffs(SqliteTransaction transaction, string characterId, List<CharacterBuff> summonBuffs)
+        {
+            try
+            {
+                DeleteSummonBuff(transaction, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < summonBuffs.Count; ++i)
+                {
+                    CreateSummonBuff(transaction, insertedIds, characterId, summonBuffs[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing buffs of summon: " + characterId);
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
+        private void FillPlayerStorageItems(SqliteTransaction transaction, string userId, List<CharacterItem> storageItems)
+        {
+            try
+            {
+                StorageType storageType = StorageType.Player;
+                string storageOwnerId = userId;
+                DeleteStorageItems(transaction, storageType, storageOwnerId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < storageItems.Count; ++i)
+                {
+                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
+        private void FillCharacterRelatesData(SqliteTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
             FillCharacterAttributes(transaction, characterData);
             FillCharacterBuffs(transaction, characterData);
@@ -283,6 +325,12 @@ namespace MultiplayerARPG.MMO
             FillCharacterDataBooleans(transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
             FillCharacterDataInt32s(transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
             FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+
+            if (summonBuffs != null)
+                FillSummonBuffs(transaction, characterData.Id, summonBuffs);
+
+            if (storageItems != null)
+                FillPlayerStorageItems(transaction, characterData.UserId, storageItems);
         }
 
         public override UniTask CreateCharacter(string userId, IPlayerCharacterData character)
@@ -325,7 +373,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@iconDataId", character.IconDataId),
                     new SqliteParameter("@frameDataId", character.FrameDataId),
                     new SqliteParameter("@titleDataId", character.TitleDataId));
-                FillCharacterRelatesData(transaction, character);
+                FillCharacterRelatesData(transaction, character, null, null);
                 transaction.Commit();
                 this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
             }
@@ -575,7 +623,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override UniTask UpdateCharacter(IPlayerCharacterData character)
+        public override UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -664,7 +712,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@lastDeadTime", character.LastDeadTime),
                     new SqliteParameter("@unmuteTime", character.UnmuteTime),
                     new SqliteParameter("@id", character.Id));
-                FillCharacterRelatesData(transaction, character);
+                FillCharacterRelatesData(transaction, character, summonBuffs, storageItems);
                 transaction.Commit();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }

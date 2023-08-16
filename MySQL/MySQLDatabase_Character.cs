@@ -255,7 +255,49 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private async UniTask FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
+        private async UniTask FillSummonBuffs(MySqlConnection connection, MySqlTransaction transaction, string characterId, List<CharacterBuff> summonBuffs)
+        {
+            try
+            {
+                await DeleteSummonBuff(connection, transaction, characterId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < summonBuffs.Count; ++i)
+                {
+                    await CreateSummonBuff(connection, transaction, insertedIds, characterId, summonBuffs[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing buffs of summon: " + characterId);
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
+        private async UniTask FillPlayerStorageItems(MySqlConnection connection, MySqlTransaction transaction, string userId, List<CharacterItem> storageItems)
+        {
+            try
+            {
+                StorageType storageType = StorageType.Player;
+                string storageOwnerId = userId;
+                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < storageItems.Count; ++i)
+                {
+                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
+        private async UniTask FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
             await FillCharacterAttributes(connection, transaction, characterData);
             await FillCharacterBuffs(connection, transaction, characterData);
@@ -278,6 +320,13 @@ namespace MultiplayerARPG.MMO
             await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
             await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
             await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+
+            if (summonBuffs != null)
+                await FillSummonBuffs(connection, transaction, characterData.Id, summonBuffs);
+
+            if (storageItems != null)
+                await FillPlayerStorageItems(connection, transaction, characterData.UserId, storageItems);
+
         }
 
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
@@ -322,7 +371,7 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@iconDataId", character.IconDataId),
                     new MySqlParameter("@frameDataId", character.FrameDataId),
                     new MySqlParameter("@titleDataId", character.TitleDataId));
-                await FillCharacterRelatesData(connection, transaction, character);
+                await FillCharacterRelatesData(connection, transaction, character, null, null);
                 await transaction.CommitAsync();
                 this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
             }
@@ -570,7 +619,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTask UpdateCharacter(IPlayerCharacterData character)
+        public override async UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -661,7 +710,7 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@lastDeadTime", character.LastDeadTime),
                     new MySqlParameter("@unmuteTime", character.UnmuteTime),
                     new MySqlParameter("@id", character.Id));
-                await FillCharacterRelatesData(connection, transaction, character);
+                await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
                 await transaction.CommitAsync();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }

@@ -61,30 +61,6 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@characterId", characterId));
             return result;
         }
-
-        public override async UniTask UpdateSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
-        {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
-            {
-                await DeleteSummonBuff(connection, transaction, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < summonBuffs.Count; ++i)
-                {
-                    await CreateSummonBuff(connection, transaction, insertedIds, characterId, summonBuffs[i]);
-                }
-                transaction.Commit();
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing buffs of summon: " + characterId);
-                LogException(LogTag, ex);
-                transaction.Rollback();
-            }
-        }
     }
 }
 #endif

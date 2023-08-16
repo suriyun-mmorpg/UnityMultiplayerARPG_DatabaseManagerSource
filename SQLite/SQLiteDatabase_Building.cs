@@ -35,6 +35,28 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
+        private void FillBuildingStorageItems(SqliteTransaction transaction, string buildingId, List<CharacterItem> storageItems)
+        {
+            try
+            {
+                StorageType storageType = StorageType.Building;
+                string storageOwnerId = buildingId;
+                DeleteStorageItems(transaction, storageType, storageOwnerId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < storageItems.Count; ++i)
+                {
+                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
         public override UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
@@ -73,43 +95,59 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<BuildingSaveData>>(result);
         }
 
-        public override UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
         {
-            ExecuteNonQuery("UPDATE buildings SET " +
-                "parentId=@parentId, " +
-                "entityId=@entityId, " +
-                "currentHp=@currentHp, " +
-                "remainsLifeTime=@remainsLifeTime, " +
-                "isLocked=@isLocked, " +
-                "lockPassword=@lockPassword, " +
-                "creatorId=@creatorId, " +
-                "creatorName=@creatorName, " +
-                "extraData=@extraData, " +
-                "positionX=@positionX, " +
-                "positionY=@positionY, " +
-                "positionZ=@positionZ, " +
-                "rotationX=@rotationX, " +
-                "rotationY=@rotationY, " +
-                "rotationZ=@rotationZ " +
-                "WHERE id=@id AND channel=@channel AND mapName=@mapName",
-                new SqliteParameter("@id", building.Id),
-                new SqliteParameter("@parentId", building.ParentId),
-                new SqliteParameter("@entityId", building.EntityId),
-                new SqliteParameter("@currentHp", building.CurrentHp),
-                new SqliteParameter("@remainsLifeTime", building.RemainsLifeTime),
-                new SqliteParameter("@isLocked", building.IsLocked),
-                new SqliteParameter("@lockPassword", building.LockPassword),
-                new SqliteParameter("@creatorId", building.CreatorId),
-                new SqliteParameter("@creatorName", building.CreatorName),
-                new SqliteParameter("@extraData", building.ExtraData),
-                new SqliteParameter("@positionX", building.Position.x),
-                new SqliteParameter("@positionY", building.Position.y),
-                new SqliteParameter("@positionZ", building.Position.z),
-                new SqliteParameter("@rotationX", building.Rotation.x),
-                new SqliteParameter("@rotationY", building.Rotation.y),
-                new SqliteParameter("@rotationZ", building.Rotation.z),
-                new SqliteParameter("@channel", channel),
-                new SqliteParameter("@mapName", mapName));
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery(transaction, "UPDATE buildings SET " +
+                    "parentId=@parentId, " +
+                    "entityId=@entityId, " +
+                    "currentHp=@currentHp, " +
+                    "remainsLifeTime=@remainsLifeTime, " +
+                    "isLocked=@isLocked, " +
+                    "lockPassword=@lockPassword, " +
+                    "creatorId=@creatorId, " +
+                    "creatorName=@creatorName, " +
+                    "extraData=@extraData, " +
+                    "positionX=@positionX, " +
+                    "positionY=@positionY, " +
+                    "positionZ=@positionZ, " +
+                    "rotationX=@rotationX, " +
+                    "rotationY=@rotationY, " +
+                    "rotationZ=@rotationZ " +
+                    "WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                    new SqliteParameter("@id", building.Id),
+                    new SqliteParameter("@parentId", building.ParentId),
+                    new SqliteParameter("@entityId", building.EntityId),
+                    new SqliteParameter("@currentHp", building.CurrentHp),
+                    new SqliteParameter("@remainsLifeTime", building.RemainsLifeTime),
+                    new SqliteParameter("@isLocked", building.IsLocked),
+                    new SqliteParameter("@lockPassword", building.LockPassword),
+                    new SqliteParameter("@creatorId", building.CreatorId),
+                    new SqliteParameter("@creatorName", building.CreatorName),
+                    new SqliteParameter("@extraData", building.ExtraData),
+                    new SqliteParameter("@positionX", building.Position.x),
+                    new SqliteParameter("@positionY", building.Position.y),
+                    new SqliteParameter("@positionZ", building.Position.z),
+                    new SqliteParameter("@rotationX", building.Rotation.x),
+                    new SqliteParameter("@rotationY", building.Rotation.y),
+                    new SqliteParameter("@rotationZ", building.Rotation.z),
+                    new SqliteParameter("@channel", channel),
+                    new SqliteParameter("@mapName", mapName));
+
+                if (storageItems != null)
+                    FillBuildingStorageItems(transaction, building.Id, storageItems);
+
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update building: " + building.Id);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
             return new UniTask();
         }
 
