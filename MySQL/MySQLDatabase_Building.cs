@@ -30,7 +30,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override async UniTaskVoid CreateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -69,7 +69,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTaskVoid UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -110,7 +110,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@mapName", mapName));
         }
 
-        public override async UniTaskVoid DeleteBuilding(string channel, string mapName, string id)
+        public override async UniTask DeleteBuilding(string channel, string mapName, string id)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);

@@ -62,7 +62,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTaskVoid SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
+        public override async UniTask UpdateSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);

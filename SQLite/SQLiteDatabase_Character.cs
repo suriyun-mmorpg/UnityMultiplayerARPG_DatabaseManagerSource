@@ -285,7 +285,7 @@ namespace MultiplayerARPG.MMO
             FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
-        public override UniTaskVoid CreateCharacter(string userId, IPlayerCharacterData character)
+        public override UniTask CreateCharacter(string userId, IPlayerCharacterData character)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -336,7 +336,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         private bool ReadCharacter(SqliteDataReader reader, out PlayerCharacterData result)
@@ -575,7 +575,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override UniTaskVoid UpdateCharacter(IPlayerCharacterData character)
+        public override UniTask UpdateCharacter(IPlayerCharacterData character)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -675,10 +675,10 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid DeleteCharacter(string userId, string id)
+        public override UniTask DeleteCharacter(string userId, string id)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
                 new SqliteParameter("@id", id),
@@ -724,7 +724,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Dispose();
                 this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
             }
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<long> FindCharacterName(string characterName)
@@ -779,7 +779,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<SocialCharacterData>>(result);
         }
 
-        public override UniTaskVoid CreateFriend(string id1, string id2, byte state)
+        public override UniTask CreateFriend(string id1, string id2, byte state)
         {
             DeleteFriend(id1, id2);
             ExecuteNonQuery("INSERT INTO friend " +
@@ -788,17 +788,17 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@characterId1", id1),
                 new SqliteParameter("@characterId2", id2),
                 new SqliteParameter("@state", (int)state));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid DeleteFriend(string id1, string id2)
+        public override UniTask DeleteFriend(string id1, string id2)
         {
             ExecuteNonQuery("DELETE FROM friend WHERE " +
                 "characterId1 LIKE @characterId1 AND " +
                 "characterId2 LIKE @characterId2",
                 new SqliteParameter("@characterId1", id1),
                 new SqliteParameter("@characterId2", id2));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)

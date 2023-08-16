@@ -73,7 +73,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTaskVoid UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);

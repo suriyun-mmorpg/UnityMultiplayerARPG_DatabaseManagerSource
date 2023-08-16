@@ -48,7 +48,6 @@
         public const string GetGuildGold = "get-guild-gold";
         public const string ChangeGuildGold = "change-guild-gold";
         public const string ReadStorageItems = "read-storage-items";
-        public const string UpdateStorageItems = "update-storage-items";
         public const string MailList = "mail-list";
         public const string UpdateReadMailState = "update-read-mail-state";
         public const string UpdateClaimMailItemsState = "update-claim-mail-items-state";
@@ -67,7 +66,6 @@
         public const string SetUserUnbanTimeByCharacterName = "set-user-unban-time-by-character-name";
         public const string SetCharacterUnmuteTimeByName = "set-character-unmute-time-by-name";
         public const string GetSummonBuffs = "get-summon-buffs";
-        public const string SetSummonBuffs = "set-summon-buffs";
         public const string ValidateEmailVerification = "validate-email-verification";
         public const string FindEmail = "find-email";
         public const string GetFriendRequestNotification = "get-friend-request-notification";

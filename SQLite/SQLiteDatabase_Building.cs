@@ -35,7 +35,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override UniTaskVoid CreateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
                 new SqliteParameter("@id", building.Id),
@@ -54,7 +54,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@creatorId", building.CreatorId),
                 new SqliteParameter("@creatorName", building.CreatorName),
                 new SqliteParameter("@extraData", building.ExtraData));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
@@ -73,7 +73,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<BuildingSaveData>>(result);
         }
 
-        public override UniTaskVoid UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
+        public override UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             ExecuteNonQuery("UPDATE buildings SET " +
                 "parentId=@parentId, " +
@@ -110,16 +110,16 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@rotationZ", building.Rotation.z),
                 new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid DeleteBuilding(string channel, string mapName, string id)
+        public override UniTask DeleteBuilding(string channel, string mapName, string id)
         {
             ExecuteNonQuery("DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@channel", channel),
                 new SqliteParameter("@mapName", mapName));
-            return new UniTaskVoid();
+            return new UniTask();
         }
     }
 }

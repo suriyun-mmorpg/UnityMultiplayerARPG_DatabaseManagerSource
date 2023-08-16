@@ -650,12 +650,12 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(gold);
         }
 
-        public override UniTaskVoid UpdateGold(string userId, int gold)
+        public override UniTask UpdateGold(string userId, int gold)
         {
             ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@gold", gold));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<int> GetCash(string userId)
@@ -670,23 +670,23 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(cash);
         }
 
-        public override UniTaskVoid UpdateCash(string userId, int cash)
+        public override UniTask UpdateCash(string userId, int cash)
         {
             ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@cash", cash));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid UpdateAccessToken(string userId, string accessToken)
+        public override UniTask UpdateAccessToken(string userId, string accessToken)
         {
             ExecuteNonQuery("UPDATE userlogin SET accessToken=@accessToken WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@accessToken", accessToken));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid CreateUserLogin(string username, string password, string email)
+        public override UniTask CreateUserLogin(string username, string password, string email)
         {
             ExecuteNonQuery("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
                 new SqliteParameter("@id", _userLoginManager.GenerateNewId()),
@@ -694,7 +694,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@password", _userLoginManager.GetHashedPassword(password)),
                 new SqliteParameter("@email", email),
                 new SqliteParameter("@authType", AUTH_TYPE_NORMAL));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<long> FindUsername(string username)
@@ -718,7 +718,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<long>(unbanTime);
         }
 
-        public override UniTaskVoid SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
+        public override UniTask SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
         {
             string userId = string.Empty;
             ExecuteReader((reader) =>
@@ -730,19 +730,19 @@ namespace MultiplayerARPG.MMO
             }, "SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
                 new SqliteParameter("@characterName", characterName));
             if (string.IsNullOrEmpty(userId))
-                return new UniTaskVoid();
+                return new UniTask();
             ExecuteNonQuery("UPDATE userlogin SET unbanTime=@unbanTime WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@unbanTime", unbanTime));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
+        public override UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
             ExecuteNonQuery("UPDATE characters SET unmuteTime=@unmuteTime WHERE characterName LIKE @characterName",
                 new SqliteParameter("@characterName", characterName),
                 new SqliteParameter("@unmuteTime", unmuteTime));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public override UniTask<bool> ValidateEmailVerification(string userId)
@@ -759,7 +759,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<long>(result != null ? (long)result : 0);
         }
 
-        public override UniTaskVoid UpdateUserCount(int userCount)
+        public override UniTask UpdateUserCount(int userCount)
         {
             object result = ExecuteScalar("SELECT COUNT(*) FROM statistic WHERE 1");
             long count = result != null ? (long)result : 0;
@@ -773,7 +773,7 @@ namespace MultiplayerARPG.MMO
                 ExecuteNonQuery("INSERT INTO statistic (userCount) VALUES(@userCount);",
                     new SqliteParameter("@userCount", userCount));
             }
-            return new UniTaskVoid();
+            return new UniTask();
         }
 #endif
         }

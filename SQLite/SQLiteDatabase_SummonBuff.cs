@@ -67,7 +67,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<CharacterBuff>>(result);
         }
 
-        public override UniTaskVoid SetSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
+        public override UniTask UpdateSummonBuffs(string characterId, List<CharacterBuff> summonBuffs)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -88,7 +88,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
-            return new UniTaskVoid();
+            return new UniTask();
         }
     }
 }

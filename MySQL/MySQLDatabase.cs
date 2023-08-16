@@ -342,7 +342,7 @@ namespace MultiplayerARPG.MMO
             return gold;
         }
 
-        public override async UniTaskVoid UpdateGold(string userId, int gold)
+        public override async UniTask UpdateGold(string userId, int gold)
         {
             await ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
                 new MySqlParameter("@id", userId),
@@ -361,21 +361,21 @@ namespace MultiplayerARPG.MMO
             return cash;
         }
 
-        public override async UniTaskVoid UpdateCash(string userId, int cash)
+        public override async UniTask UpdateCash(string userId, int cash)
         {
             await ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@cash", cash));
         }
 
-        public override async UniTaskVoid UpdateAccessToken(string userId, string accessToken)
+        public override async UniTask UpdateAccessToken(string userId, string accessToken)
         {
             await ExecuteNonQuery("UPDATE userlogin SET accessToken=@accessToken WHERE id=@id",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@accessToken", accessToken));
         }
 
-        public override async UniTaskVoid CreateUserLogin(string username, string password, string email)
+        public override async UniTask CreateUserLogin(string username, string password, string email)
         {
             await ExecuteNonQuery("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
                 new MySqlParameter("@id", _userLoginManager.GenerateNewId()),
@@ -406,7 +406,7 @@ namespace MultiplayerARPG.MMO
             return unbanTime;
         }
 
-        public override async UniTaskVoid SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
+        public override async UniTask SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
         {
             string userId = string.Empty;
             await ExecuteReader((reader) =>
@@ -424,7 +424,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@unbanTime", unbanTime));
         }
 
-        public override async UniTaskVoid SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
+        public override async UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
             await ExecuteNonQuery("UPDATE characters SET unmuteTime=@unmuteTime WHERE characterName LIKE @characterName LIMIT 1",
                 new MySqlParameter("@characterName", characterName),
@@ -445,7 +445,7 @@ namespace MultiplayerARPG.MMO
             return result != null ? (long)result : 0;
         }
 
-        public override async UniTaskVoid UpdateUserCount(int userCount)
+        public override async UniTask UpdateUserCount(int userCount)
         {
             object result = await ExecuteScalar("SELECT COUNT(*) FROM statistic WHERE 1");
             long count = result != null ? (long)result : 0;

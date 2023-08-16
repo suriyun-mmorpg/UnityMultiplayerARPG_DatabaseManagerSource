@@ -280,7 +280,7 @@ namespace MultiplayerARPG.MMO
             await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
         }
 
-        public override async UniTaskVoid CreateCharacter(string userId, IPlayerCharacterData character)
+        public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -570,7 +570,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTaskVoid UpdateCharacter(IPlayerCharacterData character)
+        public override async UniTask UpdateCharacter(IPlayerCharacterData character)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -673,7 +673,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        public override async UniTaskVoid DeleteCharacter(string userId, string id)
+        public override async UniTask DeleteCharacter(string userId, string id)
         {
             object result = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
                 new MySqlParameter("@id", id),
@@ -774,7 +774,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTaskVoid CreateFriend(string id1, string id2, byte state)
+        public override async UniTask CreateFriend(string id1, string id2, byte state)
         {
             using MySqlConnection connection = NewConnection();
             await OpenConnection(connection);
@@ -802,7 +802,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        public override async UniTaskVoid DeleteFriend(string id1, string id2)
+        public override async UniTask DeleteFriend(string id1, string id2)
         {
             await ExecuteNonQuery("DELETE FROM friend WHERE " +
                "characterId1 LIKE @characterId1 AND " +

@@ -78,7 +78,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<CharacterItem>>(result);
         }
 
-        public override UniTaskVoid UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -99,7 +99,7 @@ namespace MultiplayerARPG.MMO
                 transaction.Rollback();
             }
             transaction.Dispose();
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
         public void DeleteStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId)

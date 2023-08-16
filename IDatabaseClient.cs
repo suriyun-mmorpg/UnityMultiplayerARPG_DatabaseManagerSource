@@ -102,8 +102,6 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<ReadStorageItemsResp>> ReadStorageItemsAsync(ReadStorageItemsReq request);
 
-        UniTask<DatabaseApiResult> UpdateStorageItemsAsync(UpdateStorageItemsReq request);
-
         UniTask<DatabaseApiResult<MailListResp>> MailListAsync(MailListReq request);
 
         UniTask<DatabaseApiResult<UpdateReadMailStateResp>> UpdateReadMailStateAsync(UpdateReadMailStateReq request);
@@ -129,8 +127,6 @@ namespace MultiplayerARPG.MMO
         UniTask<DatabaseApiResult> SetCharacterUnmuteTimeByNameAsync(SetCharacterUnmuteTimeByNameReq request);
 
         UniTask<DatabaseApiResult<GetSummonBuffsResp>> GetSummonBuffsAsync(GetSummonBuffsReq request);
-
-        UniTask<DatabaseApiResult> SetSummonBuffsAsync(SetSummonBuffsReq request);
 
         UniTask<DatabaseApiResult<ValidateEmailVerificationResp>> ValidateEmailVerificationAsync(ValidateEmailVerificationReq request);
 

@@ -21,7 +21,7 @@ namespace MultiplayerARPG.MMO
         private ConcurrentDictionary<int, PartyData> _cachedParties = new ConcurrentDictionary<int, PartyData>();
         private ConcurrentDictionary<int, GuildData> _cachedGuilds = new ConcurrentDictionary<int, GuildData>();
         private ConcurrentDictionary<StorageId, List<CharacterItem>> _cachedStorageItems = new ConcurrentDictionary<StorageId, List<CharacterItem>>();
-        private ConcurrentDictionary<StorageId, long> _updatingStorages = new ConcurrentDictionary<StorageId, long>();
+        private ConcurrentDictionary<string, List<CharacterBuff>> _cachedSummonBuffs = new ConcurrentDictionary<string, List<CharacterBuff>>();
 
         public async UniTask<bool> AddUsername(string username)
         {
@@ -325,42 +325,47 @@ namespace MultiplayerARPG.MMO
             return _cachedGuilds.TryRemove(id, out _);
         }
 
-        public async UniTask<bool> SetStorageItems(StorageId storageId, List<CharacterItem> items)
+        public async UniTask<bool> SetStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> items)
         {
             await UniTask.Yield();
+            StorageId storageId = new StorageId(storageType, storageOwnerId);
             _cachedStorageItems[storageId] = items;
             return true;
         }
-        public async UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageId storageId)
+        public async UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageType storageType, string storageOwnerId)
         {
             await UniTask.Yield();
+            StorageId storageId = new StorageId(storageType, storageOwnerId);
             if (_cachedStorageItems.TryGetValue(storageId, out var items))
                 return new DatabaseCacheResult<List<CharacterItem>>(items);
             return default;
         }
-        public async UniTask<bool> RemoveStorageItems(StorageId storageId)
+        public async UniTask<bool> RemoveStorageItems(StorageType storageType, string storageOwnerId)
         {
             await UniTask.Yield();
+            StorageId storageId = new StorageId(storageType, storageOwnerId);
             return _cachedStorageItems.TryRemove(storageId, out _);
         }
 
-        public async UniTask<bool> SetUpdatingStorage(StorageId storageId, long time)
+        public async UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> items)
         {
             await UniTask.Yield();
-            _updatingStorages[storageId] = time;
+            _cachedSummonBuffs[characterId] = items;
             return true;
         }
-        public async UniTask<DatabaseCacheResult<long>> GetUpdatingStorage(StorageId storageId)
+
+        public async UniTask<DatabaseCacheResult<List<CharacterBuff>>> GetSummonBuffs(string characterId)
         {
             await UniTask.Yield();
-            if (_updatingStorages.TryGetValue(storageId, out var time))
-                return new DatabaseCacheResult<long>(time);
+            if (_cachedSummonBuffs.TryGetValue(characterId, out var buffs))
+                return new DatabaseCacheResult<List<CharacterBuff>>(buffs);
             return default;
         }
-        public async UniTask<bool> RemoveUpdatingStorage(StorageId storageId)
+
+        public async UniTask<bool> RemoveSummonBuffs(string characterId)
         {
             await UniTask.Yield();
-            return _updatingStorages.TryRemove(storageId, out _);
+            return _cachedSummonBuffs.TryRemove(characterId, out _);
         }
     }
 }

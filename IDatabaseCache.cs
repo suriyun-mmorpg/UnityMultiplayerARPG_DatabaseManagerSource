@@ -63,12 +63,12 @@ namespace MultiplayerARPG.MMO
         UniTask<DatabaseCacheResult<GuildData>> GetGuild(int id);
         UniTask<bool> RemoveGuild(int id);
 
-        UniTask<bool> SetStorageItems(StorageId storageId, List<CharacterItem> items);
-        UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageId storageId);
-        UniTask<bool> RemoveStorageItems(StorageId storageId);
+        UniTask<bool> SetStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> items);
+        UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageType storageType, string storageOwnerId);
+        UniTask<bool> RemoveStorageItems(StorageType storageType, string storageOwnerId);
 
-        UniTask<bool> SetUpdatingStorage(StorageId storageId, long time);
-        UniTask<DatabaseCacheResult<long>> GetUpdatingStorage(StorageId storageId);
-        UniTask<bool> RemoveUpdatingStorage(StorageId storageId);
+        UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> items);
+        UniTask<DatabaseCacheResult<List<CharacterBuff>>> GetSummonBuffs(string characterId);
+        UniTask<bool> RemoveSummonBuffs(string characterId);
     }
 }

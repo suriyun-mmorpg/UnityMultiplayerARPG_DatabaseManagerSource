@@ -67,37 +67,37 @@ namespace MultiplayerARPG.MMO
             return new UniTask<PartyData>(result);
         }
 
-        public override UniTaskVoid UpdatePartyLeader(int id, string leaderId)
+        public override UniTask UpdatePartyLeader(int id, string leaderId)
         {
             ExecuteNonQuery("UPDATE party SET leaderId=@leaderId WHERE id=@id",
                 new SqliteParameter("@leaderId", leaderId),
                 new SqliteParameter("@id", id));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid UpdateParty(int id, bool shareExp, bool shareItem)
+        public override UniTask UpdateParty(int id, bool shareExp, bool shareItem)
         {
             ExecuteNonQuery("UPDATE party SET shareExp=@shareExp, shareItem=@shareItem WHERE id=@id",
                 new SqliteParameter("@shareExp", shareExp),
                 new SqliteParameter("@shareItem", shareItem),
                 new SqliteParameter("@id", id));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid DeleteParty(int id)
+        public override UniTask DeleteParty(int id)
         {
             ExecuteNonQuery("DELETE FROM party WHERE id=@id;" +
                 "UPDATE characters SET partyId=0 WHERE partyId=@id;",
                 new SqliteParameter("@id", id));
-            return new UniTaskVoid();
+            return new UniTask();
         }
 
-        public override UniTaskVoid UpdateCharacterParty(string characterId, int partyId)
+        public override UniTask UpdateCharacterParty(string characterId, int partyId)
         {
             ExecuteNonQuery("UPDATE characters SET partyId=@partyId WHERE id=@characterId",
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@partyId", partyId));
-            return new UniTaskVoid();
+            return new UniTask();
         }
     }
 }
