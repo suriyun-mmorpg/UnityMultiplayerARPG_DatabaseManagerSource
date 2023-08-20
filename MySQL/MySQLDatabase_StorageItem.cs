@@ -103,6 +103,56 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@storageType", (byte)storageType),
                 new MySqlParameter("@storageOwnerId", storageOwnerId));
         }
+
+        public override async UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId)
+        {
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                new MySqlParameter("@storageType", (byte)storageType),
+                new MySqlParameter("@storageOwnerId", storageOwnerId));
+            return result != null ? (long)result : 0;
+        }
+
+        public override async UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId)
+        {
+            using MySqlConnection connection = NewConnection();
+            await OpenConnection(connection);
+            using MySqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+                await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                    new MySqlParameter("@storageType", (byte)storageType),
+                    new MySqlParameter("@storageOwnerId", storageOwnerId));
+                await ExecuteNonQuery(connection, transaction, "INSERT INTO storage_reservation (storageType, storageOwnerId, reserverId) VALUES (@storageType, @storageOwnerId, @reserverId)",
+                    new MySqlParameter("@storageType", (byte)storageType),
+                    new MySqlParameter("@storageOwnerId", storageOwnerId),
+                    new MySqlParameter("@reserverId", reserverId));
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+        }
+
+        public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)
+        {
+            await ExecuteNonQuery("DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                new MySqlParameter("@storageType", (byte)storageType),
+                new MySqlParameter("@storageOwnerId", storageOwnerId));
+        }
+
+        public override async UniTask DeleteReservedStorageByReserver(string reserverId)
+        {
+            await ExecuteNonQuery("DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                new MySqlParameter("@reserverId", reserverId));
+        }
+
+        public override async UniTask DeleteAllReservedStorage()
+        {
+            await ExecuteNonQuery("DELETE FROM storage_reservation");
+        }
     }
 }
 #endif

@@ -108,6 +108,58 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@storageType", (byte)storageType),
                 new SqliteParameter("@storageOwnerId", storageOwnerId));
         }
+
+        public override UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId)
+        {
+            object result = ExecuteScalar("SELECT COUNT(*) FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                new SqliteParameter("@storageType", (byte)storageType),
+                new SqliteParameter("@storageOwnerId", storageOwnerId));
+            return new UniTask<long>(result != null ? (long)result : 0);
+        }
+
+        public override UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId)
+        {
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                    new SqliteParameter("@storageType", (byte)storageType),
+                    new SqliteParameter("@storageOwnerId", storageOwnerId));
+                ExecuteNonQuery(transaction, "INSERT INTO storage_reservation (storageType, storageOwnerId, reserverId) VALUES (@storageType, @storageOwnerId, @reserverId)",
+                    new SqliteParameter("@storageType", (byte)storageType),
+                    new SqliteParameter("@storageOwnerId", storageOwnerId),
+                    new SqliteParameter("@reserverId", reserverId));
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            return new UniTask();
+        }
+
+        public override UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)
+        {
+            ExecuteNonQuery("DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                new SqliteParameter("@storageType", (byte)storageType),
+                new SqliteParameter("@storageOwnerId", storageOwnerId));
+            return new UniTask();
+        }
+
+        public override UniTask DeleteReservedStorageByReserver(string reserverId)
+        {
+            ExecuteNonQuery("DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                new SqliteParameter("@reserverId", reserverId));
+            return new UniTask();
+        }
+
+        public override UniTask DeleteAllReservedStorage()
+        {
+            ExecuteNonQuery("DELETE FROM storage_reservation");
+            return new UniTask();
+        }
     }
 }
 #endif

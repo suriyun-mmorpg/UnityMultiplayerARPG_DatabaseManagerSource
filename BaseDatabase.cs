@@ -105,6 +105,7 @@ namespace MultiplayerARPG.MMO
         public abstract UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId);
         public abstract UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId);
         public abstract UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId);
+        public abstract UniTask DeleteReservedStorageByReserver(string reserverId);
         public abstract UniTask DeleteAllReservedStorage();
 
         public abstract UniTask<List<MailListEntry>> MailList(string userId, bool onlyNewMails);
