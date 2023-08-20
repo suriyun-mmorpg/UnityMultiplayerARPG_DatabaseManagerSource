@@ -618,7 +618,7 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new SqliteParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(await ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await ReadCharacter(characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }

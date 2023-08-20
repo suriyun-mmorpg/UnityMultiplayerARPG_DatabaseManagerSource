@@ -499,46 +499,48 @@ namespace MultiplayerARPG.MMO
                 List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
 
                 // Read data
+                List<UniTask> tasks = new List<UniTask>();
                 if (withEquipWeapons)
-                    await ReadCharacterEquipWeapons(id, selectableWeaponSets);
+                    tasks.Add(ReadCharacterEquipWeapons(id, selectableWeaponSets));
                 if (withAttributes)
-                    await ReadCharacterAttributes(id, attributes);
+                    tasks.Add(ReadCharacterAttributes(id, attributes));
                 if (withSkills)
-                    await ReadCharacterSkills(id, skills);
+                    tasks.Add(ReadCharacterSkills(id, skills));
                 if (withSkillUsages)
-                    await ReadCharacterSkillUsages(id, skillUsages);
+                    tasks.Add(ReadCharacterSkillUsages(id, skillUsages));
                 if (withBuffs)
-                    await ReadCharacterBuffs(id, buffs);
+                    tasks.Add(ReadCharacterBuffs(id, buffs));
                 if (withEquipItems)
-                    await ReadCharacterEquipItems(id, equipItems);
+                    tasks.Add(ReadCharacterEquipItems(id, equipItems));
                 if (withNonEquipItems)
-                    await ReadCharacterNonEquipItems(id, nonEquipItems);
+                    tasks.Add(ReadCharacterNonEquipItems(id, nonEquipItems));
                 if (withSummons)
-                    await ReadCharacterSummons(id, summons);
+                    tasks.Add(ReadCharacterSummons(id, summons));
                 if (withHotkeys)
-                    await ReadCharacterHotkeys(id, hotkeys);
+                    tasks.Add(ReadCharacterHotkeys(id, hotkeys));
                 if (withQuests)
-                    await ReadCharacterQuests(id, quests);
+                    tasks.Add(ReadCharacterQuests(id, quests));
                 if (withCurrencies)
-                    await ReadCharacterCurrencies(id, currencies);
+                    tasks.Add(ReadCharacterCurrencies(id, currencies));
                 if (withServerCustomData)
                 {
-                    await ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
-                    await ReadCharacterDataInt32s("character_server_int32", id, serverInts);
-                    await ReadCharacterDataFloat32s("character_server_float32", id, serverFloats);
+                    tasks.Add(ReadCharacterDataBooleans("character_server_boolean", id, serverBools));
+                    tasks.Add(ReadCharacterDataInt32s("character_server_int32", id, serverInts));
+                    tasks.Add(ReadCharacterDataFloat32s("character_server_float32", id, serverFloats));
                 }
                 if (withPrivateCustomData)
                 {
-                    await ReadCharacterDataBooleans("character_private_boolean", id, privateBools);
-                    await ReadCharacterDataInt32s("character_private_int32", id, privateInts);
-                    await ReadCharacterDataFloat32s("character_private_float32", id, privateFloats);
+                    tasks.Add(ReadCharacterDataBooleans("character_private_boolean", id, privateBools));
+                    tasks.Add(ReadCharacterDataInt32s("character_private_int32", id, privateInts));
+                    tasks.Add(ReadCharacterDataFloat32s("character_private_float32", id, privateFloats));
                 }
                 if (withPublicCustomData)
                 {
-                    await ReadCharacterDataBooleans("character_public_boolean", id, publicBools);
-                    await ReadCharacterDataInt32s("character_public_int32", id, publicInts);
-                    await ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
+                    tasks.Add(ReadCharacterDataBooleans("character_public_boolean", id, publicBools));
+                    tasks.Add(ReadCharacterDataInt32s("character_public_int32", id, publicInts));
+                    tasks.Add(ReadCharacterDataFloat32s("character_public_float32", id, publicFloats));
                 }
+                await UniTask.WhenAll(tasks);
                 // Assign read data
                 if (withEquipWeapons)
                     result.SelectableWeaponSets = selectableWeaponSets;
@@ -614,7 +616,7 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new MySqlParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(await ReadCharacter(characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await ReadCharacter(characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
