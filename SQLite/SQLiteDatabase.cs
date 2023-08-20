@@ -169,7 +169,7 @@ namespace MultiplayerARPG.MMO
                 storageType INTEGER NOT NULL,
                 storageOwnerId TEXT NOT NULL,
                 reserverId TEXT NOT NULL,
-                PRIMARY KEY (storageType, storageOwnerId), INDEX (reserverId)
+                PRIMARY KEY (storageType, storageOwnerId)
             )");
 
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS characterquest (
