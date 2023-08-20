@@ -164,6 +164,14 @@ namespace MultiplayerARPG.MMO
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
 
+
+            ExecuteNonQuery(@"CREATE TABLE storage_reservation (
+                storageType INTEGER NOT NULL,
+                storageOwnerId TEXT NOT NULL,
+                reserverId TEXT NOT NULL,
+                PRIMARY KEY (storageType, storageOwnerId), INDEX (reserverId)
+            )");
+
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS characterquest (
               id TEXT NOT NULL PRIMARY KEY,
               idx INTEGER NOT NULL,
