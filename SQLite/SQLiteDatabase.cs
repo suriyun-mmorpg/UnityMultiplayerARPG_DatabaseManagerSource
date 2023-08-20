@@ -165,7 +165,7 @@ namespace MultiplayerARPG.MMO
             )");
 
 
-            ExecuteNonQuery(@"CREATE TABLE storage_reservation (
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS storage_reservation (
                 storageType INTEGER NOT NULL,
                 storageOwnerId TEXT NOT NULL,
                 reserverId TEXT NOT NULL,
