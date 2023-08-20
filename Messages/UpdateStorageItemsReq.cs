@@ -8,5 +8,6 @@ namespace MultiplayerARPG.MMO
         public StorageType StorageType { get; set; }
         public string StorageOwnerId { get; set; }
         public List<CharacterItem> StorageItems { get; set; }
+        public bool DeleteStorageReservation { get; set; }
     }
 }

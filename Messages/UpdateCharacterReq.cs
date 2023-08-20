@@ -8,5 +8,6 @@ namespace MultiplayerARPG.MMO
         public PlayerCharacterData CharacterData { get; set; }
         public List<CharacterBuff> SummonBuffs { get; set; }
         public List<CharacterItem> StorageItems { get; set; }
+        public bool DeleteStorageReservation { get; set; }
     }
 }

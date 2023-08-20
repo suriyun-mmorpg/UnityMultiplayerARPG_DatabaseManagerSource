@@ -623,7 +623,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
+        public override UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -713,6 +713,8 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@unmuteTime", character.UnmuteTime),
                     new SqliteParameter("@id", character.Id));
                 FillCharacterRelatesData(transaction, character, summonBuffs, storageItems);
+                ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                    new SqliteParameter("@reserverId", character.Id));
                 transaction.Commit();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }
