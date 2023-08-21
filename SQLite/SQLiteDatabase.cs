@@ -393,6 +393,7 @@ namespace MultiplayerARPG.MMO
               creatorId TEXT NOT NULL,
               creatorName TEXT NOT NULL,
               extraData TEXT NOT NULL DEFAULT '',
+              isSceneObject INTEGER NOT NULL DEFAULT 0,
               createAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
