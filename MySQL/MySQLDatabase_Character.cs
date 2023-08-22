@@ -713,8 +713,11 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@unmuteTime", character.UnmuteTime),
                     new MySqlParameter("@id", character.Id));
                 await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
-                await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
-                    new MySqlParameter("@reserverId", character.Id));
+                if (deleteStorageReservation)
+                {
+                    await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                        new MySqlParameter("@reserverId", character.Id));
+                }
                 await transaction.CommitAsync();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }

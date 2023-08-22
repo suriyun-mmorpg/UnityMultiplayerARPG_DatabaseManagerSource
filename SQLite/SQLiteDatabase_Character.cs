@@ -713,8 +713,11 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@unmuteTime", character.UnmuteTime),
                     new SqliteParameter("@id", character.Id));
                 FillCharacterRelatesData(transaction, character, summonBuffs, storageItems);
-                ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
-                    new SqliteParameter("@reserverId", character.Id));
+                if (deleteStorageReservation)
+                {
+                    ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                        new SqliteParameter("@reserverId", character.Id));
+                }
                 transaction.Commit();
                 this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }
