@@ -23,7 +23,7 @@ namespace MultiplayerARPG.MMO
             if (string.IsNullOrEmpty(characterItem.id))
                 return;
             insertedIds.Add(id);
-            ExecuteNonQuery(transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
+            ExecuteNonQuery(transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version)",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@idx", idx),
                 new SqliteParameter("@storageType", (byte)storageType),
@@ -37,7 +37,8 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@expireTime", characterItem.expireTime),
                 new SqliteParameter("@randomSeed", characterItem.randomSeed),
                 new SqliteParameter("@ammo", characterItem.ammo),
-                new SqliteParameter("@sockets", characterItem.WriteSockets()));
+                new SqliteParameter("@sockets", characterItem.WriteSockets()),
+                new SqliteParameter("@version", characterItem.version));
         }
 
         private bool ReadStorageItem(SqliteDataReader reader, out CharacterItem result)
@@ -56,6 +57,7 @@ namespace MultiplayerARPG.MMO
                 result.randomSeed = reader.GetInt32(8);
                 result.ammo = reader.GetInt32(9);
                 result.ReadSockets(reader.GetString(10));
+                result.version = reader.GetByte(11);
                 return true;
             }
             result = CharacterItem.Empty;
@@ -72,7 +74,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempInventory);
                 }
-            }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
                 new SqliteParameter("@storageType", (byte)storageType),
                 new SqliteParameter("@storageOwnerId", storageOwnerId));
             return new UniTask<List<CharacterItem>>(result);

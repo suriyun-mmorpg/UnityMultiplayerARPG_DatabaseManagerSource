@@ -22,7 +22,7 @@ namespace MultiplayerARPG.MMO
             if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
-            ExecuteNonQuery(transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
+            ExecuteNonQuery(transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version)",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@idx", idx),
                 new SqliteParameter("@inventoryType", (byte)inventoryType),
@@ -37,7 +37,8 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@expireTime", characterItem.expireTime),
                 new SqliteParameter("@randomSeed", characterItem.randomSeed),
                 new SqliteParameter("@ammo", characterItem.ammo),
-                new SqliteParameter("@sockets", characterItem.WriteSockets()));
+                new SqliteParameter("@sockets", characterItem.WriteSockets()),
+                new SqliteParameter("@version", characterItem.version));
         }
 
         private bool ReadCharacterItem(SqliteDataReader reader, out CharacterItem result)
@@ -57,6 +58,7 @@ namespace MultiplayerARPG.MMO
                 result.randomSeed = reader.GetInt32(9);
                 result.ammo = reader.GetInt32(10);
                 result.ReadSockets(reader.GetString(11));
+                result.version = reader.GetByte(12);
                 return true;
             }
             result = CharacterItem.Empty;
@@ -74,7 +76,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempInventory);
                 }
-            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets FROM characteritem WHERE characterId=@characterId AND inventoryType=@inventoryType ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version FROM characteritem WHERE characterId=@characterId AND inventoryType=@inventoryType ORDER BY idx ASC",
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@inventoryType", (byte)inventoryType));
             return result;
@@ -91,8 +93,8 @@ namespace MultiplayerARPG.MMO
                 InventoryType inventoryType;
                 while (ReadCharacterItem(reader, out tempInventory))
                 {
-                    equipWeaponSet = reader.GetByte(12);
-                    inventoryType = (InventoryType)reader.GetByte(13);
+                    equipWeaponSet = reader.GetByte(13);
+                    inventoryType = (InventoryType)reader.GetByte(14);
                     // Fill weapon sets if needed
                     while (result.Count <= equipWeaponSet)
                         result.Add(new EquipWeapons());
@@ -102,7 +104,7 @@ namespace MultiplayerARPG.MMO
                     if (inventoryType == InventoryType.EquipWeaponLeft)
                         result[equipWeaponSet].leftHand = tempInventory;
                 }
-            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, idx, inventoryType FROM characteritem WHERE characterId=@characterId AND (inventoryType=@inventoryType1 OR inventoryType=@inventoryType2) ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version, idx, inventoryType FROM characteritem WHERE characterId=@characterId AND (inventoryType=@inventoryType1 OR inventoryType=@inventoryType2) ORDER BY idx ASC",
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@inventoryType1", (byte)InventoryType.EquipWeaponRight),
                 new SqliteParameter("@inventoryType2", (byte)InventoryType.EquipWeaponLeft));

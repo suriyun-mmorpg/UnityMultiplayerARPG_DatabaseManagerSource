@@ -18,7 +18,7 @@ namespace MultiplayerARPG.MMO
             if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO characteritem (id, idx, inventoryType, characterId, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version) VALUES (@id, @idx, @inventoryType, @characterId, @dataId, @level, @amount, @equipSlotIndex, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@idx", idx),
                 new MySqlParameter("@inventoryType", (byte)inventoryType),
@@ -33,7 +33,8 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@expireTime", characterItem.expireTime),
                 new MySqlParameter("@randomSeed", characterItem.randomSeed),
                 new MySqlParameter("@ammo", characterItem.ammo),
-                new MySqlParameter("@sockets", characterItem.WriteSockets()));
+                new MySqlParameter("@sockets", characterItem.WriteSockets()),
+                new MySqlParameter("@version", characterItem.version));
         }
 
         private bool ReadCharacterItem(MySqlDataReader reader, out CharacterItem result)
@@ -53,6 +54,7 @@ namespace MultiplayerARPG.MMO
                 result.randomSeed = reader.GetInt32(9);
                 result.ammo = reader.GetInt32(10);
                 result.ReadSockets(reader.GetString(11));
+                result.version = reader.GetByte(12);
                 return true;
             }
             result = CharacterItem.Empty;
@@ -70,7 +72,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempInventory);
                 }
-            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets FROM characteritem WHERE characterId=@characterId AND inventoryType=@inventoryType ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version FROM characteritem WHERE characterId=@characterId AND inventoryType=@inventoryType ORDER BY idx ASC",
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@inventoryType", (byte)inventoryType));
             return result;
@@ -87,8 +89,8 @@ namespace MultiplayerARPG.MMO
                 InventoryType inventoryType;
                 while (ReadCharacterItem(reader, out tempInventory))
                 {
-                    equipWeaponSet = reader.GetByte(12);
-                    inventoryType = (InventoryType)reader.GetByte(13);
+                    equipWeaponSet = reader.GetByte(13);
+                    inventoryType = (InventoryType)reader.GetByte(14);
                     // Fill weapon sets if needed
                     while (result.Count <= equipWeaponSet)
                         result.Add(new EquipWeapons());
@@ -98,7 +100,7 @@ namespace MultiplayerARPG.MMO
                     if (inventoryType == InventoryType.EquipWeaponLeft)
                         result[equipWeaponSet].leftHand = tempInventory;
                 }
-            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, idx, inventoryType FROM characteritem WHERE characterId=@characterId AND (inventoryType=@inventoryType1 OR inventoryType=@inventoryType2) ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version, idx, inventoryType FROM characteritem WHERE characterId=@characterId AND (inventoryType=@inventoryType1 OR inventoryType=@inventoryType2) ORDER BY idx ASC",
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@inventoryType1", (byte)InventoryType.EquipWeaponRight),
                 new MySqlParameter("@inventoryType2", (byte)InventoryType.EquipWeaponLeft));

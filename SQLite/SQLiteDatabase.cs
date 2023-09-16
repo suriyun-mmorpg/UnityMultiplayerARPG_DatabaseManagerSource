@@ -141,6 +141,7 @@ namespace MultiplayerARPG.MMO
               randomSeed INTEGER NOT NULL DEFAULT 0,
               ammo INTEGER NOT NULL DEFAULT 0,
               sockets TEXT NOT NULL DEFAULT '',
+              version INTEGER NOT NULL DEFAULT 0,
               createAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
@@ -160,6 +161,7 @@ namespace MultiplayerARPG.MMO
               randomSeed INTEGER NOT NULL DEFAULT 0,
               ammo INTEGER NOT NULL DEFAULT 0,
               sockets TEXT NOT NULL DEFAULT '',
+              version INTEGER NOT NULL DEFAULT 0,
               createAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
