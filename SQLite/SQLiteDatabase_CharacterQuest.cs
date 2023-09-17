@@ -18,10 +18,12 @@ namespace MultiplayerARPG.MMO
             {
                 result = new CharacterQuest();
                 result.dataId = reader.GetInt32(0);
-                result.isComplete = reader.GetBoolean(1);
-                result.isTracking = reader.GetBoolean(2);
-                result.ReadKilledMonsters(reader.GetString(3));
-                result.ReadCompletedTasks(reader.GetString(4));
+                result.randomTasksIndex = reader.GetByte(1);
+                result.isComplete = reader.GetBoolean(2);
+                result.completeTime = reader.GetInt64(3);
+                result.isTracking = reader.GetBoolean(4);
+                result.ReadKilledMonsters(reader.GetString(5));
+                result.ReadCompletedTasks(reader.GetString(6));
                 return true;
             }
             result = CharacterQuest.Empty;
@@ -37,12 +39,14 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            ExecuteNonQuery(transaction, "INSERT INTO characterquest (id, idx, characterId, dataId, isComplete, isTracking, killedMonsters, completedTasks) VALUES (@id, @idx, @characterId, @dataId, @isComplete, @isTracking, @killedMonsters, @completedTasks)",
+            ExecuteNonQuery(transaction, "INSERT INTO characterquest (id, idx, characterId, dataId, randomTasksIndex, isComplete, completeTime, isTracking, killedMonsters, completedTasks) VALUES (@id, @idx, @characterId, @dataId, @randomTasksIndex, @isComplete, @completeTime, @isTracking, @killedMonsters, @completedTasks)",
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@idx", idx),
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@dataId", characterQuest.dataId),
+                new SqliteParameter("@randomTasksIndex", characterQuest.randomTasksIndex),
                 new SqliteParameter("@isComplete", characterQuest.isComplete),
+                new SqliteParameter("@completeTime", characterQuest.completeTime),
                 new SqliteParameter("@isTracking", characterQuest.isTracking),
                 new SqliteParameter("@killedMonsters", characterQuest.WriteKilledMonsters()),
                 new SqliteParameter("@completedTasks", characterQuest.WriteCompletedTasks()));
@@ -59,7 +63,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempQuest);
                 }
-            }, "SELECT dataId, isComplete, isTracking, killedMonsters, completedTasks FROM characterquest WHERE characterId=@characterId ORDER BY id ASC",
+            }, "SELECT dataId, randomTasksIndex, isComplete, completeTime, isTracking, killedMonsters, completedTasks FROM characterquest WHERE characterId=@characterId ORDER BY id ASC",
                 new SqliteParameter("@characterId", characterId));
             return result;
         }

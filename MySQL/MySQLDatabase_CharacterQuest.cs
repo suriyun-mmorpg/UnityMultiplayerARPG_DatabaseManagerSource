@@ -14,10 +14,12 @@ namespace MultiplayerARPG.MMO
             {
                 result = new CharacterQuest();
                 result.dataId = reader.GetInt32(0);
-                result.isComplete = reader.GetBoolean(1);
-                result.isTracking = reader.GetBoolean(2);
-                result.ReadKilledMonsters(reader.GetString(3));
-                result.ReadCompletedTasks(reader.GetString(4));
+                result.randomTasksIndex = reader.GetByte(1);
+                result.isComplete = reader.GetBoolean(2);
+                result.completeTime = reader.GetInt64(3);
+                result.isTracking = reader.GetBoolean(4);
+                result.ReadKilledMonsters(reader.GetString(5));
+                result.ReadCompletedTasks(reader.GetString(6));
                 return true;
             }
             result = CharacterQuest.Empty;
@@ -33,11 +35,13 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterquest (id, characterId, dataId, isComplete, isTracking, killedMonsters, completedTasks) VALUES (@id, @characterId, @dataId, @isComplete, @isTracking, @killedMonsters, @completedTasks)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterquest (id, idx, characterId, dataId, randomTasksIndex, isComplete, completeTime, isTracking, killedMonsters, completedTasks) VALUES (@id, @idx, @characterId, @dataId, @randomTasksIndex, @isComplete, @completeTime, @isTracking, @killedMonsters, @completedTasks)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@dataId", characterQuest.dataId),
+                new MySqlParameter("@randomTasksIndex", characterQuest.randomTasksIndex),
                 new MySqlParameter("@isComplete", characterQuest.isComplete),
+                new MySqlParameter("@completeTime", characterQuest.completeTime),
                 new MySqlParameter("@isTracking", characterQuest.isTracking),
                 new MySqlParameter("@killedMonsters", characterQuest.WriteKilledMonsters()),
                 new MySqlParameter("@completedTasks", characterQuest.WriteCompletedTasks()));
@@ -54,7 +58,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempQuest);
                 }
-            }, "SELECT dataId, isComplete, isTracking, killedMonsters, completedTasks FROM characterquest WHERE characterId=@characterId ORDER BY id ASC",
+            }, "SELECT dataId, randomTasksIndex, isComplete, completeTime, isTracking, killedMonsters, completedTasks FROM characterquest WHERE characterId=@characterId ORDER BY id ASC",
                 new MySqlParameter("@characterId", characterId));
             return result;
         }
