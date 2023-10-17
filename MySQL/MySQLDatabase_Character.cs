@@ -381,6 +381,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await connection.DisposeAsync();
         }
 
         private bool ReadCharacter(MySqlDataReader reader, out PlayerCharacterData result)
@@ -727,6 +728,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteCharacter(string userId, string id)
@@ -775,6 +777,7 @@ namespace MultiplayerARPG.MMO
                     transaction.Rollback();
                 }
                 this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
+                await connection.DisposeAsync();
             }
         }
 
@@ -856,6 +859,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteFriend(string id1, string id2)

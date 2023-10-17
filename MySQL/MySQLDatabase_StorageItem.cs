@@ -97,6 +97,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 transaction.Rollback();
             }
+            await connection.DisposeAsync();
         }
 
         public async UniTask DeleteStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId)
@@ -136,6 +137,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 transaction.Rollback();
             }
+            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)

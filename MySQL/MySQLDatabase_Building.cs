@@ -73,6 +73,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@creatorId", building.CreatorId),
                 new MySqlParameter("@creatorName", building.CreatorName),
                 new MySqlParameter("@extraData", building.ExtraData));
+            await connection.DisposeAsync();
         }
 
         public override async UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
@@ -145,6 +146,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteBuilding(string channel, string mapName, string id)
@@ -155,6 +157,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@channel", channel),
                 new MySqlParameter("@mapName", mapName));
+            await connection.DisposeAsync();
         }
     }
 }
