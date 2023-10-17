@@ -381,6 +381,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 
@@ -728,6 +729,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 
@@ -768,15 +770,16 @@ namespace MultiplayerARPG.MMO
                     await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
                     await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
                     await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (System.Exception ex)
                 {
                     LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
                     LogException(LogTag, ex);
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                 }
                 this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
+                await transaction.DisposeAsync();
                 await connection.DisposeAsync();
             }
         }
@@ -859,6 +862,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 

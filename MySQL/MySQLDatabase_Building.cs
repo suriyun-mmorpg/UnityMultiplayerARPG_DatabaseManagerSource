@@ -146,6 +146,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 

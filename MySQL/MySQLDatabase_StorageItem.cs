@@ -89,14 +89,15 @@ namespace MultiplayerARPG.MMO
                 {
                     await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
                 }
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing storage items");
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 
@@ -129,14 +130,15 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@storageType", (byte)storageType),
                     new MySqlParameter("@storageOwnerId", storageOwnerId),
                     new MySqlParameter("@reserverId", reserverId));
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
                 LogException(LogTag, ex);
-                transaction.Rollback();
+                await transaction.RollbackAsync();
             }
+            await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }
 
