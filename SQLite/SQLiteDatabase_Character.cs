@@ -374,8 +374,8 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@frameDataId", character.FrameDataId),
                     new SqliteParameter("@titleDataId", character.TitleDataId));
                 FillCharacterRelatesData(transaction, character, null, null);
+                this.InvokeInstanceDevExtMethods("CreateCharacter", transaction, userId, character);
                 transaction.Commit();
-                this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
             }
             catch (System.Exception ex)
             {
@@ -718,8 +718,8 @@ namespace MultiplayerARPG.MMO
                     ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
                         new SqliteParameter("@reserverId", character.Id));
                 }
+                this.InvokeInstanceDevExtMethods("UpdateCharacter", transaction, character);
                 transaction.Commit();
-                this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }
             catch (System.Exception ex)
             {
@@ -766,6 +766,8 @@ namespace MultiplayerARPG.MMO
                     DeleteCharacterDataBooleans(transaction, "character_public_boolean", id);
                     DeleteCharacterDataInt32s(transaction, "character_public_int32", id);
                     DeleteCharacterDataFloat32s(transaction, "character_public_float32", id);
+
+                    this.InvokeInstanceDevExtMethods("DeleteCharacter", transaction, userId, id);
                     transaction.Commit();
                 }
                 catch (System.Exception ex)
@@ -775,7 +777,6 @@ namespace MultiplayerARPG.MMO
                     transaction.Rollback();
                 }
                 transaction.Dispose();
-                this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
             }
             return new UniTask();
         }
