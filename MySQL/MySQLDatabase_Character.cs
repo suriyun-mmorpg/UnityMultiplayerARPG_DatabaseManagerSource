@@ -372,8 +372,8 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@frameDataId", character.FrameDataId),
                     new MySqlParameter("@titleDataId", character.TitleDataId));
                 await FillCharacterRelatesData(connection, transaction, character, null, null);
+                this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
                 await transaction.CommitAsync();
-                this.InvokeInstanceDevExtMethods("CreateCharacter", userId, character);
             }
             catch (System.Exception ex)
             {
@@ -720,8 +720,8 @@ namespace MultiplayerARPG.MMO
                     await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
                         new MySqlParameter("@reserverId", character.Id));
                 }
+                this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
                 await transaction.CommitAsync();
-                this.InvokeInstanceDevExtMethods("UpdateCharacter", character);
             }
             catch (System.Exception ex)
             {
@@ -770,6 +770,8 @@ namespace MultiplayerARPG.MMO
                     await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
                     await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
                     await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
+
+                    this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
                     await transaction.CommitAsync();
                 }
                 catch (System.Exception ex)
@@ -778,7 +780,6 @@ namespace MultiplayerARPG.MMO
                     LogException(LogTag, ex);
                     await transaction.RollbackAsync();
                 }
-                this.InvokeInstanceDevExtMethods("DeleteCharacter", userId, id);
                 await transaction.DisposeAsync();
                 await connection.DisposeAsync();
             }
