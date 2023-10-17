@@ -284,7 +284,7 @@ namespace MultiplayerARPG.MMO
                 {
                     MySqlDataReader dataReader = await cmd.ExecuteReaderAsync();
                     if (onRead != null) onRead.Invoke(dataReader);
-                    dataReader.Close();
+                    await dataReader.DisposeAsync();
                 }
                 catch (MySqlException ex)
                 {
