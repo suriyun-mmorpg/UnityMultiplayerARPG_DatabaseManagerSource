@@ -140,6 +140,11 @@ namespace MultiplayerARPG.MMO
         public async UniTask<long> ExecuteInsertData(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
+            if (connection != null && connection.State != System.Data.ConnectionState.Open)
+            {
+                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
+                connection = null;
+            }
             if (connection == null)
             {
                 connection = NewConnection();
@@ -184,6 +189,11 @@ namespace MultiplayerARPG.MMO
         public async UniTask<int> ExecuteNonQuery(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
+            if (connection != null && connection.State != System.Data.ConnectionState.Open)
+            {
+                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
+                connection = null;
+            }
             if (connection == null)
             {
                 connection = NewConnection();
@@ -227,6 +237,11 @@ namespace MultiplayerARPG.MMO
         public async UniTask<object> ExecuteScalar(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
+            if (connection != null && connection.State != System.Data.ConnectionState.Open)
+            {
+                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
+                connection = null;
+            }
             if (connection == null)
             {
                 connection = NewConnection();
@@ -269,6 +284,11 @@ namespace MultiplayerARPG.MMO
         public async UniTask ExecuteReader(MySqlConnection connection, MySqlTransaction transaction, Action<MySqlDataReader> onRead, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
+            if (connection != null && connection.State != System.Data.ConnectionState.Open)
+            {
+                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
+                connection = null;
+            }
             if (connection == null)
             {
                 connection = NewConnection();
