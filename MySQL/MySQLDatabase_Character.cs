@@ -331,58 +331,60 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
-                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
-                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
-                    new MySqlParameter("@id", character.Id),
-                    new MySqlParameter("@userId", userId),
-                    new MySqlParameter("@dataId", character.DataId),
-                    new MySqlParameter("@entityId", character.EntityId),
-                    new MySqlParameter("@factionId", character.FactionId),
-                    new MySqlParameter("@characterName", character.CharacterName),
-                    new MySqlParameter("@level", character.Level),
-                    new MySqlParameter("@exp", character.Exp),
-                    new MySqlParameter("@currentHp", character.CurrentHp),
-                    new MySqlParameter("@currentMp", character.CurrentMp),
-                    new MySqlParameter("@currentStamina", character.CurrentStamina),
-                    new MySqlParameter("@currentFood", character.CurrentFood),
-                    new MySqlParameter("@currentWater", character.CurrentWater),
-                    new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                    new MySqlParameter("@statPoint", character.StatPoint),
-                    new MySqlParameter("@skillPoint", character.SkillPoint),
-                    new MySqlParameter("@gold", character.Gold),
-                    new MySqlParameter("@currentMapName", character.CurrentMapName),
-                    new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
-                    new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
-                    new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                    new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
-                    new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
-                    new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                    new MySqlParameter("@respawnMapName", character.RespawnMapName),
-                    new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                    new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                    new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                    new MySqlParameter("@mountDataId", character.MountDataId),
-                    new MySqlParameter("@iconDataId", character.IconDataId),
-                    new MySqlParameter("@frameDataId", character.FrameDataId),
-                    new MySqlParameter("@titleDataId", character.TitleDataId));
-                await FillCharacterRelatesData(connection, transaction, character, null, null);
-                this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
-                await transaction.CommitAsync();
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
+                            "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
+                            "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
+                            new MySqlParameter("@id", character.Id),
+                            new MySqlParameter("@userId", userId),
+                            new MySqlParameter("@dataId", character.DataId),
+                            new MySqlParameter("@entityId", character.EntityId),
+                            new MySqlParameter("@factionId", character.FactionId),
+                            new MySqlParameter("@characterName", character.CharacterName),
+                            new MySqlParameter("@level", character.Level),
+                            new MySqlParameter("@exp", character.Exp),
+                            new MySqlParameter("@currentHp", character.CurrentHp),
+                            new MySqlParameter("@currentMp", character.CurrentMp),
+                            new MySqlParameter("@currentStamina", character.CurrentStamina),
+                            new MySqlParameter("@currentFood", character.CurrentFood),
+                            new MySqlParameter("@currentWater", character.CurrentWater),
+                            new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                            new MySqlParameter("@statPoint", character.StatPoint),
+                            new MySqlParameter("@skillPoint", character.SkillPoint),
+                            new MySqlParameter("@gold", character.Gold),
+                            new MySqlParameter("@currentMapName", character.CurrentMapName),
+                            new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
+                            new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
+                            new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                            new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
+                            new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
+                            new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                            new MySqlParameter("@respawnMapName", character.RespawnMapName),
+                            new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                            new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                            new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+                            new MySqlParameter("@mountDataId", character.MountDataId),
+                            new MySqlParameter("@iconDataId", character.IconDataId),
+                            new MySqlParameter("@frameDataId", character.FrameDataId),
+                            new MySqlParameter("@titleDataId", character.TitleDataId));
+                        await FillCharacterRelatesData(connection, transaction, character, null, null);
+                        this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
+                }
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         private bool ReadCharacter(MySqlDataReader reader, out PlayerCharacterData result)
@@ -625,12 +627,14 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
                     (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
                     (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
                     ON DUPLICATE KEY UPDATE
@@ -640,14 +644,14 @@ namespace MultiplayerARPG.MMO
                     consecutivePkKills = @consecutivePkKills,
                     highestPkPoint = @highestPkPoint,
                     highestConsecutivePkKills = @highestConsecutivePkKills",
-                    new MySqlParameter("@id", character.Id),
-                    new MySqlParameter("@isPkOn", character.IsPkOn),
-                    new MySqlParameter("@lastPkOnTime", character.LastPkOnTime),
-                    new MySqlParameter("@pkPoint", character.PkPoint),
-                    new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
-                    new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
-                    new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-                await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
+                            new MySqlParameter("@id", character.Id),
+                            new MySqlParameter("@isPkOn", character.IsPkOn),
+                            new MySqlParameter("@lastPkOnTime", character.LastPkOnTime),
+                            new MySqlParameter("@pkPoint", character.PkPoint),
+                            new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
+                            new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
+                            new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
+                        await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
                     dataId=@dataId,
                     entityId=@entityId,
                     factionId=@factionId,
@@ -681,56 +685,56 @@ namespace MultiplayerARPG.MMO
                     lastDeadTime=@lastDeadTime,
                     unmuteTime=@unmuteTime
                     WHERE id=@id",
-                    new MySqlParameter("@dataId", character.DataId),
-                    new MySqlParameter("@entityId", character.EntityId),
-                    new MySqlParameter("@factionId", character.FactionId),
-                    new MySqlParameter("@characterName", character.CharacterName),
-                    new MySqlParameter("@level", character.Level),
-                    new MySqlParameter("@exp", character.Exp),
-                    new MySqlParameter("@currentHp", character.CurrentHp),
-                    new MySqlParameter("@currentMp", character.CurrentMp),
-                    new MySqlParameter("@currentStamina", character.CurrentStamina),
-                    new MySqlParameter("@currentFood", character.CurrentFood),
-                    new MySqlParameter("@currentWater", character.CurrentWater),
-                    new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                    new MySqlParameter("@statPoint", character.StatPoint),
-                    new MySqlParameter("@skillPoint", character.SkillPoint),
-                    new MySqlParameter("@gold", character.Gold),
-                    new MySqlParameter("@currentMapName", character.CurrentMapName),
-                    new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
-                    new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
-                    new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                    new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
-                    new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
-                    new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                    new MySqlParameter("@respawnMapName", character.RespawnMapName),
-                    new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                    new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                    new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                    new MySqlParameter("@mountDataId", character.MountDataId),
-                    new MySqlParameter("@iconDataId", character.IconDataId),
-                    new MySqlParameter("@frameDataId", character.FrameDataId),
-                    new MySqlParameter("@titleDataId", character.TitleDataId),
-                    new MySqlParameter("@lastDeadTime", character.LastDeadTime),
-                    new MySqlParameter("@unmuteTime", character.UnmuteTime),
-                    new MySqlParameter("@id", character.Id));
-                await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
-                if (deleteStorageReservation)
-                {
-                    await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
-                        new MySqlParameter("@reserverId", character.Id));
+                            new MySqlParameter("@dataId", character.DataId),
+                            new MySqlParameter("@entityId", character.EntityId),
+                            new MySqlParameter("@factionId", character.FactionId),
+                            new MySqlParameter("@characterName", character.CharacterName),
+                            new MySqlParameter("@level", character.Level),
+                            new MySqlParameter("@exp", character.Exp),
+                            new MySqlParameter("@currentHp", character.CurrentHp),
+                            new MySqlParameter("@currentMp", character.CurrentMp),
+                            new MySqlParameter("@currentStamina", character.CurrentStamina),
+                            new MySqlParameter("@currentFood", character.CurrentFood),
+                            new MySqlParameter("@currentWater", character.CurrentWater),
+                            new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                            new MySqlParameter("@statPoint", character.StatPoint),
+                            new MySqlParameter("@skillPoint", character.SkillPoint),
+                            new MySqlParameter("@gold", character.Gold),
+                            new MySqlParameter("@currentMapName", character.CurrentMapName),
+                            new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
+                            new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
+                            new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                            new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
+                            new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
+                            new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                            new MySqlParameter("@respawnMapName", character.RespawnMapName),
+                            new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                            new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                            new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+                            new MySqlParameter("@mountDataId", character.MountDataId),
+                            new MySqlParameter("@iconDataId", character.IconDataId),
+                            new MySqlParameter("@frameDataId", character.FrameDataId),
+                            new MySqlParameter("@titleDataId", character.TitleDataId),
+                            new MySqlParameter("@lastDeadTime", character.LastDeadTime),
+                            new MySqlParameter("@unmuteTime", character.UnmuteTime),
+                            new MySqlParameter("@id", character.Id));
+                        await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
+                        if (deleteStorageReservation)
+                        {
+                            await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
+                                new MySqlParameter("@reserverId", character.Id));
+                        }
+                        this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
                 }
-                this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
-                await transaction.CommitAsync();
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteCharacter(string userId, string id)
@@ -741,47 +745,49 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                using MySqlConnection connection = NewConnection();
-                await OpenConnection(connection);
-                using MySqlTransaction transaction = connection.BeginTransaction();
-                try
+                using (MySqlConnection connection = NewConnection())
                 {
-                    await ExecuteNonQuery(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new MySqlParameter("@characterId", id));
-                    await ExecuteNonQuery(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new MySqlParameter("@characterId", id));
-                    await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new MySqlParameter("@characterId", id));
-                    await DeleteCharacterAttributes(connection, transaction, id);
-                    await DeleteCharacterCurrencies(connection, transaction, id);
-                    await DeleteCharacterBuffs(connection, transaction, id);
-                    await DeleteCharacterHotkeys(connection, transaction, id);
-                    await DeleteCharacterItems(connection, transaction, id);
-                    await DeleteCharacterQuests(connection, transaction, id);
-                    await DeleteCharacterSkills(connection, transaction, id);
-                    await DeleteCharacterSkillUsages(connection, transaction, id);
-                    await DeleteCharacterSummons(connection, transaction, id);
+                    await OpenConnection(connection);
+                    using (MySqlTransaction transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            await ExecuteNonQuery(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new MySqlParameter("@characterId", id));
+                            await ExecuteNonQuery(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new MySqlParameter("@characterId", id));
+                            await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new MySqlParameter("@characterId", id));
+                            await DeleteCharacterAttributes(connection, transaction, id);
+                            await DeleteCharacterCurrencies(connection, transaction, id);
+                            await DeleteCharacterBuffs(connection, transaction, id);
+                            await DeleteCharacterHotkeys(connection, transaction, id);
+                            await DeleteCharacterItems(connection, transaction, id);
+                            await DeleteCharacterQuests(connection, transaction, id);
+                            await DeleteCharacterSkills(connection, transaction, id);
+                            await DeleteCharacterSkillUsages(connection, transaction, id);
+                            await DeleteCharacterSummons(connection, transaction, id);
 
-                    await DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
-                    await DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
-                    await DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
+                            await DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
+                            await DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
+                            await DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
 
-                    await DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
-                    await DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
-                    await DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
+                            await DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
+                            await DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
+                            await DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
 
-                    await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
-                    await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
-                    await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
+                            await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
+                            await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
+                            await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
 
-                    this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
-                    await transaction.CommitAsync();
+                            this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
+                            await transaction.CommitAsync();
+                        }
+                        catch (System.Exception ex)
+                        {
+                            LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
+                            LogException(LogTag, ex);
+                            await transaction.RollbackAsync();
+                        }
+                    }
                 }
-                catch (System.Exception ex)
-                {
-                    LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
-                    LogException(LogTag, ex);
-                    await transaction.RollbackAsync();
-                }
-                await transaction.DisposeAsync();
-                await connection.DisposeAsync();
             }
         }
 
@@ -839,32 +845,34 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask CreateFriend(string id1, string id2, byte state)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE " +
-                   "characterId1 LIKE @characterId1 AND " +
-                   "characterId2 LIKE @characterId2",
-                   new MySqlParameter("@characterId1", id1),
-                   new MySqlParameter("@characterId2", id2));
-                await ExecuteNonQuery(connection, transaction, "INSERT INTO friend " +
-                    "(characterId1, characterId2, state) VALUES " +
-                    "(@characterId1, @characterId2, @state)",
-                    new MySqlParameter("@characterId1", id1),
-                    new MySqlParameter("@characterId2", id2),
-                    new MySqlParameter("@state", state));
-                await transaction.CommitAsync();
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE " +
+                           "characterId1 LIKE @characterId1 AND " +
+                           "characterId2 LIKE @characterId2",
+                           new MySqlParameter("@characterId1", id1),
+                           new MySqlParameter("@characterId2", id2));
+                        await ExecuteNonQuery(connection, transaction, "INSERT INTO friend " +
+                            "(characterId1, characterId2, state) VALUES " +
+                            "(@characterId1, @characterId2, @state)",
+                            new MySqlParameter("@characterId1", id1),
+                            new MySqlParameter("@characterId2", id2),
+                            new MySqlParameter("@state", state));
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while creating friend: " + id1 + " " + id2);
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
+                }
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while creating friend: " + id1 + " " + id2);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteFriend(string id1, string id2)

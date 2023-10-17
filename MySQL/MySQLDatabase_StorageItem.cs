@@ -77,28 +77,30 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterItems.Count; ++i)
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
                 {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
+                    try
+                    {
+                        await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
+                        HashSet<string> insertedIds = new HashSet<string>();
+                        int i;
+                        for (i = 0; i < characterItems.Count; ++i)
+                        {
+                            await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
+                        }
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
                 }
-                await transaction.CommitAsync();
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         public async UniTask DeleteStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId)
@@ -118,28 +120,30 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
-                    new MySqlParameter("@storageType", (byte)storageType),
-                    new MySqlParameter("@storageOwnerId", storageOwnerId));
-                await ExecuteNonQuery(connection, transaction, "INSERT INTO storage_reservation (storageType, storageOwnerId, reserverId) VALUES (@storageType, @storageOwnerId, @reserverId)",
-                    new MySqlParameter("@storageType", (byte)storageType),
-                    new MySqlParameter("@storageOwnerId", storageOwnerId),
-                    new MySqlParameter("@reserverId", reserverId));
-                await transaction.CommitAsync();
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
+                            new MySqlParameter("@storageType", (byte)storageType),
+                            new MySqlParameter("@storageOwnerId", storageOwnerId));
+                        await ExecuteNonQuery(connection, transaction, "INSERT INTO storage_reservation (storageType, storageOwnerId, reserverId) VALUES (@storageType, @storageOwnerId, @reserverId)",
+                            new MySqlParameter("@storageType", (byte)storageType),
+                            new MySqlParameter("@storageOwnerId", storageOwnerId),
+                            new MySqlParameter("@reserverId", reserverId));
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
+                }
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)

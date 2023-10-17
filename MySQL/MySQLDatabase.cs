@@ -129,11 +129,12 @@ namespace MultiplayerARPG.MMO
 
         public async UniTask<long> ExecuteInsertData(string sql, params MySqlParameter[] args)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            long result = await ExecuteInsertData(connection, null, sql, args);
-            await connection.DisposeAsync();
-            return result;
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                long result = await ExecuteInsertData(connection, null, sql, args);
+                return result;
+            }
         }
 
         public async UniTask<long> ExecuteInsertData(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
@@ -166,17 +167,18 @@ namespace MultiplayerARPG.MMO
                 }
             }
             if (createNewConnection)
-                await connection.DisposeAsync();
+                connection.Dispose();
             return result;
         }
 
         public async UniTask<int> ExecuteNonQuery(string sql, params MySqlParameter[] args)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            int result = await ExecuteNonQuery(connection, null, sql, args);
-            await connection.DisposeAsync();
-            return result;
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                int result = await ExecuteNonQuery(connection, null, sql, args);
+                return result;
+            }
         }
 
         public async UniTask<int> ExecuteNonQuery(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
@@ -208,17 +210,18 @@ namespace MultiplayerARPG.MMO
                 }
             }
             if (createNewConnection)
-                await connection.DisposeAsync();
+                connection.Dispose();
             return numRows;
         }
 
         public async UniTask<object> ExecuteScalar(string sql, params MySqlParameter[] args)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            object result = await ExecuteScalar(connection, null, sql, args);
-            await connection.DisposeAsync();
-            return result;
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                object result = await ExecuteScalar(connection, null, sql, args);
+                return result;
+            }
         }
 
         public async UniTask<object> ExecuteScalar(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
@@ -250,16 +253,17 @@ namespace MultiplayerARPG.MMO
                 }
             }
             if (createNewConnection)
-                await connection.DisposeAsync();
+                connection.Dispose();
             return result;
         }
 
         public async UniTask ExecuteReader(Action<MySqlDataReader> onRead, string sql, params MySqlParameter[] args)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            await ExecuteReader(connection, null, onRead, sql, args);
-            await connection.DisposeAsync();
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                await ExecuteReader(connection, null, onRead, sql, args);
+            }
         }
 
         public async UniTask ExecuteReader(MySqlConnection connection, MySqlTransaction transaction, Action<MySqlDataReader> onRead, string sql, params MySqlParameter[] args)
@@ -282,9 +286,11 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    MySqlDataReader dataReader = await cmd.ExecuteReaderAsync();
-                    if (onRead != null) onRead.Invoke(dataReader);
-                    await dataReader.DisposeAsync();
+                    using (MySqlDataReader dataReader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (onRead != null)
+                            onRead.Invoke(dataReader);
+                    }
                 }
                 catch (MySqlException ex)
                 {
@@ -292,7 +298,7 @@ namespace MultiplayerARPG.MMO
                 }
             }
             if (createNewConnection)
-                await connection.DisposeAsync();
+                connection.Dispose();
         }
 
         public override async UniTask<string> ValidateUserLogin(string username, string password)

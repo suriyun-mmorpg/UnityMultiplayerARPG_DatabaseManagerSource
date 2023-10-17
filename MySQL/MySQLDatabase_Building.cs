@@ -54,26 +54,27 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
-                new MySqlParameter("@id", building.Id),
-                new MySqlParameter("@channel", channel),
-                new MySqlParameter("@parentId", building.ParentId),
-                new MySqlParameter("@entityId", building.EntityId),
-                new MySqlParameter("@currentHp", building.CurrentHp),
-                new MySqlParameter("@remainsLifeTime", building.RemainsLifeTime),
-                new MySqlParameter("@mapName", mapName),
-                new MySqlParameter("@positionX", building.Position.x),
-                new MySqlParameter("@positionY", building.Position.y),
-                new MySqlParameter("@positionZ", building.Position.z),
-                new MySqlParameter("@rotationX", building.Rotation.x),
-                new MySqlParameter("@rotationY", building.Rotation.y),
-                new MySqlParameter("@rotationZ", building.Rotation.z),
-                new MySqlParameter("@creatorId", building.CreatorId),
-                new MySqlParameter("@creatorName", building.CreatorName),
-                new MySqlParameter("@extraData", building.ExtraData));
-            await connection.DisposeAsync();
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+                    new MySqlParameter("@id", building.Id),
+                    new MySqlParameter("@channel", channel),
+                    new MySqlParameter("@parentId", building.ParentId),
+                    new MySqlParameter("@entityId", building.EntityId),
+                    new MySqlParameter("@currentHp", building.CurrentHp),
+                    new MySqlParameter("@remainsLifeTime", building.RemainsLifeTime),
+                    new MySqlParameter("@mapName", mapName),
+                    new MySqlParameter("@positionX", building.Position.x),
+                    new MySqlParameter("@positionY", building.Position.y),
+                    new MySqlParameter("@positionZ", building.Position.z),
+                    new MySqlParameter("@rotationX", building.Rotation.x),
+                    new MySqlParameter("@rotationY", building.Rotation.y),
+                    new MySqlParameter("@rotationZ", building.Rotation.z),
+                    new MySqlParameter("@creatorId", building.CreatorId),
+                    new MySqlParameter("@creatorName", building.CreatorName),
+                    new MySqlParameter("@extraData", building.ExtraData));
+            }
         }
 
         public override async UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
@@ -94,71 +95,74 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            using MySqlTransaction transaction = connection.BeginTransaction();
-            try
+            using (MySqlConnection connection = NewConnection())
             {
-                await ExecuteNonQuery(connection, transaction, "UPDATE buildings SET " +
-                    "parentId=@parentId, " +
-                    "entityId=@entityId, " +
-                    "currentHp=@currentHp, " +
-                    "remainsLifeTime=@remainsLifeTime, " +
-                    "isLocked=@isLocked, " +
-                    "lockPassword=@lockPassword, " +
-                    "creatorId=@creatorId, " +
-                    "creatorName=@creatorName, " +
-                    "extraData=@extraData, " +
-                    "positionX=@positionX, " +
-                    "positionY=@positionY, " +
-                    "positionZ=@positionZ, " +
-                    "rotationX=@rotationX, " +
-                    "rotationY=@rotationY, " +
-                    "rotationZ=@rotationZ " +
-                    "WHERE id=@id AND channel=@channel AND mapName=@mapName",
-                    new MySqlParameter("@id", building.Id),
-                    new MySqlParameter("@parentId", building.ParentId),
-                    new MySqlParameter("@entityId", building.EntityId),
-                    new MySqlParameter("@currentHp", building.CurrentHp),
-                    new MySqlParameter("@remainsLifeTime", building.RemainsLifeTime),
-                    new MySqlParameter("@isLocked", building.IsLocked),
-                    new MySqlParameter("@lockPassword", building.LockPassword),
-                    new MySqlParameter("@creatorId", building.CreatorId),
-                    new MySqlParameter("@creatorName", building.CreatorName),
-                    new MySqlParameter("@extraData", building.ExtraData),
-                    new MySqlParameter("@positionX", building.Position.x),
-                    new MySqlParameter("@positionY", building.Position.y),
-                    new MySqlParameter("@positionZ", building.Position.z),
-                    new MySqlParameter("@rotationX", building.Rotation.x),
-                    new MySqlParameter("@rotationY", building.Rotation.y),
-                    new MySqlParameter("@rotationZ", building.Rotation.z),
-                    new MySqlParameter("@channel", channel),
-                    new MySqlParameter("@mapName", mapName));
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, "UPDATE buildings SET " +
+                            "parentId=@parentId, " +
+                            "entityId=@entityId, " +
+                            "currentHp=@currentHp, " +
+                            "remainsLifeTime=@remainsLifeTime, " +
+                            "isLocked=@isLocked, " +
+                            "lockPassword=@lockPassword, " +
+                            "creatorId=@creatorId, " +
+                            "creatorName=@creatorName, " +
+                            "extraData=@extraData, " +
+                            "positionX=@positionX, " +
+                            "positionY=@positionY, " +
+                            "positionZ=@positionZ, " +
+                            "rotationX=@rotationX, " +
+                            "rotationY=@rotationY, " +
+                            "rotationZ=@rotationZ " +
+                            "WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                            new MySqlParameter("@id", building.Id),
+                            new MySqlParameter("@parentId", building.ParentId),
+                            new MySqlParameter("@entityId", building.EntityId),
+                            new MySqlParameter("@currentHp", building.CurrentHp),
+                            new MySqlParameter("@remainsLifeTime", building.RemainsLifeTime),
+                            new MySqlParameter("@isLocked", building.IsLocked),
+                            new MySqlParameter("@lockPassword", building.LockPassword),
+                            new MySqlParameter("@creatorId", building.CreatorId),
+                            new MySqlParameter("@creatorName", building.CreatorName),
+                            new MySqlParameter("@extraData", building.ExtraData),
+                            new MySqlParameter("@positionX", building.Position.x),
+                            new MySqlParameter("@positionY", building.Position.y),
+                            new MySqlParameter("@positionZ", building.Position.z),
+                            new MySqlParameter("@rotationX", building.Rotation.x),
+                            new MySqlParameter("@rotationY", building.Rotation.y),
+                            new MySqlParameter("@rotationZ", building.Rotation.z),
+                            new MySqlParameter("@channel", channel),
+                            new MySqlParameter("@mapName", mapName));
 
-                if (storageItems != null)
-                    await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
+                        if (storageItems != null)
+                            await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
 
-                await transaction.CommitAsync();
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while update building: " + building.Id);
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
+                }
             }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while update building: " + building.Id);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
-            await transaction.DisposeAsync();
-            await connection.DisposeAsync();
         }
 
         public override async UniTask DeleteBuilding(string channel, string mapName, string id)
         {
-            using MySqlConnection connection = NewConnection();
-            await OpenConnection(connection);
-            await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
-                new MySqlParameter("@id", id),
-                new MySqlParameter("@channel", channel),
-                new MySqlParameter("@mapName", mapName));
-            await connection.DisposeAsync();
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                    new MySqlParameter("@id", id),
+                    new MySqlParameter("@channel", channel),
+                    new MySqlParameter("@mapName", mapName));
+            }
         }
     }
 }
