@@ -139,6 +139,11 @@ namespace MultiplayerARPG.MMO
 
         public async UniTask<long> ExecuteInsertData(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
         {
+            return await ExecuteInsertData(connection, transaction, false, sql, args);
+        }
+
+        public async UniTask<long> ExecuteInsertData(MySqlConnection connection, MySqlTransaction transaction, bool isAsync, string sql, params MySqlParameter[] args)
+        {
             bool createNewConnection = false;
             if (connection != null && connection.State != System.Data.ConnectionState.Open)
             {
@@ -163,7 +168,10 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    await cmd.ExecuteNonQueryAsync();
+                    if (isAsync)
+                        await cmd.ExecuteNonQueryAsync();
+                    else
+                        cmd.ExecuteNonQuery();
                     result = cmd.LastInsertedId;
                 }
                 catch (MySqlException ex)
@@ -187,6 +195,11 @@ namespace MultiplayerARPG.MMO
         }
 
         public async UniTask<int> ExecuteNonQuery(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
+        {
+            return await ExecuteNonQuery(connection, transaction, false, sql, args);
+        }
+
+        public async UniTask<int> ExecuteNonQuery(MySqlConnection connection, MySqlTransaction transaction, bool isAsync, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
             if (connection != null && connection.State != System.Data.ConnectionState.Open)
@@ -212,7 +225,10 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    numRows = await cmd.ExecuteNonQueryAsync();
+                    if (isAsync)
+                        numRows = await cmd.ExecuteNonQueryAsync();
+                    else
+                        numRows = cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException ex)
                 {
@@ -235,6 +251,11 @@ namespace MultiplayerARPG.MMO
         }
 
         public async UniTask<object> ExecuteScalar(MySqlConnection connection, MySqlTransaction transaction, string sql, params MySqlParameter[] args)
+        {
+            return await ExecuteScalar(connection, transaction, false, sql, args);
+        }
+
+        public async UniTask<object> ExecuteScalar(MySqlConnection connection, MySqlTransaction transaction, bool isAsync, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
             if (connection != null && connection.State != System.Data.ConnectionState.Open)
@@ -260,7 +281,10 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    result = await cmd.ExecuteScalarAsync();
+                    if (isAsync)
+                        result = await cmd.ExecuteScalarAsync();
+                    else
+                        result = cmd.ExecuteScalar();
                 }
                 catch (MySqlException ex)
                 {
@@ -306,7 +330,7 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    using (MySqlDataReader dataReader = await cmd.ExecuteReaderAsync())
+                    using (MySqlDataReader dataReader = cmd.ExecuteReader())
                     {
                         if (onRead != null)
                             onRead.Invoke(dataReader);
