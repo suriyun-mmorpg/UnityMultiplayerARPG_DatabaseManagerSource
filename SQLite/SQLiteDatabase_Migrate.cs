@@ -1,11 +1,12 @@
 #if NET || NETCOREAPP
-using Cysharp.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 #elif (UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE
 using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+using Cysharp.Threading.Tasks;
+
 namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
