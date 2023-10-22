@@ -8,8 +8,7 @@ namespace MultiplayerARPG.MMO
     {
         delegate UniTask MigrateActionDelegate();
 
-        [DevExtMethods("Init")]
-        public async void Migrate()
+        public override async UniTask DoMigration()
         {
             await DoMigration("1.58", async () =>
             {

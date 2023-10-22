@@ -1,4 +1,5 @@
 #if NET || NETCOREAPP
+using Cysharp.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 #elif (UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE
 using Mono.Data.Sqlite;
@@ -9,9 +10,10 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        [DevExtMethods("Init")]
-        public void Migrate()
+        public override async UniTask DoMigration()
         {
+            await UniTask.Yield();
+
             // Migrate fields
             if (!IsColumnExist("characterhotkey", "relateId"))
                 ExecuteNonQuery("ALTER TABLE characterhotkey ADD relateId TEXT NOT NULL DEFAULT '';");

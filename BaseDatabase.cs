@@ -18,9 +18,15 @@ namespace MultiplayerARPG.MMO
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
         protected IDatabaseUserLogin _userLoginManager;
+        protected delegate UniTask MigrationAction();
+        protected MigrationAction _doMigrationAction;
 
         public virtual void Initialize() { }
         public virtual void Destroy() { }
+        public virtual async UniTask DoMigration()
+        {
+            await UniTask.Yield();
+        }
 
         public abstract UniTask<string> ValidateUserLogin(string username, string password);
         public abstract UniTask<bool> ValidateAccessToken(string userId, string accessToken);
