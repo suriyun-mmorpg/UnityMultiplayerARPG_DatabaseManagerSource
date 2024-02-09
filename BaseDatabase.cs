@@ -23,9 +23,9 @@ namespace MultiplayerARPG.MMO
 
         public virtual void Initialize() { }
         public virtual void Destroy() { }
-        public virtual async UniTask DoMigration()
+        public virtual UniTask DoMigration()
         {
-            await UniTask.Yield();
+            return UniTask.CompletedTask;
         }
 
         public abstract UniTask<string> ValidateUserLogin(string username, string password);

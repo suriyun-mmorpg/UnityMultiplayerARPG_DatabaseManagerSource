@@ -23,144 +23,120 @@ namespace MultiplayerARPG.MMO
         private ConcurrentDictionary<StorageId, List<CharacterItem>> _cachedStorageItems = new ConcurrentDictionary<StorageId, List<CharacterItem>>();
         private ConcurrentDictionary<string, List<CharacterBuff>> _cachedSummonBuffs = new ConcurrentDictionary<string, List<CharacterBuff>>();
 
-        public async UniTask<bool> AddUsername(string username)
+        public UniTask<bool> AddUsername(string username)
         {
-            await UniTask.Yield();
-            return _cachedUsernames.Add(username);
+            return UniTask.FromResult(_cachedUsernames.Add(username));
         }
-        public async UniTask<bool> ContainsUsername(string username)
+        public UniTask<bool> ContainsUsername(string username)
         {
-            await UniTask.Yield();
-            return _cachedUsernames.Contains(username);
+            return UniTask.FromResult(_cachedUsernames.Contains(username));
         }
-        public async UniTask<bool> RemoveUsername(string username)
+        public UniTask<bool> RemoveUsername(string username)
         {
-            await UniTask.Yield();
-            return _cachedUsernames.TryRemove(username);
+            return UniTask.FromResult(_cachedUsernames.TryRemove(username));
         }
 
-        public async UniTask<bool> AddEmail(string email)
+        public UniTask<bool> AddEmail(string email)
         {
-            await UniTask.Yield();
-            return _cachedEmails.Add(email);
+            return UniTask.FromResult(_cachedEmails.Add(email));
         }
-        public async UniTask<bool> ContainsEmail(string email)
+        public UniTask<bool> ContainsEmail(string email)
         {
-            await UniTask.Yield();
-            return _cachedEmails.Contains(email);
+            return UniTask.FromResult(_cachedEmails.Contains(email));
         }
-        public async UniTask<bool> RemoveEmail(string email)
+        public UniTask<bool> RemoveEmail(string email)
         {
-            await UniTask.Yield();
-            return _cachedEmails.TryRemove(email);
+            return UniTask.FromResult(_cachedEmails.TryRemove(email));
         }
 
-        public async UniTask<bool> AddCharacterName(string characterName)
+        public UniTask<bool> AddCharacterName(string characterName)
         {
-            await UniTask.Yield();
-            return _cachedCharacterNames.Add(characterName);
+            return UniTask.FromResult(_cachedCharacterNames.Add(characterName));
         }
-        public async UniTask<bool> ContainsCharacterName(string characterName)
+        public UniTask<bool> ContainsCharacterName(string characterName)
         {
-            await UniTask.Yield();
-            return _cachedCharacterNames.Contains(characterName);
+            return UniTask.FromResult(_cachedCharacterNames.Contains(characterName));
         }
-        public async UniTask<bool> RemoveCharacterName(string characterName)
+        public UniTask<bool> RemoveCharacterName(string characterName)
         {
-            await UniTask.Yield();
-            return _cachedCharacterNames.TryRemove(characterName);
+            return UniTask.FromResult(_cachedCharacterNames.TryRemove(characterName));
         }
 
-        public async UniTask<bool> AddGuildName(string guildName)
+        public UniTask<bool> AddGuildName(string guildName)
         {
-            await UniTask.Yield();
-            return _cachedGuildNames.Add(guildName);
+            return UniTask.FromResult(_cachedGuildNames.Add(guildName));
         }
-        public async UniTask<bool> ContainsGuildName(string guildName)
+        public UniTask<bool> ContainsGuildName(string guildName)
         {
-            await UniTask.Yield();
-            return _cachedGuildNames.Contains(guildName);
+            return UniTask.FromResult(_cachedGuildNames.Contains(guildName));
         }
-        public async UniTask<bool> RemoveGuildName(string guildName)
+        public UniTask<bool> RemoveGuildName(string guildName)
         {
-            await UniTask.Yield();
-            return _cachedGuildNames.TryRemove(guildName);
+            return UniTask.FromResult(_cachedGuildNames.TryRemove(guildName));
         }
 
-        public async UniTask<bool> SetUserAccessToken(string userId, string accessToken)
+        public UniTask<bool> SetUserAccessToken(string userId, string accessToken)
         {
-            await UniTask.Yield();
             _cachedUserAccessTokens[userId] = accessToken;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<string>> GetUserAccessToken(string userId)
+        public UniTask<DatabaseCacheResult<string>> GetUserAccessToken(string userId)
         {
-            await UniTask.Yield();
             if (_cachedUserAccessTokens.TryGetValue(userId, out var token))
-                return new DatabaseCacheResult<string>(token);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<string>(token));
+            return UniTask.FromResult(new DatabaseCacheResult<string>());
         }
-        public async UniTask<bool> RemoveUserAccessToken(string userId)
+        public UniTask<bool> RemoveUserAccessToken(string userId)
         {
-            await UniTask.Yield();
-            return _cachedUserAccessTokens.TryRemove(userId, out _);
+            return UniTask.FromResult(_cachedUserAccessTokens.TryRemove(userId, out _));
         }
 
-        public async UniTask<bool> SetUserGold(string userId, int gold)
+        public UniTask<bool> SetUserGold(string userId, int gold)
         {
-            await UniTask.Yield();
             _cachedUserGolds[userId] = gold;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<int>> GetUserGold(string userId)
+        public UniTask<DatabaseCacheResult<int>> GetUserGold(string userId)
         {
-            await UniTask.Yield();
             if (_cachedUserGolds.TryGetValue(userId, out var gold))
-                return new DatabaseCacheResult<int>(gold);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<int>(gold));
+            return UniTask.FromResult(new DatabaseCacheResult<int>());
         }
-        public async UniTask<bool> RemoveUserGold(string userId)
+        public UniTask<bool> RemoveUserGold(string userId)
         {
-            await UniTask.Yield();
-            return _cachedUserGolds.TryRemove(userId, out _);
+            return UniTask.FromResult(_cachedUserGolds.TryRemove(userId, out _));
         }
 
-        public async UniTask<bool> SetUserCash(string userId, int cash)
+        public UniTask<bool> SetUserCash(string userId, int cash)
         {
-            await UniTask.Yield();
             _cachedUserCashes[userId] = cash;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<int>> GetUserCash(string userId)
+        public UniTask<DatabaseCacheResult<int>> GetUserCash(string userId)
         {
-            await UniTask.Yield();
             if (_cachedUserCashes.TryGetValue(userId, out var cash))
-                return new DatabaseCacheResult<int>(cash);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<int>(cash));
+            return UniTask.FromResult(new DatabaseCacheResult<int>());
         }
-        public async UniTask<bool> RemoveUserCash(string userId)
+        public UniTask<bool> RemoveUserCash(string userId)
         {
-            await UniTask.Yield();
-            return _cachedUserCashes.TryRemove(userId, out _);
+            return UniTask.FromResult(_cachedUserCashes.TryRemove(userId, out _));
         }
 
-        public async UniTask<bool> SetPlayerCharacter(PlayerCharacterData playerCharacter)
+        public UniTask<bool> SetPlayerCharacter(PlayerCharacterData playerCharacter)
         {
-            await UniTask.Yield();
             _cachedPlayerCharacters[playerCharacter.Id] = playerCharacter;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<PlayerCharacterData>> GetPlayerCharacter(string characterId)
+        public UniTask<DatabaseCacheResult<PlayerCharacterData>> GetPlayerCharacter(string characterId)
         {
-            await UniTask.Yield();
             if (_cachedPlayerCharacters.TryGetValue(characterId, out var playerCharacter))
-                return new DatabaseCacheResult<PlayerCharacterData>(playerCharacter);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<PlayerCharacterData>(playerCharacter));
+            return UniTask.FromResult(new DatabaseCacheResult<PlayerCharacterData>());
         }
-        public async UniTask<bool> RemovePlayerCharacter(string characterId)
+        public UniTask<bool> RemovePlayerCharacter(string characterId)
         {
-            await UniTask.Yield();
-            return _cachedPlayerCharacters.TryRemove(characterId, out _);
+            return UniTask.FromResult(_cachedPlayerCharacters.TryRemove(characterId, out _));
         }
         public async UniTask<bool> SetPlayerCharacterPartyId(string characterId, int partyId)
         {
@@ -191,30 +167,27 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public async UniTask<bool> SetSocialCharacter(SocialCharacterData playerCharacter)
+        public UniTask<bool> SetSocialCharacter(SocialCharacterData playerCharacter)
         {
-            await UniTask.Yield();
             _cachedSocialCharacters[playerCharacter.id] = playerCharacter;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<SocialCharacterData>> GetSocialCharacter(string characterId)
+        public UniTask<DatabaseCacheResult<SocialCharacterData>> GetSocialCharacter(string characterId)
         {
-            await UniTask.Yield();
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
-                return new DatabaseCacheResult<SocialCharacterData>(playerCharacter);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<SocialCharacterData>(playerCharacter));
+            return UniTask.FromResult(new DatabaseCacheResult<SocialCharacterData>());
         }
-        public async UniTask<bool> RemoveSocialCharacter(string characterId)
+        public UniTask<bool> RemoveSocialCharacter(string characterId)
         {
-            await UniTask.Yield();
-            return _cachedSocialCharacters.TryRemove(characterId, out _);
+            return UniTask.FromResult(_cachedSocialCharacters.TryRemove(characterId, out _));
         }
         public async UniTask<bool> SetSocialCharacterPartyId(string characterId, int partyId)
         {
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.partyId = partyId;
-                return await SetSocialCharacter(playerCharacter);
+                await SetSocialCharacter(playerCharacter);
             }
             return false;
         }
@@ -223,7 +196,7 @@ namespace MultiplayerARPG.MMO
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.guildId = guildId;
-                return await SetSocialCharacter(playerCharacter);
+                await SetSocialCharacter(playerCharacter);
             }
             return false;
         }
@@ -233,139 +206,121 @@ namespace MultiplayerARPG.MMO
             {
                 playerCharacter.guildId = guildId;
                 playerCharacter.guildRole = guildRole;
-                return await SetSocialCharacter(playerCharacter);
+                await SetSocialCharacter(playerCharacter);
             }
             return false;
         }
 
-        public async UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building)
+        public UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
             if (!_cachedBuilding.ContainsKey(key))
                 _cachedBuilding[key] = new ConcurrentDictionary<string, BuildingSaveData>();
             _cachedBuilding[key][building.Id] = building;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string channel, string mapName, string buildingId)
+        public UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string channel, string mapName, string buildingId)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
             if (_cachedBuilding.TryGetValue(key, out var buildings) && buildings.TryGetValue(buildingId, out var building))
-                return new DatabaseCacheResult<BuildingSaveData>(building);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<BuildingSaveData>(building));
+            return UniTask.FromResult(new DatabaseCacheResult<BuildingSaveData>());
         }
-        public async UniTask<bool> RemoveBuilding(string channel, string mapName, string buildingId)
+        public UniTask<bool> RemoveBuilding(string channel, string mapName, string buildingId)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
-            return _cachedBuilding.TryGetValue(key, out var buildings) && buildings.TryRemove(buildingId, out _);
+            return UniTask.FromResult(_cachedBuilding.TryGetValue(key, out var buildings) && buildings.TryRemove(buildingId, out _));
         }
 
-        public async UniTask<bool> SetBuildings(string channel, string mapName, IEnumerable<BuildingSaveData> buildings)
+        public UniTask<bool> SetBuildings(string channel, string mapName, IEnumerable<BuildingSaveData> buildings)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
             if (!_cachedBuilding.ContainsKey(key))
                 _cachedBuilding[key] = new ConcurrentDictionary<string, BuildingSaveData>();
             foreach (BuildingSaveData building in buildings)
                 _cachedBuilding[key][building.Id] = building;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string channel, string mapName)
+        public UniTask<DatabaseCacheResult<IEnumerable<BuildingSaveData>>> GetBuildings(string channel, string mapName)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
             if (_cachedBuilding.TryGetValue(key, out var buildings))
-                return new DatabaseCacheResult<IEnumerable<BuildingSaveData>>(buildings.Values);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<IEnumerable<BuildingSaveData>>(buildings.Values));
+            return UniTask.FromResult(new DatabaseCacheResult<IEnumerable<BuildingSaveData>>());
         }
-        public async UniTask<bool> RemoveBuildings(string channel, string mapName)
+        public UniTask<bool> RemoveBuildings(string channel, string mapName)
         {
-            await UniTask.Yield();
             string key = $"{channel}_{mapName}";
-            return _cachedBuilding.TryRemove(key, out _);
+            return UniTask.FromResult(_cachedBuilding.TryRemove(key, out _));
         }
 
-        public async UniTask<bool> SetParty(PartyData party)
+        public UniTask<bool> SetParty(PartyData party)
         {
-            await UniTask.Yield();
             _cachedParties[party.id] = party;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<PartyData>> GetParty(int id)
+        public UniTask<DatabaseCacheResult<PartyData>> GetParty(int id)
         {
-            await UniTask.Yield();
             if (_cachedParties.TryGetValue(id, out var party))
-                return new DatabaseCacheResult<PartyData>(party);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<PartyData>(party));
+            return UniTask.FromResult(new DatabaseCacheResult<PartyData>());
         }
-        public async UniTask<bool> RemoveParty(int id)
+        public UniTask<bool> RemoveParty(int id)
         {
-            await UniTask.Yield();
-            return _cachedParties.TryRemove(id, out _);
+            return UniTask.FromResult(_cachedParties.TryRemove(id, out _));
         }
 
-        public async UniTask<bool> SetGuild(GuildData guild)
+        public UniTask<bool> SetGuild(GuildData guild)
         {
-            await UniTask.Yield();
             _cachedGuilds[guild.id] = guild;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<GuildData>> GetGuild(int id)
+        public UniTask<DatabaseCacheResult<GuildData>> GetGuild(int id)
         {
-            await UniTask.Yield();
             if (_cachedGuilds.TryGetValue(id, out var guild))
-                return new DatabaseCacheResult<GuildData>(guild);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<GuildData>(guild));
+            return UniTask.FromResult(new DatabaseCacheResult<GuildData>());
         }
-        public async UniTask<bool> RemoveGuild(int id)
+        public UniTask<bool> RemoveGuild(int id)
         {
-            await UniTask.Yield();
-            return _cachedGuilds.TryRemove(id, out _);
+            return UniTask.FromResult(_cachedGuilds.TryRemove(id, out _));
         }
 
-        public async UniTask<bool> SetStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> items)
+        public UniTask<bool> SetStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> items)
         {
-            await UniTask.Yield();
             StorageId storageId = new StorageId(storageType, storageOwnerId);
             _cachedStorageItems[storageId] = items;
-            return true;
+            return UniTask.FromResult(true);
         }
-        public async UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageType storageType, string storageOwnerId)
+        public UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageType storageType, string storageOwnerId)
         {
-            await UniTask.Yield();
             StorageId storageId = new StorageId(storageType, storageOwnerId);
             if (_cachedStorageItems.TryGetValue(storageId, out var items))
-                return new DatabaseCacheResult<List<CharacterItem>>(items);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<List<CharacterItem>>(items));
+            return UniTask.FromResult(new DatabaseCacheResult<List<CharacterItem>>());
         }
-        public async UniTask<bool> RemoveStorageItems(StorageType storageType, string storageOwnerId)
+        public UniTask<bool> RemoveStorageItems(StorageType storageType, string storageOwnerId)
         {
-            await UniTask.Yield();
             StorageId storageId = new StorageId(storageType, storageOwnerId);
-            return _cachedStorageItems.TryRemove(storageId, out _);
+            return UniTask.FromResult(_cachedStorageItems.TryRemove(storageId, out _));
         }
 
-        public async UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> items)
+        public UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> items)
         {
-            await UniTask.Yield();
             _cachedSummonBuffs[characterId] = items;
-            return true;
+            return UniTask.FromResult(true);
         }
 
-        public async UniTask<DatabaseCacheResult<List<CharacterBuff>>> GetSummonBuffs(string characterId)
+        public UniTask<DatabaseCacheResult<List<CharacterBuff>>> GetSummonBuffs(string characterId)
         {
-            await UniTask.Yield();
             if (_cachedSummonBuffs.TryGetValue(characterId, out var buffs))
-                return new DatabaseCacheResult<List<CharacterBuff>>(buffs);
-            return default;
+                return UniTask.FromResult(new DatabaseCacheResult<List<CharacterBuff>>(buffs));
+            return UniTask.FromResult(new DatabaseCacheResult<List<CharacterBuff>>());
         }
 
-        public async UniTask<bool> RemoveSummonBuffs(string characterId)
+        public UniTask<bool> RemoveSummonBuffs(string characterId)
         {
-            await UniTask.Yield();
-            return _cachedSummonBuffs.TryRemove(characterId, out _);
+            return UniTask.FromResult(_cachedSummonBuffs.TryRemove(characterId, out _));
         }
     }
 }

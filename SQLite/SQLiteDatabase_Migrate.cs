@@ -11,10 +11,8 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        public override async UniTask DoMigration()
+        public override UniTask DoMigration()
         {
-            await UniTask.Yield();
-
             // Migrate fields
             if (!IsColumnExist("characterhotkey", "relateId"))
                 ExecuteNonQuery("ALTER TABLE characterhotkey ADD relateId TEXT NOT NULL DEFAULT '';");
@@ -275,6 +273,7 @@ namespace MultiplayerARPG.MMO
                 ExecuteNonQuery("DROP TABLE characters_delete;");
                 ExecuteNonQuery("ALTER TABLE characters_modifying RENAME TO characters;");
             }
+            return default;
         }
     }
 }
