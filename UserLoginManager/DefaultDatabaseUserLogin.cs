@@ -19,7 +19,7 @@ namespace MultiplayerARPG.MMO
 
         public string GenerateNewId()
         {
-            return Nanoid.Nanoid.Generate("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-", 16);
+            return System.Guid.NewGuid().ToString("N");
         }
 
         public string GetHashedPassword(string password)
