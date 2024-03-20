@@ -30,8 +30,8 @@ namespace MultiplayerARPG.MMO
         [Header("Running In Editor")]
         [SerializeField]
         [Tooltip("You should set this to where you build app to make database path as same as map server")]
-#endif
         private string editorDbPath = "./mmorpgtemplate.sqlite3";
+#endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
 #nullable enable
