@@ -88,6 +88,7 @@ namespace MultiplayerARPG.MMO
                 result = new List<EquipWeapons>();
             ExecuteReader((reader) =>
             {
+                EquipWeapons tempEquipWeapons;
                 CharacterItem tempInventory;
                 byte equipWeaponSet;
                 InventoryType inventoryType;
@@ -100,9 +101,17 @@ namespace MultiplayerARPG.MMO
                         result.Add(new EquipWeapons());
                     // Get equip weapon set
                     if (inventoryType == InventoryType.EquipWeaponRight)
-                        result[equipWeaponSet].rightHand = tempInventory;
+                    {
+                        tempEquipWeapons = result[equipWeaponSet];
+                        tempEquipWeapons.rightHand = tempInventory;
+                        result[equipWeaponSet] = tempEquipWeapons;
+                    }
                     if (inventoryType == InventoryType.EquipWeaponLeft)
-                        result[equipWeaponSet].leftHand = tempInventory;
+                    {
+                        tempEquipWeapons = result[equipWeaponSet];
+                        tempEquipWeapons.leftHand = tempInventory;
+                        result[equipWeaponSet] = tempEquipWeapons;
+                    }
                 }
             }, "SELECT id, dataId, level, amount, equipSlotIndex, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version, idx, inventoryType FROM characteritem WHERE characterId=@characterId AND (inventoryType=@inventoryType1 OR inventoryType=@inventoryType2) ORDER BY idx ASC",
                 new SqliteParameter("@characterId", characterId),
