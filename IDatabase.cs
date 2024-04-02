@@ -5,7 +5,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial interface IDatabase
     {
-#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         UniTask DoMigration();
         UniTask<string> ValidateUserLogin(string username, string password);
         UniTask<bool> ValidateAccessToken(string userId, string accessToken);
