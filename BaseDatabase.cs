@@ -2,7 +2,7 @@
 using UnityEngine;
 #endif
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 #endif
@@ -15,7 +15,7 @@ namespace MultiplayerARPG.MMO
     public abstract partial class BaseDatabase : IDatabase, IDatabaseLogging
 #endif
     {
-#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
         protected IDatabaseUserLogin _userLoginManager;
         protected delegate UniTask MigrationAction();
