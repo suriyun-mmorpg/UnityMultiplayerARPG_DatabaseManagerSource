@@ -169,9 +169,15 @@ namespace MultiplayerARPG.MMO
                 try
                 {
                     if (isAsync)
+                    {
+                        await cmd.PrepareAsync();
                         await cmd.ExecuteNonQueryAsync();
+                    }
                     else
+                    {
+                        cmd.Prepare();
                         cmd.ExecuteNonQuery();
+                    }
                     result = cmd.LastInsertedId;
                 }
                 catch (MySqlException ex)
@@ -226,9 +232,15 @@ namespace MultiplayerARPG.MMO
                 try
                 {
                     if (isAsync)
+                    {
+                        await cmd.PrepareAsync();
                         numRows = await cmd.ExecuteNonQueryAsync();
+                    }
                     else
+                    {
+                        cmd.Prepare();
                         numRows = cmd.ExecuteNonQuery();
+                    }
                 }
                 catch (MySqlException ex)
                 {
@@ -282,9 +294,15 @@ namespace MultiplayerARPG.MMO
                 try
                 {
                     if (isAsync)
+                    {
+                        await cmd.PrepareAsync();
                         result = await cmd.ExecuteScalarAsync();
+                    }
                     else
+                    {
+                        cmd.Prepare();
                         result = cmd.ExecuteScalar();
+                    }
                 }
                 catch (MySqlException ex)
                 {
@@ -306,6 +324,11 @@ namespace MultiplayerARPG.MMO
         }
 
         public async UniTask ExecuteReader(MySqlConnection connection, MySqlTransaction transaction, Action<MySqlDataReader> onRead, string sql, params MySqlParameter[] args)
+        {
+            await ExecuteReader(connection, transaction, onRead, false, sql, args);
+        }
+
+        public async UniTask ExecuteReader(MySqlConnection connection, MySqlTransaction transaction, Action<MySqlDataReader> onRead, bool isAsync, string sql, params MySqlParameter[] args)
         {
             bool createNewConnection = false;
             if (connection != null && connection.State != System.Data.ConnectionState.Open)
@@ -330,10 +353,23 @@ namespace MultiplayerARPG.MMO
                 }
                 try
                 {
-                    using (MySqlDataReader dataReader = cmd.ExecuteReader())
+                    if (isAsync)
                     {
-                        if (onRead != null)
-                            onRead.Invoke(dataReader);
+                        await cmd.PrepareAsync();
+                        using (MySqlDataReader dataReader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (onRead != null)
+                                onRead.Invoke(dataReader);
+                        }
+                    }
+                    else
+                    {
+                        cmd.Prepare();
+                        using (MySqlDataReader dataReader = cmd.ExecuteReader())
+                        {
+                            if (onRead != null)
+                                onRead.Invoke(dataReader);
+                        }
                     }
                 }
                 catch (MySqlException ex)
