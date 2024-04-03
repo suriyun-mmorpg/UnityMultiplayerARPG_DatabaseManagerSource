@@ -92,7 +92,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<FindGuildNameResp>> FindGuildNameAsync(FindGuildNameReq request);
 
-        UniTask<DatabaseApiResult<GuildsResp>> FindGuildsAsync(FindGuildsReq request);
+        UniTask<DatabaseApiResult<GuildsResp>> FindGuildsAsync(FindGuildNameReq request);
 
         UniTask<DatabaseApiResult<GuildResp>> ReadGuildAsync(ReadGuildReq request);
 

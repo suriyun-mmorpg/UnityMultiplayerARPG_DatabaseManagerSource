@@ -238,6 +238,117 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@id", guildId),
                 new MySqlParameter("@gold", gold));
         }
+
+        public override async UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
+        {
+            string excludeIdsQuery = "1";
+            // TODO: exclude joined guild, exclude requested guilds
+            List<GuildListEntry> result = new List<GuildListEntry>();
+            await ExecuteReader((reader) =>
+            {
+                GuildListEntry guildListEntry;
+                while (reader.Read())
+                {
+                    // Get some required data, other data will be set at server side
+                    guildListEntry = new GuildListEntry();
+                    guildListEntry.Id = reader.GetInt32(0);
+                    guildListEntry.GuildName = reader.GetString(1);
+                    guildListEntry.Level = reader.GetInt32(2);
+                    guildListEntry.FieldOptions = GuildListFieldOptions.All;
+                    guildListEntry.GuildMessage = reader.GetString(3);
+                    guildListEntry.GuildMessage2 = reader.GetString(4);
+                    guildListEntry.Score = reader.GetInt32(5);
+                    guildListEntry.Options = reader.GetString(6);
+                    guildListEntry.AutoAcceptRequests = reader.GetBoolean(7);
+                    guildListEntry.Rank = reader.GetInt32(8);
+                    guildListEntry.CurrentMembers = reader.GetInt32(9);
+                    guildListEntry.MaxMembers = reader.GetInt32(10);
+                    result.Add(guildListEntry);
+                }
+            }, "SELECT id, guildName, level, guildMessage, guildMessage2, score, options, autoAcceptRequests, rank, currentMembers, maxMembers FROM guild WHERE guildName LIKE @guildName AND " + excludeIdsQuery + " ORDER BY RAND() LIMIT " + skip + ", " + limit,
+                new MySqlParameter("@guildName", "%" + guildName + "%"));
+            return result;
+        }
+
+        public override async UniTask CreateGuildRequest(int guildId, string requesterId)
+        {
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await ExecuteNonQuery(connection, transaction, "DELETE FROM guild_requests WHERE " +
+                           "characterId1 LIKE @guildId AND " +
+                           "requesterId LIKE @requesterId",
+                           new MySqlParameter("@guildId", guildId),
+                           new MySqlParameter("@requesterId", requesterId));
+                        await ExecuteNonQuery(connection, transaction, "INSERT INTO guild_requests " +
+                            "(guildId, requesterId, state) VALUES " +
+                            "(@guildId, @requesterId, @state)",
+                            new MySqlParameter("@guildId", guildId),
+                            new MySqlParameter("@requesterId", requesterId));
+                        await transaction.CommitAsync();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        LogError(LogTag, "Transaction, Error occurs while creating guild_requests: " + guildId + " " + requesterId);
+                        LogException(LogTag, ex);
+                        await transaction.RollbackAsync();
+                    }
+                }
+            }
+        }
+
+        public override async UniTask DeleteGuildRequest(int guildId, string requesterId)
+        {
+            await ExecuteNonQuery("DELETE FROM guild_requests WHERE " +
+               "guildId LIKE @guildId AND " +
+               "requesterId LIKE @requesterId",
+               new MySqlParameter("@guildId", guildId),
+               new MySqlParameter("@requesterId", requesterId));
+        }
+
+        public override async UniTask<List<SocialCharacterData>> GetGuildRequests(int guildId, int skip, int limit)
+        {
+            List<SocialCharacterData> result = new List<SocialCharacterData>();
+            List<string> characterIds = new List<string>();
+            await ExecuteReader((reader) =>
+            {
+                while (reader.Read())
+                {
+                    characterIds.Add(reader.GetString(0));
+                }
+            }, "SELECT requesterId FROM guild_requests WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
+                new MySqlParameter("@guildId", guildId));
+            SocialCharacterData socialCharacterData;
+            foreach (string characterId in characterIds)
+            {
+                await ExecuteReader((reader) =>
+                {
+                    while (reader.Read())
+                    {
+                        // Get some required data, other data will be set at server side
+                        socialCharacterData = new SocialCharacterData();
+                        socialCharacterData.id = reader.GetString(0);
+                        socialCharacterData.dataId = reader.GetInt32(1);
+                        socialCharacterData.characterName = reader.GetString(2);
+                        socialCharacterData.level = reader.GetInt32(3);
+                        result.Add(socialCharacterData);
+                    }
+                }, "SELECT id, dataId, characterName, level FROM characters WHERE BINARY id = @id",
+                    new MySqlParameter("@id", characterId));
+            }
+            return result;
+        }
+
+        public override async UniTask<int> GetGuildRequestsNotification(int guildId)
+        {
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM guild_requests WHERE guildId=@guildId",
+                new MySqlParameter("@guildId", guildId));
+            return (int)(long)result;
+        }
     }
 }
 #endif

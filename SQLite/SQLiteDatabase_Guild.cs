@@ -255,6 +255,114 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@gold", gold));
             return new UniTask();
         }
+
+        public override UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
+        {
+            string excludeIdsQuery = "1";
+            // TODO: exclude joined guild, exclude requested guilds
+            List<GuildListEntry> result = new List<GuildListEntry>();
+            ExecuteReader((reader) =>
+            {
+                GuildListEntry guildListEntry;
+                while (reader.Read())
+                {
+                    // Get some required data, other data will be set at server side
+                    guildListEntry = new GuildListEntry();
+                    guildListEntry.Id = reader.GetInt32(0);
+                    guildListEntry.GuildName = reader.GetString(1);
+                    guildListEntry.Level = reader.GetInt32(2);
+                    guildListEntry.FieldOptions = GuildListFieldOptions.All;
+                    guildListEntry.GuildMessage = reader.GetString(3);
+                    guildListEntry.GuildMessage2 = reader.GetString(4);
+                    guildListEntry.Score = reader.GetInt32(5);
+                    guildListEntry.Options = reader.GetString(6);
+                    guildListEntry.AutoAcceptRequests = reader.GetBoolean(7);
+                    guildListEntry.Rank = reader.GetInt32(8);
+                    guildListEntry.CurrentMembers = reader.GetInt32(9);
+                    guildListEntry.MaxMembers = reader.GetInt32(10);
+                    result.Add(guildListEntry);
+                }
+            }, "SELECT id, guildName, level, guildMessage, guildMessage2, score, options, autoAcceptRequests, rank, currentMembers, maxMembers FROM guild WHERE guildName LIKE @guildName AND " + excludeIdsQuery + " ORDER BY RAND() LIMIT " + skip + ", " + limit,
+                new SqliteParameter("@guildName", "%" + guildName + "%"));
+            return new UniTask<List<GuildListEntry>>(result);
+        }
+
+        public override UniTask CreateGuildRequest(int guildId, string requesterId)
+        {
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery(transaction, "DELETE FROM guild_requests WHERE " +
+                   "characterId1 LIKE @guildId AND " +
+                   "requesterId LIKE @requesterId",
+                   new SqliteParameter("@guildId", guildId),
+                   new SqliteParameter("@requesterId", requesterId));
+                ExecuteNonQuery(transaction, "INSERT INTO guild_requests " +
+                    "(guildId, requesterId, state) VALUES " +
+                    "(@guildId, @requesterId, @state)",
+                    new SqliteParameter("@guildId", guildId),
+                    new SqliteParameter("@requesterId", requesterId));
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while creating guild_requests: " + guildId + " " + requesterId);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+            return new UniTask();
+        }
+
+        public override UniTask DeleteGuildRequest(int guildId, string requesterId)
+        {
+            ExecuteNonQuery("DELETE FROM guild_requests WHERE " +
+               "guildId LIKE @guildId AND " +
+               "requesterId LIKE @requesterId",
+               new SqliteParameter("@guildId", guildId),
+               new SqliteParameter("@requesterId", requesterId));
+            return new UniTask();
+        }
+
+        public override UniTask<List<SocialCharacterData>> GetGuildRequests(int guildId, int skip, int limit)
+        {
+            List<SocialCharacterData> result = new List<SocialCharacterData>();
+            List<string> characterIds = new List<string>();
+            ExecuteReader((reader) =>
+            {
+                while (reader.Read())
+                {
+                    characterIds.Add(reader.GetString(0));
+                }
+            }, "SELECT requesterId FROM guild_requests WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
+                new SqliteParameter("@guildId", guildId));
+            SocialCharacterData socialCharacterData;
+            foreach (string characterId in characterIds)
+            {
+                ExecuteReader((reader) =>
+                {
+                    while (reader.Read())
+                    {
+                        // Get some required data, other data will be set at server side
+                        socialCharacterData = new SocialCharacterData();
+                        socialCharacterData.id = reader.GetString(0);
+                        socialCharacterData.dataId = reader.GetInt32(1);
+                        socialCharacterData.characterName = reader.GetString(2);
+                        socialCharacterData.level = reader.GetInt32(3);
+                        result.Add(socialCharacterData);
+                    }
+                }, "SELECT id, dataId, characterName, level FROM characters WHERE BINARY id = @id",
+                    new SqliteParameter("@id", characterId));
+            }
+            return new UniTask<List<SocialCharacterData>>(result);
+        }
+
+        public override UniTask<int> GetGuildRequestsNotification(int guildId)
+        {
+            object result = ExecuteScalar("SELECT COUNT(*) FROM guild_requests WHERE guildId=@guildId",
+                new SqliteParameter("@guildId", guildId));
+            return new UniTask<int>((int)(long)result);
+        }
     }
 }
 #endif

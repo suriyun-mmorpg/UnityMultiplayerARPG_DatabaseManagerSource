@@ -835,13 +835,29 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask CreateFriend(string id1, string id2, byte state)
         {
-            DeleteFriend(id1, id2);
-            ExecuteNonQuery("INSERT INTO friend " +
-                "(characterId1, characterId2, state) VALUES " +
-                "(@characterId1, @characterId2, @state)",
-                new SqliteParameter("@characterId1", id1),
-                new SqliteParameter("@characterId2", id2),
-                new SqliteParameter("@state", (int)state));
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteNonQuery(transaction, "DELETE FROM friend WHERE " +
+                   "characterId1 LIKE @characterId1 AND " +
+                   "characterId2 LIKE @characterId2",
+                   new SqliteParameter("@characterId1", id1),
+                   new SqliteParameter("@characterId2", id2));
+                ExecuteNonQuery(transaction, "INSERT INTO friend " +
+                    "(characterId1, characterId2, state) VALUES " +
+                    "(@characterId1, @characterId2, @state)",
+                    new SqliteParameter("@characterId1", id1),
+                    new SqliteParameter("@characterId2", id2),
+                    new SqliteParameter("@state", state));
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while creating friend: " + id1 + " " + id2);
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
             return new UniTask();
         }
 
