@@ -1,7 +1,7 @@
 ﻿namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct FindGuildReq
+    public partial struct FindGuildsReq
     {
         public string GuildName { get; set; }
         public string FinderCharacterId { get; set; }

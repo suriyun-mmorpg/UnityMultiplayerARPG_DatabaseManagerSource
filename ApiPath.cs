@@ -72,5 +72,11 @@
         public const string FindEmail = "find-email";
         public const string GetFriendRequestNotification = "get-friend-request-notification";
         public const string UpdateUserCount = "update-user-count";
+        public const string ReadSocialCharacter = "read-social-character";
+        public const string FindGuilds = "find-guilds";
+        public const string CreateGuildRequest = "create-guild-request";
+        public const string DeleteGuildRequest = "delete-guild-request";
+        public const string GetGuildRequests = "get-guild-requests";
+        public const string GetGuildRequestNotification = "get-guild-request-notification";
     }
 }
