@@ -296,6 +296,15 @@ namespace MultiplayerARPG.MMO
                 await ExecuteNonQuery("ALTER TABLE `characterquest` ADD `completeTime` BIGINT NOT NULL DEFAULT '0' AFTER `isComplete`;");
 
             });
+            await DoMigration("1.88", async () =>
+            {
+                await ExecuteNonQuery("CREATE TABLE `guildrequest` (" +
+                    "`id` INT NOT NULL AUTO_INCREMENT," +
+                    "`guildId` INT NOT NULL," +
+                    "`requesterId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL," +
+                    "`createAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
+                    "PRIMARY KEY (`id`), INDEX (`requesterId`), INDEX (`guildId`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)

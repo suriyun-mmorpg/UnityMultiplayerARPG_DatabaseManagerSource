@@ -292,12 +292,12 @@ namespace MultiplayerARPG.MMO
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
-                ExecuteNonQuery(transaction, "DELETE FROM guild_requests WHERE " +
+                ExecuteNonQuery(transaction, "DELETE FROM guildrequest WHERE " +
                    "characterId1 LIKE @guildId AND " +
                    "requesterId LIKE @requesterId",
                    new SqliteParameter("@guildId", guildId),
                    new SqliteParameter("@requesterId", requesterId));
-                ExecuteNonQuery(transaction, "INSERT INTO guild_requests " +
+                ExecuteNonQuery(transaction, "INSERT INTO guildrequest " +
                     "(guildId, requesterId, state) VALUES " +
                     "(@guildId, @requesterId, @state)",
                     new SqliteParameter("@guildId", guildId),
@@ -306,7 +306,7 @@ namespace MultiplayerARPG.MMO
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while creating guild_requests: " + guildId + " " + requesterId);
+                LogError(LogTag, "Transaction, Error occurs while creating guildrequest: " + guildId + " " + requesterId);
                 LogException(LogTag, ex);
                 transaction.Rollback();
             }
@@ -316,7 +316,7 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask DeleteGuildRequest(int guildId, string requesterId)
         {
-            ExecuteNonQuery("DELETE FROM guild_requests WHERE " +
+            ExecuteNonQuery("DELETE FROM guildrequest WHERE " +
                "guildId LIKE @guildId AND " +
                "requesterId LIKE @requesterId",
                new SqliteParameter("@guildId", guildId),
@@ -334,7 +334,7 @@ namespace MultiplayerARPG.MMO
                 {
                     characterIds.Add(reader.GetString(0));
                 }
-            }, "SELECT requesterId FROM guild_requests WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
+            }, "SELECT requesterId FROM guildrequest WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
                 new SqliteParameter("@guildId", guildId));
             SocialCharacterData socialCharacterData;
             foreach (string characterId in characterIds)
@@ -359,7 +359,7 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask<int> GetGuildRequestsNotification(int guildId)
         {
-            object result = ExecuteScalar("SELECT COUNT(*) FROM guild_requests WHERE guildId=@guildId",
+            object result = ExecuteScalar("SELECT COUNT(*) FROM guildrequest WHERE guildId=@guildId",
                 new SqliteParameter("@guildId", guildId));
             return new UniTask<int>((int)(long)result);
         }

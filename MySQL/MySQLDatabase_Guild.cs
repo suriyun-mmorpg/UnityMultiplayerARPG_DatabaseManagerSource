@@ -279,12 +279,12 @@ namespace MultiplayerARPG.MMO
                 {
                     try
                     {
-                        await ExecuteNonQuery(connection, transaction, "DELETE FROM guild_requests WHERE " +
+                        await ExecuteNonQuery(connection, transaction, "DELETE FROM guildrequest WHERE " +
                            "characterId1 LIKE @guildId AND " +
                            "requesterId LIKE @requesterId",
                            new MySqlParameter("@guildId", guildId),
                            new MySqlParameter("@requesterId", requesterId));
-                        await ExecuteNonQuery(connection, transaction, "INSERT INTO guild_requests " +
+                        await ExecuteNonQuery(connection, transaction, "INSERT INTO guildrequest " +
                             "(guildId, requesterId, state) VALUES " +
                             "(@guildId, @requesterId, @state)",
                             new MySqlParameter("@guildId", guildId),
@@ -293,7 +293,7 @@ namespace MultiplayerARPG.MMO
                     }
                     catch (System.Exception ex)
                     {
-                        LogError(LogTag, "Transaction, Error occurs while creating guild_requests: " + guildId + " " + requesterId);
+                        LogError(LogTag, "Transaction, Error occurs while creating guildrequest: " + guildId + " " + requesterId);
                         LogException(LogTag, ex);
                         await transaction.RollbackAsync();
                     }
@@ -303,7 +303,7 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask DeleteGuildRequest(int guildId, string requesterId)
         {
-            await ExecuteNonQuery("DELETE FROM guild_requests WHERE " +
+            await ExecuteNonQuery("DELETE FROM guildrequest WHERE " +
                "guildId LIKE @guildId AND " +
                "requesterId LIKE @requesterId",
                new MySqlParameter("@guildId", guildId),
@@ -320,7 +320,7 @@ namespace MultiplayerARPG.MMO
                 {
                     characterIds.Add(reader.GetString(0));
                 }
-            }, "SELECT requesterId FROM guild_requests WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
+            }, "SELECT requesterId FROM guildrequest WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
                 new MySqlParameter("@guildId", guildId));
             SocialCharacterData socialCharacterData;
             foreach (string characterId in characterIds)
@@ -345,7 +345,7 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> GetGuildRequestsNotification(int guildId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM guild_requests WHERE guildId=@guildId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM guildrequest WHERE guildId=@guildId",
                 new MySqlParameter("@guildId", guildId));
             return (int)(long)result;
         }

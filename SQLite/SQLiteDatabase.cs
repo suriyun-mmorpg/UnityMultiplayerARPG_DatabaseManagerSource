@@ -436,6 +436,12 @@ namespace MultiplayerARPG.MMO
               level INTEGER NOT NULL
             )");
 
+            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS guildrequest (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              guildId INTEGER NOT NULL,
+              requesterId TEXT NOT NULL
+            )");
+
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS party (
               id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
               shareExp INTEGER NOT NULL,
