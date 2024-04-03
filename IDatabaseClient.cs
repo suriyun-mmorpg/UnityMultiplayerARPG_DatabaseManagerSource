@@ -36,6 +36,8 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<FindCharacterNameResp>> FindCharacterNameAsync(FindCharacterNameReq request);
 
+        UniTask<DatabaseApiResult<SocialCharacterResp>> ReadSocialCharacterAsync(ReadSocialCharacterReq request);
+
         UniTask<DatabaseApiResult<SocialCharactersResp>> FindCharactersAsync(FindCharacterNameReq request);
 
         UniTask<DatabaseApiResult> CreateFriendAsync(CreateFriendReq request);
@@ -90,6 +92,8 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<FindGuildNameResp>> FindGuildNameAsync(FindGuildNameReq request);
 
+        UniTask<DatabaseApiResult<GuildsResp>> FindGuildAsync(FindGuildReq request);
+
         UniTask<DatabaseApiResult<GuildResp>> ReadGuildAsync(ReadGuildReq request);
 
         UniTask<DatabaseApiResult<GuildResp>> IncreaseGuildExpAsync(IncreaseGuildExpReq request);
@@ -99,6 +103,14 @@ namespace MultiplayerARPG.MMO
         UniTask<DatabaseApiResult<GuildGoldResp>> GetGuildGoldAsync(GetGuildGoldReq request);
 
         UniTask<DatabaseApiResult<GuildGoldResp>> ChangeGuildGoldAsync(ChangeGuildGoldReq request);
+
+        UniTask<DatabaseApiResult> CreateGuildRequestAsync(CreateGuildRequestReq request);
+
+        UniTask<DatabaseApiResult> DeleteGuildRequestAsync(DeleteGuildRequestReq request);
+
+        UniTask<DatabaseApiResult<SocialCharactersResp>> GetGuildRequestsAsync(GetGuildRequestsReq request);
+
+        UniTask<DatabaseApiResult<GetGuildRequestNotificationResp>> GetGuildRequestNotificationAsync(GetGuildRequestNotificationReq request);
 
         UniTask<DatabaseApiResult<ReadStorageItemsResp>> ReadStorageItemsAsync(ReadStorageItemsReq request);
 
