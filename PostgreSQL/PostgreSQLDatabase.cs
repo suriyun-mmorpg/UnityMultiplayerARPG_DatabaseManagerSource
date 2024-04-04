@@ -1,9 +1,12 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Npgsql;
+using NpgsqlTypes;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using Cysharp.Text;
+using System.Collections.Concurrent;
 
 namespace MultiplayerARPG.MMO
 {
@@ -11,12 +14,13 @@ namespace MultiplayerARPG.MMO
     {
         public static readonly string LogTag = nameof(PostgreSQLDatabase);
 
-        private string address = "127.0.0.1";
-        private int port = 3306;
-        private string username = "root";
-        private string password = "";
-        private string dbName = "mmorpgtemplate";
-        private string connectionString = "";
+        private string _address = "127.0.0.1";
+        private int _port = 5432;
+        private string _username = "postgres";
+        private string _password = "localdb";
+        private string _dbName = "mmorpg_kit";
+        private string _connectionString = "";
+        private NpgsqlDataSource _dataSource;
 
         public override void Initialize()
         {
@@ -26,12 +30,12 @@ namespace MultiplayerARPG.MMO
             string configFilePath = configFolder + "/NpgsqlConfig.json";
             PostgreSQLConfig config = new PostgreSQLConfig()
             {
-                pgAddress = address,
-                pgPort = port,
-                pgUsername = username,
-                pgPassword = password,
-                pgDbName = dbName,
-                pgConnectionString = connectionString,
+                pgAddress = _address,
+                pgPort = _port,
+                pgUsername = _username,
+                pgPassword = _password,
+                pgDbName = _dbName,
+                pgConnectionString = _connectionString,
             };
             LogInformation(LogTag, "Reading config file from " + configFilePath);
             if (File.Exists(configFilePath))
@@ -54,12 +58,13 @@ namespace MultiplayerARPG.MMO
                 configFileFound = true;
             }
 
-            address = config.pgAddress;
-            port = config.pgPort.Value;
-            username = config.pgUsername;
-            password = config.pgPassword;
-            dbName = config.pgDbName;
-            connectionString = config.pgConnectionString;
+            _address = config.pgAddress;
+            _port = config.pgPort.Value;
+            _username = config.pgUsername;
+            _password = config.pgPassword;
+            _dbName = config.pgDbName;
+            _connectionString = config.pgConnectionString;
+            _dataSource = new NpgsqlDataSourceBuilder(GetConnectionString()).Build();
 
             if (!configFileFound)
             {
@@ -74,199 +79,25 @@ namespace MultiplayerARPG.MMO
 
         public string GetConnectionString()
         {
-            if (!string.IsNullOrWhiteSpace(this.connectionString))
-                return this.connectionString;
-            string connectionString = "Server=" + address + ";" +
-            "Port=" + port + ";" +
-            "Uid=" + username + ";" +
-                (string.IsNullOrEmpty(password) ? "" : "Pwd=\"" + password + "\";") +
-                "Database=" + dbName + ";" +
-                "SSL Mode=None;";
+            if (!string.IsNullOrWhiteSpace(this._connectionString))
+                return this._connectionString;
+            string connectionString = "Host=" + _address + ";" +
+                "Port=" + _port + ";" +
+                "Username=" + _username + ";" +
+                (string.IsNullOrEmpty(_password) ? "" : "Password=\"" + _password + "\";") +
+                "Database=" + _dbName + ";";
             return connectionString;
-        }
-
-        public NpgsqlConnection NewConnection()
-        {
-            return new NpgsqlConnection(GetConnectionString());
-        }
-
-        private async UniTask OpenConnection(NpgsqlConnection connection)
-        {
-            try
-            {
-                await connection.OpenAsync();
-            }
-            catch (NpgsqlException ex)
-            {
-                LogException(LogTag, ex);
-            }
-        }
-
-        public async UniTask<int> ExecuteNonQuery(string sql, params NpgsqlParameter[] args)
-        {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                int result = await ExecuteNonQuery(connection, null, sql, args);
-                return result;
-            }
-        }
-
-        public async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, params NpgsqlParameter[] args)
-        {
-            return await ExecuteNonQuery(connection, transaction, false, sql, args);
-        }
-
-        public async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, bool isAsync, string sql, params NpgsqlParameter[] args)
-        {
-            bool createNewConnection = false;
-            if (connection != null && connection.State != System.Data.ConnectionState.Open)
-            {
-                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
-                connection = null;
-            }
-            if (connection == null)
-            {
-                connection = NewConnection();
-                transaction = null;
-                await OpenConnection(connection);
-                createNewConnection = true;
-            }
-            int numRows = 0;
-            using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
-            {
-                if (transaction != null)
-                    cmd.Transaction = transaction;
-                foreach (NpgsqlParameter arg in args)
-                {
-                    cmd.Parameters.Add(arg);
-                }
-                try
-                {
-                    if (isAsync)
-                        numRows = await cmd.ExecuteNonQueryAsync();
-                    else
-                        numRows = cmd.ExecuteNonQuery();
-                }
-                catch (NpgsqlException ex)
-                {
-                    LogException(LogTag, ex);
-                }
-            }
-            if (createNewConnection)
-                connection.Dispose();
-            return numRows;
-        }
-
-        public async UniTask<object> ExecuteScalar(string sql, params NpgsqlParameter[] args)
-        {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                object result = await ExecuteScalar(connection, null, sql, args);
-                return result;
-            }
-        }
-
-        public async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, params NpgsqlParameter[] args)
-        {
-            return await ExecuteScalar(connection, transaction, false, sql, args);
-        }
-
-        public async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, bool isAsync, string sql, params NpgsqlParameter[] args)
-        {
-            bool createNewConnection = false;
-            if (connection != null && connection.State != System.Data.ConnectionState.Open)
-            {
-                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
-                connection = null;
-            }
-            if (connection == null)
-            {
-                connection = NewConnection();
-                transaction = null;
-                await OpenConnection(connection);
-                createNewConnection = true;
-            }
-            object result = null;
-            using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
-            {
-                if (transaction != null)
-                    cmd.Transaction = transaction;
-                foreach (NpgsqlParameter arg in args)
-                {
-                    cmd.Parameters.Add(arg);
-                }
-                try
-                {
-                    if (isAsync)
-                        result = await cmd.ExecuteScalarAsync();
-                    else
-                        result = cmd.ExecuteScalar();
-                }
-                catch (NpgsqlException ex)
-                {
-                    LogException(LogTag, ex);
-                }
-            }
-            if (createNewConnection)
-                connection.Dispose();
-            return result;
-        }
-
-        public async UniTask ExecuteReader(Action<NpgsqlDataReader> onRead, string sql, params NpgsqlParameter[] args)
-        {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                await ExecuteReader(connection, null, onRead, sql, args);
-            }
-        }
-
-        public async UniTask ExecuteReader(NpgsqlConnection connection, NpgsqlTransaction transaction, Action<NpgsqlDataReader> onRead, string sql, params NpgsqlParameter[] args)
-        {
-            bool createNewConnection = false;
-            if (connection != null && connection.State != System.Data.ConnectionState.Open)
-            {
-                LogWarning(LogTag, "Connection's state is not open yet, it will create and connect by a new one.");
-                connection = null;
-            }
-            if (connection == null)
-            {
-                connection = NewConnection();
-                transaction = null;
-                await OpenConnection(connection);
-                createNewConnection = true;
-            }
-            using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
-            {
-                if (transaction != null)
-                    cmd.Transaction = transaction;
-                foreach (NpgsqlParameter arg in args)
-                {
-                    cmd.Parameters.Add(arg);
-                }
-                try
-                {
-                    using (NpgsqlDataReader dataReader = cmd.ExecuteReader())
-                    {
-                        if (onRead != null)
-                            onRead.Invoke(dataReader);
-                    }
-                }
-                catch (NpgsqlException ex)
-                {
-                    LogException(LogTag, ex);
-                }
-            }
-            if (createNewConnection)
-                connection.Dispose();
         }
 
         public override async UniTask<string> ValidateUserLogin(string username, string password)
         {
+            await using var cmd = _dataSource.CreateCommand("SELECT id, password FROM users WHERE username=$1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = username;
+
             string id = string.Empty;
-            await ExecuteReader((reader) =>
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
                 {
@@ -275,162 +106,342 @@ namespace MultiplayerARPG.MMO
                     if (!_userLoginManager.VerifyPassword(password, hashedPassword))
                         id = string.Empty;
                 }
-            }, "SELECT id, password FROM userlogin WHERE username=@username AND authType=@authType LIMIT 1",
-                new NpgsqlParameter("@username", username),
-                new NpgsqlParameter("@authType", AUTH_TYPE_NORMAL));
-
+            }
             return id;
         }
 
         public override async UniTask<bool> ValidateAccessToken(string userId, string accessToken)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE id=@id AND accessToken=@accessToken",
-                new NpgsqlParameter("@id", userId),
-                new NpgsqlParameter("@accessToken", accessToken));
+            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM user_accesses WHERE id=$1 AND access_token=$2");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+            cmd.Parameters[1].Value = accessToken;
+
+            var result = await cmd.ExecuteScalarAsync();
             return (result != null ? (long)result : 0) > 0;
         }
 
         public override async UniTask<byte> GetUserLevel(string userId)
         {
+            await using var cmd = _dataSource.CreateCommand("SELECT level FROM user_accesses WHERE id=$1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+
             byte userLevel = 0;
-            await ExecuteReader((reader) =>
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
+                {
                     userLevel = reader.GetByte(0);
-            }, "SELECT userLevel FROM userlogin WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", userId));
+                }
+            }
             return userLevel;
         }
 
         public override async UniTask<int> GetGold(string userId)
         {
-            int gold = 0;
-            await ExecuteReader((reader) =>
+            await using var cmd = _dataSource.CreateCommand("SELECT gold FROM user_currencies WHERE id=$1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+
+            byte gold = 0;
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
-                    gold = reader.GetInt32(0);
-            }, "SELECT gold FROM userlogin WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", userId));
+                {
+                    gold = reader.GetByte(0);
+                }
+            }
             return gold;
         }
 
         public override async UniTask UpdateGold(string userId, int gold)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
-                new NpgsqlParameter("@id", userId),
-                new NpgsqlParameter("@gold", gold));
+            await using var cmd = _dataSource.CreateCommand("UPDATE user_currencies SET gold=$1 WHERE id=$2");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = gold;
+            cmd.Parameters[1].Value = userId;
+            await cmd.ExecuteNonQueryAsync();
         }
 
         public override async UniTask<int> GetCash(string userId)
         {
-            int cash = 0;
-            await ExecuteReader((reader) =>
+            await using var cmd = _dataSource.CreateCommand("SELECT cash FROM user_currencies WHERE id=$1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+
+            byte cash = 0;
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
-                    cash = reader.GetInt32(0);
-            }, "SELECT cash FROM userlogin WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", userId));
+                {
+                    cash = reader.GetByte(0);
+                }
+            }
             return cash;
         }
 
         public override async UniTask UpdateCash(string userId, int cash)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
-                new NpgsqlParameter("@id", userId),
-                new NpgsqlParameter("@cash", cash));
+            await using var cmd = _dataSource.CreateCommand("UPDATE user_currencies SET cash=$1 WHERE id=$2");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = cash;
+            cmd.Parameters[1].Value = userId;
+            await cmd.ExecuteNonQueryAsync();
         }
 
         public override async UniTask UpdateAccessToken(string userId, string accessToken)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET accessToken=@accessToken WHERE id=@id",
-                new NpgsqlParameter("@id", userId),
-                new NpgsqlParameter("@accessToken", accessToken));
+            await using var cmd = _dataSource.CreateCommand("UPDATE user_accesses SET access_token=$1 WHERE id=$2");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = accessToken;
+            cmd.Parameters[1].Value = userId;
+            await cmd.ExecuteNonQueryAsync();
         }
 
         public override async UniTask CreateUserLogin(string username, string password, string email)
         {
-            await ExecuteNonQuery("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
-                new NpgsqlParameter("@id", _userLoginManager.GenerateNewId()),
-                new NpgsqlParameter("@username", username),
-                new NpgsqlParameter("@password", _userLoginManager.GetHashedPassword(password)),
-                new NpgsqlParameter("@email", email),
-                new NpgsqlParameter("@authType", AUTH_TYPE_NORMAL));
+            var id = _userLoginManager.GenerateNewId();
+            await using var connection = await _dataSource.OpenConnectionAsync();
+            await using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                await using var cmd = new NpgsqlCommand("INSERT INTO users (id, username, password, email) VALUES (@id, @username, @password, @email) VALUES ($1, $2, $3, $4)", connection, transaction);
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                await cmd.PrepareAsync();
+                cmd.Parameters[0].Value = id;
+                cmd.Parameters[1].Value = username;
+                cmd.Parameters[2].Value = _userLoginManager.GetHashedPassword(password);
+                cmd.Parameters[3].Value = email;
+                await cmd.ExecuteNonQueryAsync();
+
+                await using var cmd2 = new NpgsqlCommand("INSERT INTO user_accesses (id) VALUES ($1)", connection, transaction);
+                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                await cmd2.PrepareAsync();
+                cmd2.Parameters[0].Value = id;
+                await cmd2.ExecuteNonQueryAsync();
+
+                await using var cmd3 = new NpgsqlCommand("INSERT INTO user_currencies (id) VALUES ($1)", connection, transaction);
+                cmd3.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+                await cmd3.PrepareAsync();
+                cmd3.Parameters[0].Value = id;
+                await cmd3.ExecuteNonQueryAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "@CreateUserLogin_Transaction1");
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+            }
         }
 
         public override async UniTask<long> FindUsername(string username)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE username LIKE @username",
-                new NpgsqlParameter("@username", username));
+            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE username LIKE $1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = username;
+
+            var result = await cmd.ExecuteScalarAsync();
             return result != null ? (long)result : 0;
         }
 
         public override async UniTask<long> GetUserUnbanTime(string userId)
         {
+            await using var cmd = _dataSource.CreateCommand("SELECT unban_time FROM user_accesses WHERE id=$1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+
             long unbanTime = 0;
-            await ExecuteReader((reader) =>
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
                 {
                     unbanTime = reader.GetInt64(0);
                 }
-            }, "SELECT unbanTime FROM userlogin WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", userId));
+            }
             return unbanTime;
         }
 
         public override async UniTask SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
         {
+            await using var cmd = _dataSource.CreateCommand("SELECT userId FROM characters WHERE character_name LIKE $1 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = characterName;
+
             string userId = string.Empty;
-            await ExecuteReader((reader) =>
+            using (var reader = await cmd.ExecuteReaderAsync())
             {
                 if (reader.Read())
                 {
                     userId = reader.GetString(0);
                 }
-            }, "SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
-                new NpgsqlParameter("@characterName", characterName));
+            }
+
             if (string.IsNullOrEmpty(userId))
                 return;
-            await ExecuteNonQuery("UPDATE userlogin SET unbanTime=@unbanTime WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", userId),
-                new NpgsqlParameter("@unbanTime", unbanTime));
+
+            await using var cmd2 = _dataSource.CreateCommand("UPDATE user_accesses SET unban_time=$1 WHERE id=$2 LIMIT 1");
+            cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Bigint });
+            cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd2.PrepareAsync();
+            cmd2.Parameters[0].Value = unbanTime;
+            cmd2.Parameters[1].Value = userId;
         }
 
         public override async UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
-            await ExecuteNonQuery("UPDATE characters SET unmuteTime=@unmuteTime WHERE characterName LIKE @characterName LIMIT 1",
-                new NpgsqlParameter("@characterName", characterName),
-                new NpgsqlParameter("@unmuteTime", unmuteTime));
+            await using var cmd = _dataSource.CreateCommand("UPDATE characters SET unmute_time=$1 WHERE character_name LIKE $2 LIMIT 1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Bigint });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = unmuteTime;
+            cmd.Parameters[1].Value = characterName;
+            await cmd.ExecuteNonQueryAsync();
         }
 
         public override async UniTask<bool> ValidateEmailVerification(string userId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE id=@userId AND isEmailVerified=1",
-                new NpgsqlParameter("@userId", userId));
+            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE id=$1 AND is_verify IS TRUE");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+
+            var result = await cmd.ExecuteScalarAsync();
             return (result != null ? (long)result : 0) > 0;
         }
 
         public override async UniTask<long> FindEmail(string email)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE email LIKE @email",
-                new NpgsqlParameter("@email", email));
+            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE email IS NOT NULL AND email LIKE $1");
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = email;
+
+            var result = await cmd.ExecuteScalarAsync();
             return result != null ? (long)result : 0;
         }
 
         public override async UniTask UpdateUserCount(int userCount)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM statistic WHERE 1");
+            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM server_statistic WHERE 1");
+            await cmd.PrepareAsync();
+            var result = await cmd.ExecuteScalarAsync();
+
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE statistic SET userCount=@userCount;",
-                    new NpgsqlParameter("@userCount", userCount));
+                await using var cmd2 = _dataSource.CreateCommand("UPDATE server_statistic SET user_count=$1");
+                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+                await cmd2.PrepareAsync();
+                cmd2.Parameters[0].Value = userCount;
+                await cmd2.ExecuteNonQueryAsync();
             }
             else
             {
-                await ExecuteNonQuery("INSERT INTO statistic (userCount) VALUES(@userCount);",
-                    new NpgsqlParameter("@userCount", userCount));
+                await using var cmd2 = _dataSource.CreateCommand("INSERT INTO server_statistic (user_count) VALUES ($1)");
+                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+                await cmd2.PrepareAsync();
+                cmd2.Parameters[0].Value = userCount;
+                await cmd2.ExecuteNonQueryAsync();
             }
+        }
+
+        public struct ColumnInfo
+        {
+            public NpgsqlDbType type;
+            public string name;
+            public object value;
+        }
+
+        private ConcurrentDictionary<string, string> _cachedCommandTexts = new ConcurrentDictionary<string, string>();
+
+        public string CreateCommandTextForInsert(string cacheKey, string tableName, params ColumnInfo[] columns)
+        {
+            if (_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
+                return commandText;
+            var builder = ZString.CreateStringBuilder();
+            builder.Append("INSERT INTO ");
+            builder.Append(tableName);
+            builder.Append('(');
+            int i;
+            for (i = 0; i < columns.Length; ++i)
+            {
+                if (i > 0)
+                    builder.Append(',');
+                builder.Append(columns[i].name);
+            }
+            builder.Append(") VALUES (");
+            for (i = 0; i < columns.Length; ++i)
+            {
+                if (i > 0)
+                    builder.Append(',');
+                builder.Append('$');
+                builder.Append(i + 1);
+            }
+            builder.Append(')');
+            commandText = builder.ToString();
+            _cachedCommandTexts.TryAdd(cacheKey, commandText);
+            return commandText;
+        }
+
+        public string CreateCommandTextForUpdate(string cacheKey, string tableName, IList<ColumnInfo> updates, System.Action<Utf16ValueStringBuilder, int> writeWhere)
+        {
+            if (_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
+                return commandText;
+            var builder = ZString.CreateStringBuilder();
+            builder.Append("UPDATE ");
+            builder.Append(tableName);
+            builder.Append(" SET ");
+            int i;
+            int positionCount = 1;
+            for (i = 0; i < updates.Count; ++i)
+            {
+                if (i > 0)
+                    builder.Append(',');
+                builder.Append(updates[i].name);
+                builder.Append('=');
+                builder.Append('$');
+                builder.Append(positionCount++);
+            }
+            builder.Append(" WHERE ");
+            writeWhere?.Invoke(builder, positionCount);
+            commandText = builder.ToString();
+            _cachedCommandTexts.TryAdd(cacheKey, commandText);
+            return commandText;
+        }
+
+        public async UniTask ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, params ColumnInfo[] columns)
+        {
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            for (int i = 0; i < columns.Length; ++i)
+            {
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = columns[i].type });
+            }
+            await cmd.PrepareAsync();
+            for (int i = 0; i < columns.Length; ++i)
+            {
+                cmd.Parameters[0].Value = columns[i].value;
+            }
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }

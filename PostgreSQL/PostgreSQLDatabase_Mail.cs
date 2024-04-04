@@ -41,7 +41,7 @@ namespace MultiplayerARPG.MMO
                         result.Add(tempMail);
                     }
                 }
-            }, "SELECT id, senderName, title, gold, cash, currencies, items, isRead, isClaim, sentTimestamp FROM mail WHERE receiverId=@receiverId AND isDelete=0 ORDER BY isRead ASC, sentTimestamp DESC",
+            }, "SELECT id, senderName, title, gold, cash, currencies, items, is_read, is_claim, sent_time FROM mail WHERE receiver_id=@receiverId AND is_delete IS FALSE ORDER BY is_read ASC, sent_time DESC",
                 new NpgsqlParameter("@receiverId", userId));
             return result;
         }
@@ -72,7 +72,7 @@ namespace MultiplayerARPG.MMO
                         result.ClaimTimestamp = ((DateTimeOffset)reader.GetDateTime(14)).ToUnixTimeSeconds();
                     result.SentTimestamp = ((DateTimeOffset)reader.GetDateTime(15)).ToUnixTimeSeconds();
                 }
-            }, "SELECT id, eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, isRead, readTimestamp, isClaim, claimTimestamp, sentTimestamp FROM mail WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
+            }, "SELECT id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time FROM mail WHERE id=@id AND receiver_id=@receiverId AND is_delete IS FALSE",
                 new NpgsqlParameter("@id", mailId),
                 new NpgsqlParameter("@receiverId", userId));
             return result;
@@ -80,13 +80,13 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<long> UpdateReadMailState(string mailId, string userId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiver_id=@receiverId",
                 new NpgsqlParameter("@id", mailId),
                 new NpgsqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isRead=0",
+                await ExecuteNonQuery("UPDATE mail SET is_read=TRUE, read_time=NOW() WHERE id=@id AND receiver_id=@receiverId AND is_read IS FALSE",
                     new NpgsqlParameter("@id", mailId),
                     new NpgsqlParameter("@receiverId", userId));
             }
@@ -95,13 +95,13 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<long> UpdateClaimMailItemsState(string mailId, string userId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiver_id=@receiverId",
                 new NpgsqlParameter("@id", mailId),
                 new NpgsqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
+                await ExecuteNonQuery("UPDATE mail SET is_claim=TRUE, claim_time=NOW() WHERE id=@id AND receiver_id=@receiverId AND isClaim IS FALSE",
                     new NpgsqlParameter("@id", mailId),
                     new NpgsqlParameter("@receiverId", userId));
             }
@@ -110,13 +110,13 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<long> UpdateDeleteMailState(string mailId, string userId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiver_id=@receiverId",
                 new NpgsqlParameter("@id", mailId),
                 new NpgsqlParameter("@receiverId", userId));
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
+                await ExecuteNonQuery("UPDATE mail SET is_delete=TRUE, delete_time=NOW() WHERE id=@id AND receiver_id=@receiverId AND is_delete IS FALSE",
                     new NpgsqlParameter("@id", mailId),
                     new NpgsqlParameter("@receiverId", userId));
             }
@@ -125,7 +125,7 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> CreateMail(Mail mail)
         {
-            return await ExecuteNonQuery("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items) " +
+            return await ExecuteNonQuery("INSERT INTO mail (event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items) " +
                 "VALUES (@eventId, @senderId, @senderName, @receiverId, @title, @content, @gold, @cash, @currencies, @items)",
                     new NpgsqlParameter("@eventId", mail.EventId),
                     new NpgsqlParameter("@senderId", mail.SenderId),
@@ -157,7 +157,7 @@ namespace MultiplayerARPG.MMO
                     else if (!isRead)
                         count++;
                 }
-            }, "SELECT gold, cash, currencies, items, isRead, isClaim FROM mail WHERE receiverId=@receiverId AND isDelete=0",
+            }, "SELECT gold, cash, currencies, items, is_read, is_claim FROM mail WHERE receiver_id=@receiverId AND is_delete IS FALSE",
                 new NpgsqlParameter("@receiverId", userId));
             return count;
         }

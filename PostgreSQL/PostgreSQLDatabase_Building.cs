@@ -22,8 +22,9 @@ namespace MultiplayerARPG.MMO
                 result.CreatorId = reader.GetString(7);
                 result.CreatorName = reader.GetString(8);
                 result.ExtraData = reader.GetString(9);
-                result.Position = new Vec3(reader.GetFloat(10), reader.GetFloat(11), reader.GetFloat(12));
-                result.Rotation = new Vec3(reader.GetFloat(13), reader.GetFloat(14), reader.GetFloat(15));
+                result.IsSceneObject = reader.GetBoolean(10);
+                result.Position = new Vec3(reader.GetFloat(11), reader.GetFloat(12), reader.GetFloat(13));
+                result.Rotation = new Vec3(reader.GetFloat(14), reader.GetFloat(15), reader.GetFloat(16));
                 return true;
             }
             result = new BuildingSaveData();
@@ -57,7 +58,7 @@ namespace MultiplayerARPG.MMO
             using (NpgsqlConnection connection = NewConnection())
             {
                 await OpenConnection(connection);
-                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parent_id, entity_id, current_hp, remains_lifetime, map_name, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z, creator_id, creator_name, extra_data, is_scene_object) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData, @isSceneObject)",
                     new NpgsqlParameter("@id", building.Id),
                     new NpgsqlParameter("@channel", channel),
                     new NpgsqlParameter("@parentId", building.ParentId),
@@ -73,7 +74,8 @@ namespace MultiplayerARPG.MMO
                     new NpgsqlParameter("@rotationZ", building.Rotation.z),
                     new NpgsqlParameter("@creatorId", building.CreatorId),
                     new NpgsqlParameter("@creatorName", building.CreatorName),
-                    new NpgsqlParameter("@extraData", building.ExtraData));
+                    new NpgsqlParameter("@extraData", building.ExtraData),
+                    new NpgsqlParameter("@isSceneObject", building.IsSceneObject));
             }
         }
 
@@ -87,7 +89,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempBuilding);
                 }
-            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel AND mapName=@mapName",
+            }, "SELECT id, parent_id, entity_id, current_hp, remains_lifetime, is_locked, lock_password, creator_id, creator_name, extra_data, is_scene_object, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z FROM buildings WHERE channel=@channel AND map_name=@mapName",
                 new NpgsqlParameter("@channel", channel),
                 new NpgsqlParameter("@mapName", mapName));
             return result;
@@ -103,22 +105,23 @@ namespace MultiplayerARPG.MMO
                     try
                     {
                         await ExecuteNonQuery(connection, transaction, "UPDATE buildings SET " +
-                            "parentId=@parentId, " +
-                            "entityId=@entityId, " +
-                            "currentHp=@currentHp, " +
-                            "remainsLifeTime=@remainsLifeTime, " +
-                            "isLocked=@isLocked, " +
-                            "lockPassword=@lockPassword, " +
-                            "creatorId=@creatorId, " +
-                            "creatorName=@creatorName, " +
-                            "extraData=@extraData, " +
-                            "positionX=@positionX, " +
-                            "positionY=@positionY, " +
-                            "positionZ=@positionZ, " +
-                            "rotationX=@rotationX, " +
-                            "rotationY=@rotationY, " +
-                            "rotationZ=@rotationZ " +
-                            "WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                            "parent_id=@parentId, " +
+                            "entity_id=@entityId, " +
+                            "current_hp=@currentHp, " +
+                            "remains_lifetime=@remainsLifeTime, " +
+                            "is_locked=@isLocked, " +
+                            "lock_password=@lockPassword, " +
+                            "creator_id=@creatorId, " +
+                            "creator_name=@creatorName, " +
+                            "extra_data=@extraData, " +
+                            "is_scene_object=@isSceneObject, " +
+                            "position_x=@positionX, " +
+                            "position_y=@positionY, " +
+                            "position_z=@positionZ, " +
+                            "rotation_x=@rotationX, " +
+                            "rotation_y=@rotationY, " +
+                            "rotation_z=@rotationZ " +
+                            "WHERE id=@id AND channel=@channel AND map_name=@mapName",
                             new NpgsqlParameter("@id", building.Id),
                             new NpgsqlParameter("@parentId", building.ParentId),
                             new NpgsqlParameter("@entityId", building.EntityId),
@@ -129,6 +132,7 @@ namespace MultiplayerARPG.MMO
                             new NpgsqlParameter("@creatorId", building.CreatorId),
                             new NpgsqlParameter("@creatorName", building.CreatorName),
                             new NpgsqlParameter("@extraData", building.ExtraData),
+                            new NpgsqlParameter("@isSceneObject", building.IsSceneObject),
                             new NpgsqlParameter("@positionX", building.Position.x),
                             new NpgsqlParameter("@positionY", building.Position.y),
                             new NpgsqlParameter("@positionZ", building.Position.z),
@@ -158,7 +162,7 @@ namespace MultiplayerARPG.MMO
             using (NpgsqlConnection connection = NewConnection())
             {
                 await OpenConnection(connection);
-                await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND mapName=@mapName",
+                await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND map_name=@mapName",
                     new NpgsqlParameter("@id", id),
                     new NpgsqlParameter("@channel", channel),
                     new NpgsqlParameter("@mapName", mapName));
