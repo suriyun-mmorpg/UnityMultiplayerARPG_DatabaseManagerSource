@@ -359,3 +359,8 @@ model buildings {
   create_time      DateTime @default(now()) @db.Timestamptz()
   update_time      DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
+
+model server_statistic {
+  id         Int @id @default(autoincrement()) @db.Integer()
+  user_count Int @default(0)
+}
