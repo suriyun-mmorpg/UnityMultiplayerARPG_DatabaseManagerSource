@@ -22,8 +22,9 @@ namespace MultiplayerARPG.MMO
                 result.CreatorId = reader.GetString(7);
                 result.CreatorName = reader.GetString(8);
                 result.ExtraData = reader.GetString(9);
-                result.Position = new Vec3(reader.GetFloat(10), reader.GetFloat(11), reader.GetFloat(12));
-                result.Rotation = new Vec3(reader.GetFloat(13), reader.GetFloat(14), reader.GetFloat(15));
+                result.IsSceneObject = reader.GetBoolean(10);
+                result.Position = new Vec3(reader.GetFloat(11), reader.GetFloat(12), reader.GetFloat(13));
+                result.Rotation = new Vec3(reader.GetFloat(14), reader.GetFloat(15), reader.GetFloat(16));
                 return true;
             }
             result = new BuildingSaveData();
@@ -57,7 +58,7 @@ namespace MultiplayerARPG.MMO
             using (MySqlConnection connection = NewConnection())
             {
                 await OpenConnection(connection);
-                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData)",
+                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData, isSceneObject) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData, @isSceneObject)",
                     new MySqlParameter("@id", building.Id),
                     new MySqlParameter("@channel", channel),
                     new MySqlParameter("@parentId", building.ParentId),
@@ -73,7 +74,8 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@rotationZ", building.Rotation.z),
                     new MySqlParameter("@creatorId", building.CreatorId),
                     new MySqlParameter("@creatorName", building.CreatorName),
-                    new MySqlParameter("@extraData", building.ExtraData));
+                    new MySqlParameter("@extraData", building.ExtraData),
+                    new MySqlParameter("@isSceneObject", building.IsSceneObject));
             }
         }
 
@@ -87,7 +89,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempBuilding);
                 }
-            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel AND mapName=@mapName",
+            }, "SELECT id, parentId, entityId, currentHp, remainsLifeTime, isLocked, lockPassword, creatorId, creatorName, extraData, isSceneObject, positionX, positionY, positionZ, rotationX, rotationY, rotationZ FROM buildings WHERE channel=@channel AND mapName=@mapName",
                 new MySqlParameter("@channel", channel),
                 new MySqlParameter("@mapName", mapName));
             return result;
@@ -112,6 +114,7 @@ namespace MultiplayerARPG.MMO
                             "creatorId=@creatorId, " +
                             "creatorName=@creatorName, " +
                             "extraData=@extraData, " +
+                            "isSceneObject=@isSceneObject, " +
                             "positionX=@positionX, " +
                             "positionY=@positionY, " +
                             "positionZ=@positionZ, " +
@@ -129,6 +132,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@creatorId", building.CreatorId),
                             new MySqlParameter("@creatorName", building.CreatorName),
                             new MySqlParameter("@extraData", building.ExtraData),
+                            new MySqlParameter("@isSceneObject", building.IsSceneObject),
                             new MySqlParameter("@positionX", building.Position.x),
                             new MySqlParameter("@positionY", building.Position.y),
                             new MySqlParameter("@positionZ", building.Position.z),
