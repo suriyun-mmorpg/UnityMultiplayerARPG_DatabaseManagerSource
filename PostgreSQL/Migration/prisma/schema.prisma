@@ -27,7 +27,9 @@ model users {
   password     String?  @db.VarChar(128)
   create_time  DateTime @default(now()) @db.Timestamptz()
   update_time  DateTime @default(now()) @updatedAt @db.Timestamptz()
+  is_verify    Boolean  @default(false)
   verify_time  DateTime @default("1970-01-01T00:00:00+00:00") @db.Timestamptz()
+  is_disable   Boolean  @default(false)
   disable_time DateTime @default("1970-01-01T00:00:00+00:00") @db.Timestamptz()
 }
 
