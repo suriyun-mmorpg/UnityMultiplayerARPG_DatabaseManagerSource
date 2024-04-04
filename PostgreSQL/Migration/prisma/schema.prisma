@@ -26,6 +26,7 @@ model users {
   custom_id    String?  @unique @db.VarChar(128)
   password     String?  @db.VarChar(128)
   level        Int      @default(0) @db.Integer()
+  access_token String?  @db.VarChar(128)
   create_time  DateTime @default(now()) @db.Timestamptz()
   update_time  DateTime @default(now()) @updatedAt @db.Timestamptz()
   verify_time  DateTime @default("1970-01-01T00:00:00+00:00") @db.Timestamptz()
