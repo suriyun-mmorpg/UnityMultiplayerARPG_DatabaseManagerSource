@@ -21,6 +21,55 @@ namespace MultiplayerARPG.MMO
                 this.name = name;
                 this.value = value;
             }
+
+            public ColumnInfo(string name, string value)
+            {
+                this.type = NpgsqlDbType.Varchar;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, int value)
+            {
+                this.type = NpgsqlDbType.Integer;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, long value)
+            {
+                this.type = NpgsqlDbType.Bigint;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, short value)
+            {
+                this.type = NpgsqlDbType.Smallint;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, float value)
+            {
+                this.type = NpgsqlDbType.Real;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, double value)
+            {
+                this.type = NpgsqlDbType.Double;
+                this.name = name;
+                this.value = value;
+            }
+
+            public ColumnInfo(string name, bool value)
+            {
+                this.type = NpgsqlDbType.Boolean;
+                this.name = name;
+                this.value = value;
+            }
         }
 
         public struct WhereQuery
@@ -894,6 +943,11 @@ namespace MultiplayerARPG.MMO
         public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string additional = "", params WhereQuery[] wheres)
         {
             return await ExecuteDelete(cacheKey, connection, transaction, tableName, wheres, additional);
+        }
+
+        public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, params WhereQuery[] wheres)
+        {
+            return await ExecuteDelete(cacheKey, connection, transaction, tableName, wheres);
         }
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> columns)
