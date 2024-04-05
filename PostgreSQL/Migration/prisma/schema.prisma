@@ -351,12 +351,19 @@ model storage_buildings {
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
-model storage_reservation {
-  storage_type     Int    @default(0) @db.SmallInt()
-  storage_owner_id String @db.VarChar(40)
-  reserver_id      String @db.VarChar(40)
+model storage_reservation_guilds {
+  id          Int    @id @db.Integer()
+  reserver_id String @db.VarChar(40)
+}
 
-  @@id([storage_type, storage_owner_id])
+model storage_reservation_users {
+  id          String @id @db.VarChar(40)
+  reserver_id String @db.VarChar(40)
+}
+
+model storage_reservation_buildings {
+  id          String @id @db.VarChar(40)
+  reserver_id String @db.VarChar(40)
 }
 
 model buildings {
