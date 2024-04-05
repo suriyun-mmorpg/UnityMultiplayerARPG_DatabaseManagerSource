@@ -10,7 +10,7 @@ namespace MultiplayerARPG.MMO
     {
         public const string CACHE_KEY_SET_SUMMON_BUFFS_UPDATE = "SET_SUMMON_BUFFS_UPDATE";
         public const string CACHE_KEY_SET_SUMMON_BUFFS_INSERT = "SET_SUMMON_BUFFS_INSERT";
-        public async UniTask SetSummonBuffs(string characterId, IList<CharacterBuff> characterBuffs)
+        public async UniTask UpdateSummonBuffs(string characterId, IList<CharacterBuff> characterBuffs)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             int count = await PostgreSQLHelpers.ExecuteUpdate(
