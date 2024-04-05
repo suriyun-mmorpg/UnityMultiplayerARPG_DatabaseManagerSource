@@ -1,7 +1,6 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using Npgsql;
 using NpgsqlTypes;
 using System.Collections.Generic;
 
