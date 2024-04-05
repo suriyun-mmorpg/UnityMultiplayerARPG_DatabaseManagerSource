@@ -308,9 +308,9 @@ model guild_skills {
 model mails {
   id          BigInt    @id @default(autoincrement()) @db.BigInt()
   event_id    String    @default("") @db.VarChar(50)
-  sender_id   String    @default("") @db.VarChar(50)
+  sender_id   String    @default("") @db.VarChar(40)
   sender_name String    @default("") @db.VarChar(32)
-  receiver_id String    @default("") @db.VarChar(50)
+  receiver_id String    @default("") @db.VarChar(40)
   title       String    @default("") @db.VarChar(50)
   content     String    @default("") @db.Text()
   gold        Int       @default(0) @db.Integer()
