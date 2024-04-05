@@ -164,7 +164,7 @@ namespace MultiplayerARPG.MMO
                 "user_currencies",
                 new List<PostgreSQLHelpers.ColumnInfo>()
                 {
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Integer, "gold", gold),
+                    new PostgreSQLHelpers.ColumnInfo("gold", gold),
                 },
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
@@ -195,7 +195,7 @@ namespace MultiplayerARPG.MMO
                 connection, null,
                 "user_currencies",
                 new[] {
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Integer, "cash", cash),
+                    new PostgreSQLHelpers.ColumnInfo("cash", cash),
                 },
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
@@ -209,7 +209,7 @@ namespace MultiplayerARPG.MMO
                 connection, null,
                 "user_accesses",
                 new[] {
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "access_token", accessToken),
+                    new PostgreSQLHelpers.ColumnInfo("access_token", accessToken),
                 },
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
@@ -228,22 +228,22 @@ namespace MultiplayerARPG.MMO
                     CACHE_KEY_CREATE_USER_LOGIN_USERS,
                     connection, transaction,
                     "users",
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "username", username),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "password", _userLoginManager.GetHashedPassword(password)),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "email", email));
+                    new PostgreSQLHelpers.ColumnInfo("id", id),
+                    new PostgreSQLHelpers.ColumnInfo("username", username),
+                    new PostgreSQLHelpers.ColumnInfo("password", _userLoginManager.GetHashedPassword(password)),
+                    new PostgreSQLHelpers.ColumnInfo("email", email));
 
                 await PostgreSQLHelpers.ExecuteInsert(
                     CACHE_KEY_CREATE_USER_LOGIN_ACCESSES,
                     connection, transaction,
                     "user_accesses",
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id));
+                    new PostgreSQLHelpers.ColumnInfo("id", id));
 
                 await PostgreSQLHelpers.ExecuteInsert(
                     CACHE_KEY_CREATE_USER_LOGIN_CURRENCIES,
                     connection, transaction,
                     "user_currencies",
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id));
+                    new PostgreSQLHelpers.ColumnInfo("id", id));
 
                 await transaction.CommitAsync();
             }
@@ -306,7 +306,7 @@ namespace MultiplayerARPG.MMO
                 connection, null,
                 "user_accesses",
                 new[] {
-                    new PostgreSQLHelpers.ColumnInfo( NpgsqlDbType.Bigint , "unban_time", unbanTime),
+                    new PostgreSQLHelpers.ColumnInfo("unban_time", unbanTime),
                 },
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
@@ -320,7 +320,7 @@ namespace MultiplayerARPG.MMO
                 connection, null,
                 "characters",
                 new[] {
-                    new PostgreSQLHelpers.ColumnInfo( NpgsqlDbType.Bigint , "unmute_time", unmuteTime),
+                    new PostgreSQLHelpers.ColumnInfo("unmute_time", unmuteTime),
                 },
                 PostgreSQLHelpers.WhereLike("character_name", characterName));
         }
