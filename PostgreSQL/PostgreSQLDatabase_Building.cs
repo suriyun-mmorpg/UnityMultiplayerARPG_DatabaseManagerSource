@@ -51,28 +51,6 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        private async UniTask FillBuildingStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, string buildingId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Building;
-                string storageOwnerId = buildingId;
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
         public const string CACHE_KEY_CREATE_BUILDING = "CREATE_BUILDING";
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
@@ -138,7 +116,7 @@ namespace MultiplayerARPG.MMO
                     });
 
                 if (storageItems != null)
-                    await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
+                    await UpdateStorageItems(connection, transaction, StorageType.Building, building.Id, storageItems);
 
                 await transaction.CommitAsync();
             }

@@ -55,22 +55,28 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
+        public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await UpdateStorageItems(connection, null, storageType, storageOwnerId, characterItems);
+        }
+
+
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE = "UPDATE_STORAGE_ITEMS_USERS_UPDATE";
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT = "UPDATE_STORAGE_ITEMS_USERS_INSERT";
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE = "UPDATE_STORAGE_ITEMS_GUILDS_UPDATE";
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT = "UPDATE_STORAGE_ITEMS_GUILDS_INSERT";
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE = "UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE";
         public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT = "UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT";
-        public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public async UniTask UpdateStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            using var connection = await _dataSource.OpenConnectionAsync();
             int count;
             switch (storageType)
             {
                 case StorageType.Player:
                     count = await PostgreSQLHelpers.ExecuteUpdate(
                         CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE,
-                        connection, null,
+                        connection, transaction,
                         "storage_users",
                         new[]
                         {
@@ -84,7 +90,7 @@ namespace MultiplayerARPG.MMO
                     {
                         await PostgreSQLHelpers.ExecuteInsert(
                             CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT,
-                            connection, null,
+                            connection, transaction,
                             "storage_users",
                             new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
                             new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
@@ -93,7 +99,7 @@ namespace MultiplayerARPG.MMO
                 case StorageType.Guild:
                     count = await PostgreSQLHelpers.ExecuteUpdate(
                         CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE,
-                        connection, null,
+                        connection, transaction,
                         "storage_guilds",
                         new[]
                         {
@@ -107,7 +113,7 @@ namespace MultiplayerARPG.MMO
                     {
                         await PostgreSQLHelpers.ExecuteInsert(
                             CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT,
-                            connection, null,
+                            connection, transaction,
                             "storage_guilds",
                             new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
                             new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
@@ -116,7 +122,7 @@ namespace MultiplayerARPG.MMO
                 case StorageType.Building:
                     count = await PostgreSQLHelpers.ExecuteUpdate(
                         CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE,
-                        connection, null,
+                        connection, transaction,
                         "storage_buildings",
                         new[]
                         {
@@ -130,7 +136,7 @@ namespace MultiplayerARPG.MMO
                     {
                         await PostgreSQLHelpers.ExecuteInsert(
                             CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT,
-                            connection, null,
+                            connection, transaction,
                             "storage_buildings",
                             new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
                             new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
