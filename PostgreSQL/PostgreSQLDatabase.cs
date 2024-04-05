@@ -5,8 +5,6 @@ using NpgsqlTypes;
 using Newtonsoft.Json;
 using System;
 using System.IO;
-using Cysharp.Text;
-using System.Collections.Concurrent;
 
 namespace MultiplayerARPG.MMO
 {
@@ -92,9 +90,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_VALIDATE_USER_LOGIN = "VALIDATE_USER_LOGIN";
         public override async UniTask<string> ValidateUserLogin(string username, string password)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_VALIDATE_USER_LOGIN,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "users",
                 PostgreSQLHelpers.WhereEqualTo("username", username));
             string id = string.Empty;
@@ -111,9 +110,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_VALIDATE_ACCESS_TOKEN = "VALIDATE_ACCESS_TOKEN";
         public override async UniTask<bool> ValidateAccessToken(string userId, string accessToken)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KEY_VALIDATE_ACCESS_TOKEN,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_accesses", "COUNT(*)",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("access_token", accessToken));
@@ -123,9 +123,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KET_GET_USER_LEVEL = "GET_USER_LEVEL";
         public override async UniTask<byte> GetUserLevel(string userId)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_USER_LEVEL,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_accesses", "level", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             byte userLevel = 0;
@@ -139,9 +140,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KET_GET_GOLD = "GET_GOLD";
         public override async UniTask<int> GetGold(string userId)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_GOLD,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_currencies", "gold", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             int gold = 0;
@@ -155,9 +157,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_UPDATE_GOLD = "UPDATE_GOLD";
         public override async UniTask UpdateGold(string userId, int gold)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_GOLD,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_currencies",
                 new List<PostgreSQLHelpers.ColumnInfo>()
                 {
@@ -169,9 +172,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KET_GET_CASH = "GET_CASH";
         public override async UniTask<int> GetCash(string userId)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_CASH,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_currencies", "cash", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             int cash = 0;
@@ -185,9 +189,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_UPDATE_CASH = "UPDATE_CASH";
         public override async UniTask UpdateCash(string userId, int cash)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_CASH,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_currencies",
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Integer, "cash", cash),
@@ -198,9 +203,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_UPDATE_ACCESS_TOKEN = "UPDATE_ACCESS_TOKEN";
         public override async UniTask UpdateAccessToken(string userId, string accessToken)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_ACCESS_TOKEN,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_accesses",
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "access_token", accessToken),
@@ -214,8 +220,8 @@ namespace MultiplayerARPG.MMO
         public override async UniTask CreateUserLogin(string username, string password, string email)
         {
             var id = _userLoginManager.GenerateNewId();
-            await using var connection = await _dataSource.OpenConnectionAsync();
-            await using var transaction = await connection.BeginTransactionAsync();
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 await PostgreSQLHelpers.ExecuteInsert(
@@ -252,9 +258,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_FIND_USERNAME = "FIND_USERNAME";
         public override async UniTask<long> FindUsername(string username)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KEY_FIND_USERNAME,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "users", "COUNT(*)",
                 PostgreSQLHelpers.WhereLike("username", username));
             return result != null ? (long)result : 0;
@@ -263,9 +270,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
         public override async UniTask<long> GetUserUnbanTime(string userId)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_USER_UNBAN_TIME,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "user_accesses", "unban_time",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             long unbanTime = 0;
@@ -306,9 +314,10 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_SET_CHARACTER_UNMUTE_TIME_BY_NAME = "SET_CHARACTER_UNMUTE_TIME_BY_NAME";
         public override async UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
             await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_SET_CHARACTER_UNMUTE_TIME_BY_NAME,
-                await _dataSource.OpenConnectionAsync(), null,
+                connection, null,
                 "characters",
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo( NpgsqlDbType.Bigint , "unmute_time", unmuteTime),
@@ -316,38 +325,41 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.WhereLike("character_name", characterName));
         }
 
+        public const string CACHE_KEY_VALIDATE_EMAIL_VERIFICATION = "VALIDATE_EMAIL_VERIFICATION";
         public override async UniTask<bool> ValidateEmailVerification(string userId)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE id=$1 AND is_verify IS TRUE");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-
-            var result = await cmd.ExecuteScalarAsync();
+            using var connection = await _dataSource.OpenConnectionAsync();
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_VALIDATE_EMAIL_VERIFICATION,
+                connection, null,
+                "users", "COUNT(*)",
+                PostgreSQLHelpers.WhereEqualTo("id", userId),
+                PostgreSQLHelpers.AndWhereEqualTo("is_verify", true));
             return (result != null ? (long)result : 0) > 0;
         }
 
+        public const string CACHE_KEY_FIND_EMAIL = "FIND_EMAIL";
         public override async UniTask<long> FindEmail(string email)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE email IS NOT NULL AND email LIKE $1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = email;
-
-            var result = await cmd.ExecuteScalarAsync();
+            using var connection = await _dataSource.OpenConnectionAsync();
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_FIND_EMAIL,
+                connection, null,
+                "users", "COUNT(*)",
+                PostgreSQLHelpers.WhereLike("email", email));
             return result != null ? (long)result : 0;
         }
 
         public override async UniTask UpdateUserCount(int userCount)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM server_statistic WHERE 1");
+            using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM server_statistic WHERE 1");
             await cmd.PrepareAsync();
             var result = await cmd.ExecuteScalarAsync();
 
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await using var cmd2 = _dataSource.CreateCommand("UPDATE server_statistic SET user_count=$1");
+                using var cmd2 = _dataSource.CreateCommand("UPDATE server_statistic SET user_count=$1");
                 cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
                 await cmd2.PrepareAsync();
                 cmd2.Parameters[0].Value = userCount;
@@ -355,7 +367,7 @@ namespace MultiplayerARPG.MMO
             }
             else
             {
-                await using var cmd2 = _dataSource.CreateCommand("INSERT INTO server_statistic (user_count) VALUES ($1)");
+                using var cmd2 = _dataSource.CreateCommand("INSERT INTO server_statistic (user_count) VALUES ($1)");
                 cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
                 await cmd2.PrepareAsync();
                 cmd2.Parameters[0].Value = userCount;
