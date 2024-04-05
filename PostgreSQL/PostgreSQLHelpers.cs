@@ -926,6 +926,35 @@ namespace MultiplayerARPG.MMO
             return await ExecuteSelectScalar(cacheKey, connection, transaction, tableName, wheres, select);
         }
 
+        public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string additional = "")
+        {
+            var result = await ExecuteScalar(connection, transaction, CreateSelectCommandText(cacheKey, tableName, wheres, "COUNT(*)", additional), wheres);
+            if (result == null)
+            {
+                return 0;
+            }
+            return (long)result;
+        }
+
+        public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, WhereQuery where, string additional = "")
+        {
+            var wheres = new List<WhereQuery>()
+            {
+                where,
+            };
+            return await ExecuteCount(cacheKey, connection, transaction, tableName, wheres, additional);
+        }
+
+        public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string additional = "", params WhereQuery[] wheres)
+        {
+            return await ExecuteCount(cacheKey, connection, transaction, tableName, wheres, additional);
+        }
+
+        public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, params WhereQuery[] wheres)
+        {
+            return await ExecuteCount(cacheKey, connection, transaction, tableName, wheres);
+        }
+
         public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string additional = "")
         {
             return await ExecuteNonQuery(connection, transaction, CreateDeleteCommandText(cacheKey, tableName, wheres, additional), wheres);
