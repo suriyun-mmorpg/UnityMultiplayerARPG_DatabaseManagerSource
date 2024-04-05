@@ -1,64 +1,60 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public async UniTask CreateSummonBuff(NpgsqlConnection connection, NpgsqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff summonBuff)
+        public const string CACHE_KEY_SET_SUMMON_BUFFS_UPDATE = "SET_SUMMON_BUFFS_UPDATE";
+        public const string CACHE_KEY_SET_SUMMON_BUFFS_INSERT = "SET_SUMMON_BUFFS_INSERT";
+        public async UniTask SetSummonBuffs(string characterId, IList<CharacterBuff> characterBuffs)
         {
-            string id = summonBuff.id;
-            if (insertedIds.Contains(id))
+            using var connection = await _dataSource.OpenConnectionAsync();
+            int count = await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_SET_SUMMON_BUFFS_UPDATE,
+                connection, null,
+                "character_summon_buffs",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)),
+                },
+                new[]
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
+                });
+            if (count <= 0)
             {
-                LogWarning(LogTag, $"Summon buff {id}, for character {characterId}, already inserted");
-                return;
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_SET_SUMMON_BUFFS_INSERT,
+                    connection, null,
+                    "character_summon_buffs",
+                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)));
             }
-            insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO summonbuffs (id, characterId, buffId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @buffId, @type, @dataId, @level, @buffRemainsDuration)",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@buffId", summonBuff.id),
-                new NpgsqlParameter("@type", (byte)summonBuff.type),
-                new NpgsqlParameter("@dataId", summonBuff.dataId),
-                new NpgsqlParameter("@level", summonBuff.level),
-                new NpgsqlParameter("@buffRemainsDuration", summonBuff.buffRemainsDuration));
         }
 
-        private bool ReadSummonBuff(NpgsqlDataReader reader, out CharacterBuff result)
-        {
-            if (reader.Read())
-            {
-                result = new CharacterBuff();
-                result.id = reader.GetString(0);
-                result.type = (BuffType)reader.GetByte(1);
-                result.dataId = reader.GetInt32(2);
-                result.level = reader.GetInt32(3);
-                result.buffRemainsDuration = reader.GetFloat(4);
-                return true;
-            }
-            result = CharacterBuff.Empty;
-            return false;
-        }
-
-        public async UniTask DeleteSummonBuff(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId)
-        {
-            await ExecuteNonQuery(connection, transaction, "DELETE FROM summonbuffs WHERE characterId=@characterId", new NpgsqlParameter("@characterId", characterId));
-        }
-
+        public const string CACHE_KEY_GET_SUMMON_BUFFS = "GET_SUMMON_BUFFS";
         public override async UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId)
         {
-            List<CharacterBuff> result = new List<CharacterBuff>();
-            await ExecuteReader((reader) =>
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_GET_SUMMON_BUFFS,
+                connection, null,
+                "character_summon_buffs", "data",
+                PostgreSQLHelpers.WhereEqualTo("id", characterId));
+            List<CharacterBuff> result;
+            if (reader.Read())
             {
-                CharacterBuff tempBuff;
-                while (ReadSummonBuff(reader, out tempBuff))
-                {
-                    result.Add(tempBuff);
-                }
-            }, "SELECT buffId, type, dataId, level, buffRemainsDuration FROM summonbuffs WHERE characterId=@characterId ORDER BY buffRemainsDuration ASC",
-                new NpgsqlParameter("@characterId", characterId));
+                result = JsonConvert.DeserializeObject<List<CharacterBuff>>(reader.GetString(0));
+            }
+            else
+            {
+                result = new List<CharacterBuff>();
+            }
             return result;
         }
     }
