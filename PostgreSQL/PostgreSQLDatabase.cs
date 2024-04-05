@@ -111,13 +111,13 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<bool> ValidateAccessToken(string userId, string accessToken)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+            var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_VALIDATE_ACCESS_TOKEN,
                 connection, null,
-                "user_accesses", "COUNT(*)",
+                "user_accesses",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("access_token", accessToken));
-            return (result != null ? (long)result : 0) > 0;
+            return count > 0;
         }
 
         public const string CACHE_KET_GET_USER_LEVEL = "GET_USER_LEVEL";
@@ -259,12 +259,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<long> FindUsername(string username)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+            var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_USERNAME,
                 connection, null,
-                "users", "COUNT(*)",
+                "users",
                 PostgreSQLHelpers.WhereLike("username", username));
-            return result != null ? (long)result : 0;
+            return count;
         }
 
         public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
@@ -329,25 +329,25 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<bool> ValidateEmailVerification(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+            var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_VALIDATE_EMAIL_VERIFICATION,
                 connection, null,
-                "users", "COUNT(*)",
+                "users",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_verify", true));
-            return (result != null ? (long)result : 0) > 0;
+            return count > 0;
         }
 
         public const string CACHE_KEY_FIND_EMAIL = "FIND_EMAIL";
         public override async UniTask<long> FindEmail(string email)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+            var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_EMAIL,
                 connection, null,
-                "users", "COUNT(*)",
+                "users",
                 PostgreSQLHelpers.WhereLike("email", email));
-            return result != null ? (long)result : 0;
+            return count;
         }
 
         public override async UniTask UpdateUserCount(int userCount)
