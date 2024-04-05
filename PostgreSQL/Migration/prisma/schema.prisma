@@ -93,133 +93,133 @@ model characters {
 
 model character_attributes {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_buffs {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_currencies {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_hotkeys {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_equip_items {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_selectable_weapon_sets {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_non_equip_items {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_protected_non_equip_items {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_quests {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_skills {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_skill_usages {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_summons {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_private_booleans {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_private_float32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_private_int32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_public_booleans {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_public_float32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_public_int32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_server_booleans {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_server_float32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_server_int32s {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_summon_buffs {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
@@ -301,7 +301,7 @@ model guild_roles {
 
 model guild_skills {
   id          Int      @id @db.Integer()
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
@@ -335,19 +335,19 @@ model parties {
 
 model storage_guilds {
   id          Int      @id @db.Integer()
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model storage_users {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model storage_buildings {
   id          String   @id @db.VarChar(40)
-  data        Bytes    @db.ByteA()
+  data        Json     @db.JsonB()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
