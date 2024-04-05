@@ -1,167 +1,326 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public async UniTask CreateStorageItem(NpgsqlConnection connection, NpgsqlTransaction transaction, HashSet<string> insertedIds, int idx, StorageType storageType, string storageOwnerId, CharacterItem characterItem)
-        {
-            string id = characterItem.id;
-            if (insertedIds.Contains(id))
-            {
-                LogWarning(LogTag, $"Storage item {id}, storage type {storageType}, owner {storageOwnerId}, already inserted");
-                return;
-            }
-            if (string.IsNullOrEmpty(id))
-                return;
-            insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version)",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@idx", idx),
-                new NpgsqlParameter("@storageType", (byte)storageType),
-                new NpgsqlParameter("@storageOwnerId", storageOwnerId),
-                new NpgsqlParameter("@dataId", characterItem.dataId),
-                new NpgsqlParameter("@level", characterItem.level),
-                new NpgsqlParameter("@amount", characterItem.amount),
-                new NpgsqlParameter("@durability", characterItem.durability),
-                new NpgsqlParameter("@exp", characterItem.exp),
-                new NpgsqlParameter("@lockRemainsDuration", characterItem.lockRemainsDuration),
-                new NpgsqlParameter("@expireTime", characterItem.expireTime),
-                new NpgsqlParameter("@randomSeed", characterItem.randomSeed),
-                new NpgsqlParameter("@ammo", characterItem.ammo),
-                new NpgsqlParameter("@sockets", characterItem.WriteSockets()),
-                new NpgsqlParameter("@version", characterItem.version));
-        }
-
-        private bool ReadStorageItem(NpgsqlDataReader reader, out CharacterItem result)
-        {
-            if (reader.Read())
-            {
-                result = new CharacterItem();
-                result.id = reader.GetString(0);
-                result.dataId = reader.GetInt32(1);
-                result.level = reader.GetInt32(2);
-                result.amount = reader.GetInt32(3);
-                result.durability = reader.GetFloat(4);
-                result.exp = reader.GetInt32(5);
-                result.lockRemainsDuration = reader.GetFloat(6);
-                result.expireTime = reader.GetInt64(7);
-                result.randomSeed = reader.GetInt32(8);
-                result.ammo = reader.GetInt32(9);
-                result.ReadSockets(reader.GetString(10));
-                result.version = reader.GetByte(11);
-                return true;
-            }
-            result = CharacterItem.Empty;
-            return false;
-        }
-
+        public const string CACHE_KEY_READ_STORAGE_ITEMS_USERS = "READ_STORAGE_ITEMS_USERS";
+        public const string CACHE_KEY_READ_STORAGE_ITEMS_GUILDS = "READ_STORAGE_ITEMS_GUILDS";
+        public const string CACHE_KEY_READ_STORAGE_ITEMS_BUILDINGS = "READ_STORAGE_ITEMS_BUILDINGS";
         public override async UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
         {
-            List<CharacterItem> result = new List<CharacterItem>();
-            await ExecuteReader((reader) =>
+            using var connection = await _dataSource.OpenConnectionAsync();
+            NpgsqlDataReader reader = null;
+            switch (storageType)
             {
-                CharacterItem tempInventory;
-                while (ReadStorageItem(reader, out tempInventory))
-                {
-                    result.Add(tempInventory);
-                }
-            }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
-                new NpgsqlParameter("@storageType", (byte)storageType),
-                new NpgsqlParameter("@storageOwnerId", storageOwnerId));
+                case StorageType.Player:
+                    reader = await PostgreSQLHelpers.ExecuteSelect(
+                        CACHE_KEY_READ_STORAGE_ITEMS_USERS,
+                        connection, null,
+                        "storage_users", "data",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+                    break;
+                case StorageType.Guild:
+                    reader = await PostgreSQLHelpers.ExecuteSelect(
+                        CACHE_KEY_READ_STORAGE_ITEMS_GUILDS,
+                        connection, null,
+                        "storage_guilds", "data",
+                        PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
+                    break;
+                case StorageType.Building:
+                    reader = await PostgreSQLHelpers.ExecuteSelect(
+                        CACHE_KEY_READ_STORAGE_ITEMS_BUILDINGS,
+                        connection, null,
+                        "storage_buildings", "data",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+                    break;
+            }
+            if (reader == null)
+                return new List<CharacterItem>();
+            List<CharacterItem> result;
+            if (reader.Read())
+            {
+                result = JsonConvert.DeserializeObject<List<CharacterItem>>(reader.GetString(0));
+            }
+            else
+            {
+                result = new List<CharacterItem>();
+            }
+            await reader.DisposeAsync();
             return result;
         }
 
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE = "UPDATE_STORAGE_ITEMS_USERS_UPDATE";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT = "UPDATE_STORAGE_ITEMS_USERS_INSERT";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE = "UPDATE_STORAGE_ITEMS_GUILDS_UPDATE";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT = "UPDATE_STORAGE_ITEMS_GUILDS_INSERT";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE = "UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT = "UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT";
         public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            using (NpgsqlConnection connection = NewConnection())
+            using var connection = await _dataSource.OpenConnectionAsync();
+            int count;
+            switch (storageType)
             {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                        HashSet<string> insertedIds = new HashSet<string>();
-                        int i;
-                        for (i = 0; i < characterItems.Count; ++i)
+                case StorageType.Player:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE,
+                        connection, null,
+                        "storage_users",
+                        new[]
                         {
-                            await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
-                        }
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
+                        },
+                        new[]
+                        {
+                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
+                        });
+                    if (count <= 0)
                     {
-                        LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT,
+                            connection, null,
+                            "storage_users",
+                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
                     }
-                }
+                    break;
+                case StorageType.Guild:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE,
+                        connection, null,
+                        "storage_guilds",
+                        new[]
+                        {
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
+                        },
+                        new[]
+                        {
+                            PostgreSQLHelpers.AndWhereEqualTo("id", int.Parse(storageOwnerId)),
+                        });
+                    if (count <= 0)
+                    {
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT,
+                            connection, null,
+                            "storage_guilds",
+                            new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
+                    }
+                    break;
+                case StorageType.Building:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE,
+                        connection, null,
+                        "storage_buildings",
+                        new[]
+                        {
+                                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
+                        },
+                        new[]
+                        {
+                                PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
+                        });
+                    if (count <= 0)
+                    {
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT,
+                            connection, null,
+                            "storage_buildings",
+                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
+                    }
+                    break;
             }
         }
 
-        public async UniTask DeleteStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId)
-        {
-            await ExecuteNonQuery(connection, transaction, "DELETE FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
-                new NpgsqlParameter("@storageType", (byte)storageType),
-                new NpgsqlParameter("@storageOwnerId", storageOwnerId));
-        }
-
+        public const string CACHE_KEY_FIND_RESERVED_STORAGE_USERS = "FIND_RESERVED_STORAGE_USERS";
+        public const string CACHE_KEY_FIND_RESERVED_STORAGE_GUILDS = "FIND_RESERVED_STORAGE_GUILDS";
+        public const string CACHE_KEY_FIND_RESERVED_STORAGE_BUILDINGS = "FIND_RESERVED_STORAGE_BUILDINGS";
         public override async UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
-                new NpgsqlParameter("@storageType", (byte)storageType),
-                new NpgsqlParameter("@storageOwnerId", storageOwnerId));
-            return result != null ? (long)result : 0;
+            using var connection = await _dataSource.OpenConnectionAsync();
+            switch (storageType)
+            {
+                case StorageType.Player:
+                    return await PostgreSQLHelpers.ExecuteCount(
+                        CACHE_KEY_FIND_RESERVED_STORAGE_USERS,
+                        connection, null,
+                        "storage_reservation_users",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+                case StorageType.Guild:
+                    return await PostgreSQLHelpers.ExecuteCount(
+                        CACHE_KEY_FIND_RESERVED_STORAGE_GUILDS,
+                        connection, null,
+                        "storage_reservation_guilds",
+                        PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
+                case StorageType.Building:
+                    return await PostgreSQLHelpers.ExecuteCount(
+                        CACHE_KEY_FIND_RESERVED_STORAGE_BUILDINGS,
+                        connection, null,
+                        "storage_reservation_buildings",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+            }
+            return 0;
         }
 
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_UPDATE = "UPDATE_RESERVED_STORAGE_USERS_UPDATE";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_INSERT = "UPDATE_RESERVED_STORAGE_USERS_INSERT";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_UPDATE = "UPDATE_RESERVED_STORAGE_GUILDS_UPDATE";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_INSERT = "UPDATE_RESERVED_STORAGE_GUILDS_INSERT";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE = "UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT = "UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT";
         public override async UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId)
         {
-            using (NpgsqlConnection connection = NewConnection())
+            using var connection = await _dataSource.OpenConnectionAsync();
+            int count;
+            switch (storageType)
             {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
+                case StorageType.Player:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_UPDATE,
+                        connection, null,
+                        "storage_reservation_users",
+                        new[]
+                        {
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
+                        },
+                        new[]
+                        {
+                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
+                        });
+                    if (count <= 0)
                     {
-                        await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
-                            new NpgsqlParameter("@storageType", (byte)storageType),
-                            new NpgsqlParameter("@storageOwnerId", storageOwnerId));
-                        await ExecuteNonQuery(connection, transaction, "INSERT INTO storage_reservation (storageType, storageOwnerId, reserverId) VALUES (@storageType, @storageOwnerId, @reserverId)",
-                            new NpgsqlParameter("@storageType", (byte)storageType),
-                            new NpgsqlParameter("@storageOwnerId", storageOwnerId),
-                            new NpgsqlParameter("@reserverId", reserverId));
-                        await transaction.CommitAsync();
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_INSERT,
+                            connection, null,
+                            "storage_reservation_users",
+                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
                     }
-                    catch (System.Exception ex)
+                    break;
+                case StorageType.Guild:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_UPDATE,
+                        connection, null,
+                        "storage_reservation_guilds",
+                        new[]
+                        {
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
+                        },
+                        new[]
+                        {
+                            PostgreSQLHelpers.AndWhereEqualTo("id", int.Parse(storageOwnerId)),
+                        });
+                    if (count <= 0)
                     {
-                        LogError(LogTag, "Transaction, Error occurs while replacing storage reserving");
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_INSERT,
+                            connection, null,
+                            "storage_reservation_guilds",
+                            new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
                     }
-                }
+                    break;
+                case StorageType.Building:
+                    count = await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE,
+                        connection, null,
+                        "storage_reservation_buildings",
+                        new[]
+                        {
+                                new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
+                        },
+                        new[]
+                        {
+                                PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
+                        });
+                    if (count <= 0)
+                    {
+                        await PostgreSQLHelpers.ExecuteInsert(
+                            CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT,
+                            connection, null,
+                            "storage_reservation_buildings",
+                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
+                    }
+                    break;
             }
         }
 
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_USERS = "DELETE_RESERVED_STORAGE_USERS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_GUILDS = "DELETE_RESERVED_STORAGE_GUILDS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BUILDINGS = "DELETE_RESERVED_STORAGE_BUILDINGS";
         public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)
         {
-            await ExecuteNonQuery("DELETE FROM storage_reservation WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId",
-                new NpgsqlParameter("@storageType", (byte)storageType),
-                new NpgsqlParameter("@storageOwnerId", storageOwnerId));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            switch (storageType)
+            {
+                case StorageType.Player:
+                    await PostgreSQLHelpers.ExecuteDelete(
+                        CACHE_KEY_DELETE_RESERVED_STORAGE_USERS,
+                        connection, null,
+                        "storage_reservation_users",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+                    break;
+                case StorageType.Guild:
+                    await PostgreSQLHelpers.ExecuteDelete(
+                        CACHE_KEY_DELETE_RESERVED_STORAGE_GUILDS,
+                        connection, null,
+                        "storage_reservation_guilds",
+                        PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
+                    break;
+                case StorageType.Building:
+                    await PostgreSQLHelpers.ExecuteDelete(
+                        CACHE_KEY_DELETE_RESERVED_STORAGE_BUILDINGS,
+                        connection, null,
+                        "storage_reservation_buildings",
+                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
+                    break;
+            }
         }
 
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_USERS = "DELETE_RESERVED_STORAGE_BY_RESERVER_USERS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS = "DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS = "DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS";
         public override async UniTask DeleteReservedStorageByReserver(string reserverId)
         {
-            await ExecuteNonQuery("DELETE FROM storage_reservation WHERE reserverId=@reserverId",
-                new NpgsqlParameter("@reserverId", reserverId));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_USERS,
+                connection, transaction,
+                "storage_reservation_users",
+                PostgreSQLHelpers.WhereEqualTo("reserver_id", reserverId));
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS,
+                connection, transaction,
+                "storage_reservation_guilds",
+                PostgreSQLHelpers.WhereEqualTo("reserver_id", reserverId));
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS,
+                connection, transaction,
+                "storage_reservation_buildings",
+                PostgreSQLHelpers.WhereEqualTo("reserver_id", reserverId));
+            await transaction.CommitAsync();
         }
 
         public override async UniTask DeleteAllReservedStorage()
         {
-            await ExecuteNonQuery("DELETE FROM storage_reservation");
+            using var cmd = _dataSource.CreateCommand("DELETE FROM storage_reservation_users WHERE 1");
+            await cmd.PrepareAsync();
+            await cmd.ExecuteNonQueryAsync();
+            using var cmd2 = _dataSource.CreateCommand("DELETE FROM storage_reservation_guilds WHERE 1");
+            await cmd2.PrepareAsync();
+            await cmd2.ExecuteNonQueryAsync();
+            using var cmd3 = _dataSource.CreateCommand("DELETE FROM storage_reservation_buildings WHERE 1");
+            await cmd3.PrepareAsync();
+            await cmd3.ExecuteNonQueryAsync();
         }
     }
 }
