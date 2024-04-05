@@ -89,127 +89,128 @@ namespace MultiplayerARPG.MMO
             return connectionString;
         }
 
+        public const string CACHE_KEY_VALIDATE_USER_LOGIN = "VALIDATE_USER_LOGIN";
         public override async UniTask<string> ValidateUserLogin(string username, string password)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT id, password FROM users WHERE username=$1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = username;
-
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_VALIDATE_USER_LOGIN,
+                await _dataSource.OpenConnectionAsync(), null,
+                "users",
+                PostgreSQLHelpers.WhereEqualTo("username", username));
             string id = string.Empty;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    id = reader.GetString(0);
-                    string hashedPassword = reader.GetString(1);
-                    if (!_userLoginManager.VerifyPassword(password, hashedPassword))
-                        id = string.Empty;
-                }
+                id = reader.GetString(0);
+                string hashedPassword = reader.GetString(1);
+                if (!_userLoginManager.VerifyPassword(password, hashedPassword))
+                    id = string.Empty;
             }
             return id;
         }
 
+        public const string CACHE_KEY_VALIDATE_ACCESS_TOKEN = "VALIDATE_ACCESS_TOKEN";
         public override async UniTask<bool> ValidateAccessToken(string userId, string accessToken)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM user_accesses WHERE id=$1 AND access_token=$2");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-            cmd.Parameters[1].Value = accessToken;
-
-            var result = await cmd.ExecuteScalarAsync();
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_VALIDATE_ACCESS_TOKEN,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_accesses", "COUNT(*)",
+                PostgreSQLHelpers.WhereEqualTo("id", userId),
+                PostgreSQLHelpers.AndWhereEqualTo("access_token", accessToken));
             return (result != null ? (long)result : 0) > 0;
         }
 
+        public const string CACHE_KET_GET_USER_LEVEL = "GET_USER_LEVEL";
         public override async UniTask<byte> GetUserLevel(string userId)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT level FROM user_accesses WHERE id=$1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KET_GET_USER_LEVEL,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_accesses", "level", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
             byte userLevel = 0;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    userLevel = reader.GetByte(0);
-                }
+                userLevel = reader.GetByte(0);
             }
             return userLevel;
         }
 
+        public const string CACHE_KET_GET_GOLD = "GET_GOLD";
         public override async UniTask<int> GetGold(string userId)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT gold FROM user_currencies WHERE id=$1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-
-            byte gold = 0;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KET_GET_GOLD,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_currencies", "gold", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
+            int gold = 0;
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    gold = reader.GetByte(0);
-                }
+                gold = reader.GetInt32(0);
             }
             return gold;
         }
 
+        public const string CACHE_KEY_UPDATE_GOLD = "UPDATE_GOLD";
         public override async UniTask UpdateGold(string userId, int gold)
         {
-            await using var cmd = _dataSource.CreateCommand("UPDATE user_currencies SET gold=$1 WHERE id=$2");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = gold;
-            cmd.Parameters[1].Value = userId;
-            await cmd.ExecuteNonQueryAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GOLD,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_currencies",
+                new List<PostgreSQLHelpers.ColumnInfo>()
+                {
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Integer, "gold", gold),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
+        public const string CACHE_KET_GET_CASH = "GET_CASH";
         public override async UniTask<int> GetCash(string userId)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT cash FROM user_currencies WHERE id=$1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-
-            byte cash = 0;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KET_GET_CASH,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_currencies", "cash", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
+            int cash = 0;
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    cash = reader.GetByte(0);
-                }
+                cash = reader.GetInt32(0);
             }
             return cash;
         }
 
+        public const string CACHE_KEY_UPDATE_CASH = "UPDATE_CASH";
         public override async UniTask UpdateCash(string userId, int cash)
         {
-            await using var cmd = _dataSource.CreateCommand("UPDATE user_currencies SET cash=$1 WHERE id=$2");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = cash;
-            cmd.Parameters[1].Value = userId;
-            await cmd.ExecuteNonQueryAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_CASH,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_currencies",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Integer, "cash", cash),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
+        public const string CACHE_KEY_UPDATE_ACCESS_TOKEN = "UPDATE_ACCESS_TOKEN";
         public override async UniTask UpdateAccessToken(string userId, string accessToken)
         {
-            await using var cmd = _dataSource.CreateCommand("UPDATE user_accesses SET access_token=$1 WHERE id=$2");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = accessToken;
-            cmd.Parameters[1].Value = userId;
-            await cmd.ExecuteNonQueryAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_ACCESS_TOKEN,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_accesses",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "access_token", accessToken),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
+        public const string CACHE_KEY_CREATE_USER_LOGIN_USERS = "CREATE_USER_LOGIN_USERS";
+        public const string CACHE_KEY_CREATE_USER_LOGIN_ACCESSES = "CREATE_USER_LOGIN_ACCESSES";
+        public const string CACHE_KEY_CREATE_USER_LOGIN_CURRENCIES = "CREATE_USER_LOGIN_CURRENCIES";
         public override async UniTask CreateUserLogin(string username, string password, string email)
         {
             var id = _userLoginManager.GenerateNewId();
@@ -217,29 +218,26 @@ namespace MultiplayerARPG.MMO
             await using var transaction = await connection.BeginTransactionAsync();
             try
             {
-                await using var cmd = new NpgsqlCommand("INSERT INTO users (id, username, password, email) VALUES (@id, @username, @password, @email) VALUES ($1, $2, $3, $4)", connection, transaction);
-                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                await cmd.PrepareAsync();
-                cmd.Parameters[0].Value = id;
-                cmd.Parameters[1].Value = username;
-                cmd.Parameters[2].Value = _userLoginManager.GetHashedPassword(password);
-                cmd.Parameters[3].Value = email;
-                await cmd.ExecuteNonQueryAsync();
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_CREATE_USER_LOGIN_USERS,
+                    connection, transaction,
+                    "users",
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "username", username),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "password", _userLoginManager.GetHashedPassword(password)),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "email", email));
 
-                await using var cmd2 = new NpgsqlCommand("INSERT INTO user_accesses (id) VALUES ($1)", connection, transaction);
-                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                await cmd2.PrepareAsync();
-                cmd2.Parameters[0].Value = id;
-                await cmd2.ExecuteNonQueryAsync();
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_CREATE_USER_LOGIN_ACCESSES,
+                    connection, transaction,
+                    "user_accesses",
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id));
 
-                await using var cmd3 = new NpgsqlCommand("INSERT INTO user_currencies (id) VALUES ($1)", connection, transaction);
-                cmd3.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-                await cmd3.PrepareAsync();
-                cmd3.Parameters[0].Value = id;
-                await cmd3.ExecuteNonQueryAsync();
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_CREATE_USER_LOGIN_CURRENCIES,
+                    connection, transaction,
+                    "user_currencies",
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Varchar, "id", id));
 
                 await transaction.CommitAsync();
             }
@@ -251,71 +249,71 @@ namespace MultiplayerARPG.MMO
             }
         }
 
+        public const string CACHE_KEY_FIND_USERNAME = "FIND_USERNAME";
         public override async UniTask<long> FindUsername(string username)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM users WHERE username LIKE $1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = username;
-
-            var result = await cmd.ExecuteScalarAsync();
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_FIND_USERNAME,
+                await _dataSource.OpenConnectionAsync(), null,
+                "users", "COUNT(*)",
+                PostgreSQLHelpers.WhereLike("username", username));
             return result != null ? (long)result : 0;
         }
 
+        public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
         public override async UniTask<long> GetUserUnbanTime(string userId)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT unban_time FROM user_accesses WHERE id=$1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = userId;
-
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_GET_USER_UNBAN_TIME,
+                await _dataSource.OpenConnectionAsync(), null,
+                "user_accesses", "unban_time",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
             long unbanTime = 0;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    unbanTime = reader.GetInt64(0);
-                }
+                unbanTime = reader.GetInt64(0);
             }
             return unbanTime;
         }
 
+        public const string CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID = "SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID";
+        public const string CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_UPDATE = "SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_UPDATE";
         public override async UniTask SetUserUnbanTimeByCharacterName(string characterName, long unbanTime)
         {
-            await using var cmd = _dataSource.CreateCommand("SELECT userId FROM characters WHERE character_name LIKE $1 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = characterName;
-
-            string userId = string.Empty;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID,
+                connection, null,
+                "characters", "user_id",
+                PostgreSQLHelpers.WhereLike("character_name", characterName));
+            string userId = null;
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    userId = reader.GetString(0);
-                }
+                userId = reader.GetString(0);
             }
-
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrWhiteSpace(userId))
                 return;
-
-            await using var cmd2 = _dataSource.CreateCommand("UPDATE user_accesses SET unban_time=$1 WHERE id=$2 LIMIT 1");
-            cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Bigint });
-            cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd2.PrepareAsync();
-            cmd2.Parameters[0].Value = unbanTime;
-            cmd2.Parameters[1].Value = userId;
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_UPDATE,
+                connection, null,
+                "user_accesses",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo( NpgsqlDbType.Bigint , "unban_time", unbanTime),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
+        public const string CACHE_KEY_SET_CHARACTER_UNMUTE_TIME_BY_NAME = "SET_CHARACTER_UNMUTE_TIME_BY_NAME";
         public override async UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime)
         {
-            await using var cmd = _dataSource.CreateCommand("UPDATE characters SET unmute_time=$1 WHERE character_name LIKE $2 LIMIT 1");
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Bigint });
-            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
-            await cmd.PrepareAsync();
-            cmd.Parameters[0].Value = unmuteTime;
-            cmd.Parameters[1].Value = characterName;
-            await cmd.ExecuteNonQueryAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_SET_CHARACTER_UNMUTE_TIME_BY_NAME,
+                await _dataSource.OpenConnectionAsync(), null,
+                "characters",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo( NpgsqlDbType.Bigint , "unmute_time", unmuteTime),
+                },
+                PostgreSQLHelpers.WhereLike("character_name", characterName));
         }
 
         public override async UniTask<bool> ValidateEmailVerification(string userId)
