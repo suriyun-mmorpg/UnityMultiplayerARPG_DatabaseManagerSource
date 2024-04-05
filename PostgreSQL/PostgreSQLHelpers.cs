@@ -610,6 +610,36 @@ namespace MultiplayerARPG.MMO
             return Where(NpgsqlDbType.Smallint, EOperators.Or, name, EOperators.GreaterThanOrEqualTo, value);
         }
 
+        public static WhereQuery WhereEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, name, EOperators.EqualTo, value);
+        }
+
+        public static WhereQuery AndWhereEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, EOperators.And, name, EOperators.EqualTo, value);
+        }
+
+        public static WhereQuery OrWhereEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, EOperators.Or, name, EOperators.EqualTo, value);
+        }
+
+        public static WhereQuery WhereNotEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, name, EOperators.NotEqualTo, value);
+        }
+
+        public static WhereQuery AndWhereNotEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, EOperators.And, name, EOperators.NotEqualTo, value);
+        }
+
+        public static WhereQuery OrWhereNotEqualTo(string name, bool value)
+        {
+            return Where(NpgsqlDbType.Boolean, EOperators.Or, name, EOperators.NotEqualTo, value);
+        }
+
         public static void AppendOperatorString(EOperators operators, ref Utf16ValueStringBuilder builder)
         {
             switch (operators)
