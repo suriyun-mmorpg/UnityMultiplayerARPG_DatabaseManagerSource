@@ -1,6 +1,7 @@
-﻿#if NET || NETCOREAPP
+﻿ #if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -31,6 +32,25 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
+        public const string CACHE_KEY_READ_BUILDINGS = "READ_BUILDINGS";
+        public override async UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_BUILDINGS,
+                connection, null,
+                "buildings", "id, parent_id, entity_id, current_hp, remains_lifetime, is_locked, lock_password, creator_id, creator_name, extra_data, is_scene_object, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z",
+                PostgreSQLHelpers.WhereEqualTo("channel", channel),
+                PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName));
+            List<BuildingSaveData> result = new List<BuildingSaveData>();
+            BuildingSaveData tempBuilding;
+            while (ReadBuilding(reader, out tempBuilding))
+            {
+                result.Add(tempBuilding);
+            }
+            return result;
+        }
+
         private async UniTask FillBuildingStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, string buildingId, List<CharacterItem> storageItems)
         {
             try
@@ -53,120 +73,94 @@ namespace MultiplayerARPG.MMO
             }
         }
 
+        public const string CACHE_KEY_CREATE_BUILDING = "CREATE_BUILDING";
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                await ExecuteNonQuery(connection, null, "INSERT INTO buildings (id, channel, parent_id, entity_id, current_hp, remains_lifetime, map_name, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z, creator_id, creator_name, extra_data, is_scene_object) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData, @isSceneObject)",
-                    new NpgsqlParameter("@id", building.Id),
-                    new NpgsqlParameter("@channel", channel),
-                    new NpgsqlParameter("@parentId", building.ParentId),
-                    new NpgsqlParameter("@entityId", building.EntityId),
-                    new NpgsqlParameter("@currentHp", building.CurrentHp),
-                    new NpgsqlParameter("@remainsLifeTime", building.RemainsLifeTime),
-                    new NpgsqlParameter("@mapName", mapName),
-                    new NpgsqlParameter("@positionX", building.Position.x),
-                    new NpgsqlParameter("@positionY", building.Position.y),
-                    new NpgsqlParameter("@positionZ", building.Position.z),
-                    new NpgsqlParameter("@rotationX", building.Rotation.x),
-                    new NpgsqlParameter("@rotationY", building.Rotation.y),
-                    new NpgsqlParameter("@rotationZ", building.Rotation.z),
-                    new NpgsqlParameter("@creatorId", building.CreatorId),
-                    new NpgsqlParameter("@creatorName", building.CreatorName),
-                    new NpgsqlParameter("@extraData", building.ExtraData),
-                    new NpgsqlParameter("@isSceneObject", building.IsSceneObject));
-            }
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteInsert(
+                CACHE_KEY_CREATE_BUILDING,
+                connection, null,
+                "buildings",
+                new PostgreSQLHelpers.ColumnInfo("id", building.Id),
+                new PostgreSQLHelpers.ColumnInfo("channel", channel),
+                new PostgreSQLHelpers.ColumnInfo("parent_id", building.ParentId),
+                new PostgreSQLHelpers.ColumnInfo("entity_id", building.EntityId),
+                new PostgreSQLHelpers.ColumnInfo("current_hp", building.Id),
+                new PostgreSQLHelpers.ColumnInfo("remains_lifetime", building.RemainsLifeTime),
+                new PostgreSQLHelpers.ColumnInfo("map_name", mapName),
+                new PostgreSQLHelpers.ColumnInfo("position_x", building.Position.x),
+                new PostgreSQLHelpers.ColumnInfo("position_y", building.Position.y),
+                new PostgreSQLHelpers.ColumnInfo("position_z", building.Position.z),
+                new PostgreSQLHelpers.ColumnInfo("rotation_x", building.Rotation.x),
+                new PostgreSQLHelpers.ColumnInfo("rotation_y", building.Rotation.y),
+                new PostgreSQLHelpers.ColumnInfo("rotation_z", building.Rotation.z),
+                new PostgreSQLHelpers.ColumnInfo("creator_id", building.CreatorId),
+                new PostgreSQLHelpers.ColumnInfo("creator_name", building.CreatorName),
+                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "extra_data", building.ExtraData),
+                new PostgreSQLHelpers.ColumnInfo("is_scene_object", building.IsSceneObject));
         }
 
-        public override async UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
-        {
-            List<BuildingSaveData> result = new List<BuildingSaveData>();
-            await ExecuteReader((reader) =>
-            {
-                BuildingSaveData tempBuilding;
-                while (ReadBuilding(reader, out tempBuilding))
-                {
-                    result.Add(tempBuilding);
-                }
-            }, "SELECT id, parent_id, entity_id, current_hp, remains_lifetime, is_locked, lock_password, creator_id, creator_name, extra_data, is_scene_object, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z FROM buildings WHERE channel=@channel AND map_name=@mapName",
-                new NpgsqlParameter("@channel", channel),
-                new NpgsqlParameter("@mapName", mapName));
-            return result;
-        }
-
+        public const string CACHE_KEY_UPDATE_BUILDING = "UPDATE_BUILDING";
         public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
         {
-            using (NpgsqlConnection connection = NewConnection())
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
+                await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_UPDATE_BUILDING,
+                    connection, transaction,
+                    "buildings",
+                    new[]
                     {
-                        await ExecuteNonQuery(connection, transaction, "UPDATE buildings SET " +
-                            "parent_id=@parentId, " +
-                            "entity_id=@entityId, " +
-                            "current_hp=@currentHp, " +
-                            "remains_lifetime=@remainsLifeTime, " +
-                            "is_locked=@isLocked, " +
-                            "lock_password=@lockPassword, " +
-                            "creator_id=@creatorId, " +
-                            "creator_name=@creatorName, " +
-                            "extra_data=@extraData, " +
-                            "is_scene_object=@isSceneObject, " +
-                            "position_x=@positionX, " +
-                            "position_y=@positionY, " +
-                            "position_z=@positionZ, " +
-                            "rotation_x=@rotationX, " +
-                            "rotation_y=@rotationY, " +
-                            "rotation_z=@rotationZ " +
-                            "WHERE id=@id AND channel=@channel AND map_name=@mapName",
-                            new NpgsqlParameter("@id", building.Id),
-                            new NpgsqlParameter("@parentId", building.ParentId),
-                            new NpgsqlParameter("@entityId", building.EntityId),
-                            new NpgsqlParameter("@currentHp", building.CurrentHp),
-                            new NpgsqlParameter("@remainsLifeTime", building.RemainsLifeTime),
-                            new NpgsqlParameter("@isLocked", building.IsLocked),
-                            new NpgsqlParameter("@lockPassword", building.LockPassword),
-                            new NpgsqlParameter("@creatorId", building.CreatorId),
-                            new NpgsqlParameter("@creatorName", building.CreatorName),
-                            new NpgsqlParameter("@extraData", building.ExtraData),
-                            new NpgsqlParameter("@isSceneObject", building.IsSceneObject),
-                            new NpgsqlParameter("@positionX", building.Position.x),
-                            new NpgsqlParameter("@positionY", building.Position.y),
-                            new NpgsqlParameter("@positionZ", building.Position.z),
-                            new NpgsqlParameter("@rotationX", building.Rotation.x),
-                            new NpgsqlParameter("@rotationY", building.Rotation.y),
-                            new NpgsqlParameter("@rotationZ", building.Rotation.z),
-                            new NpgsqlParameter("@channel", channel),
-                            new NpgsqlParameter("@mapName", mapName));
-
-                        if (storageItems != null)
-                            await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
-
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
+                        new PostgreSQLHelpers.ColumnInfo("parent_id", building.ParentId),
+                        new PostgreSQLHelpers.ColumnInfo("entity_id", building.EntityId),
+                        new PostgreSQLHelpers.ColumnInfo("current_hp", building.Id),
+                        new PostgreSQLHelpers.ColumnInfo("remains_lifetime", building.RemainsLifeTime),
+                        new PostgreSQLHelpers.ColumnInfo("is_locked", building.IsLocked),
+                        new PostgreSQLHelpers.ColumnInfo("lock_password", building.LockPassword),
+                        new PostgreSQLHelpers.ColumnInfo("position_x", building.Position.x),
+                        new PostgreSQLHelpers.ColumnInfo("position_y", building.Position.y),
+                        new PostgreSQLHelpers.ColumnInfo("position_z", building.Position.z),
+                        new PostgreSQLHelpers.ColumnInfo("rotation_x", building.Rotation.x),
+                        new PostgreSQLHelpers.ColumnInfo("rotation_y", building.Rotation.y),
+                        new PostgreSQLHelpers.ColumnInfo("rotation_z", building.Rotation.z),
+                        new PostgreSQLHelpers.ColumnInfo("creator_id", building.CreatorId),
+                        new PostgreSQLHelpers.ColumnInfo("creator_name", building.CreatorName),
+                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "extra_data", building.ExtraData),
+                        new PostgreSQLHelpers.ColumnInfo("is_scene_object", building.IsSceneObject),
+                    },
+                    new[]
                     {
-                        LogError(LogTag, "Transaction, Error occurs while update building: " + building.Id);
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
-                }
+                        PostgreSQLHelpers.WhereEqualTo("id", building.Id),
+                        PostgreSQLHelpers.AndWhereEqualTo("channel", channel),
+                        PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName),
+                    });
+
+                if (storageItems != null)
+                    await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
+
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update building: " + building.Id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
             }
         }
 
+        public const string CACHE_KEY_DELETE_BUILDING = "DELETE_BUILDING";
         public override async UniTask DeleteBuilding(string channel, string mapName, string id)
         {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                await ExecuteNonQuery(connection, null, "DELETE FROM buildings WHERE id=@id AND channel=@channel AND map_name=@mapName",
-                    new NpgsqlParameter("@id", id),
-                    new NpgsqlParameter("@channel", channel),
-                    new NpgsqlParameter("@mapName", mapName));
-            }
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_BUILDING,
+                connection, null,
+                "buildings",
+                PostgreSQLHelpers.WhereEqualTo("id", id),
+                PostgreSQLHelpers.AndWhereEqualTo("channel", channel),
+                PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName));
         }
     }
 }
