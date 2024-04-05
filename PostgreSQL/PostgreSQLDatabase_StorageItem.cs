@@ -120,11 +120,11 @@ namespace MultiplayerARPG.MMO
                         "storage_buildings",
                         new[]
                         {
-                                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
+                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
                         },
                         new[]
                         {
-                                PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
+                            PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
                         });
                     if (count <= 0)
                     {
