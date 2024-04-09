@@ -293,7 +293,7 @@ namespace MultiplayerARPG.MMO
             try
             {
                 ExecuteNonQuery(transaction, "DELETE FROM guildrequest WHERE " +
-                   "characterId1 LIKE @guildId AND " +
+                   "guildId LIKE @guildId AND " +
                    "requesterId LIKE @requesterId",
                    new SqliteParameter("@guildId", guildId),
                    new SqliteParameter("@requesterId", requesterId));

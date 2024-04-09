@@ -280,7 +280,7 @@ namespace MultiplayerARPG.MMO
                     try
                     {
                         await ExecuteNonQuery(connection, transaction, "DELETE FROM guildrequest WHERE " +
-                           "characterId1 LIKE @guildId AND " +
+                           "guildId LIKE @guildId AND " +
                            "requesterId LIKE @requesterId",
                            new MySqlParameter("@guildId", guildId),
                            new MySqlParameter("@requesterId", requesterId));
