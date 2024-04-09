@@ -7,347 +7,564 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
+        public const string CACHE_KEY_INSERT_GUILD = "INSERT_GUILD";
+        public const string CACHE_KEY_INSERT_GUILD_UPDATE = "INSERT_GUILD_UPDATE";
         public override async UniTask<int> CreateGuild(string guildName, string leaderId)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
             int id = 0;
-            await ExecuteReader((reader) =>
+            try
             {
-                if (reader.Read())
-                    id = reader.GetInt32(0);
-            }, "INSERT INTO guild (guildName, leaderId, options) VALUES (@guildName, @leaderId, @options);" +
-                "SELECT LAST_INSERT_ID();",
-                new NpgsqlParameter("@guildName", guildName),
-                new NpgsqlParameter("@leaderId", leaderId),
-                new NpgsqlParameter("@options", "{}"));
-            if (id > 0)
+                id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
+                    CACHE_KEY_INSERT_GUILD,
+                    connection, transaction,
+                    "guilds",
+                    new[] {
+                        new PostgreSQLHelpers.ColumnInfo("guild_name", guildName),
+                        new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
+                        new PostgreSQLHelpers.ColumnInfo("options", "{}"),
+                    }, "id");
+                if (id > 0)
+                {
+                    await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_INSERT_GUILD_UPDATE,
+                        connection, transaction,
+                        "characters",
+                        new[]
+                        {
+                            new PostgreSQLHelpers.ColumnInfo("guild_id", id),
+                        },
+                        PostgreSQLHelpers.WhereEqualTo("id", leaderId));
+                }
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
             {
-                await ExecuteNonQuery("UPDATE characters SET guildId=@id WHERE id=@leaderId",
-                    new NpgsqlParameter("@id", id),
-                    new NpgsqlParameter("@leaderId", leaderId));
+                LogError(LogTag, "Transaction, Error occurs while create guild: " + id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
             }
             return id;
         }
 
+        public const string CACHE_KEY_READ_GUILD = "READ_GUILD";
+        public const string CACHE_KEY_READ_GUILD_ROLES = "READ_GUILD_ROLES";
+        public const string CACHE_KEY_READ_GUILD_MEMBERS = "READ_GUILD_MEMBERS";
+        public const string CACHE_KEY_READ_GUILD_SKILLS = "READ_GUILD_SKILLS";
         public override async UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
-            GuildData result = null;
-            await ExecuteReader((reader) =>
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_GUILD,
+                connection, null,
+                "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank",
+                PostgreSQLHelpers.WhereEqualTo("id", id));
+            // Guild data
+            GuildData guild = null;
+            if (readerGuild.Read())
             {
-                if (reader.Read())
-                {
-                    result = new GuildData(id,
-                        reader.GetString(0),
-                        reader.GetString(1),
-                        defaultGuildRoles);
-                    result.level = reader.GetInt32(2);
-                    result.exp = reader.GetInt32(3);
-                    result.skillPoint = reader.GetInt32(4);
-                    result.guildMessage = reader.GetString(5);
-                    result.guildMessage2 = reader.GetString(6);
-                    result.gold = reader.GetInt32(7);
-                    result.score = reader.GetInt32(8);
-                    result.options = reader.GetString(9);
-                    result.autoAcceptRequests = reader.GetBoolean(10);
-                    result.rank = reader.GetInt32(11);
-                }
-            }, "SELECT `guildName`, `leaderId`, `level`, `exp`, `skillPoint`, `guildMessage`, `guildMessage2`, `gold`, `score`, `options`, `autoAcceptRequests`, `rank` FROM guild WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", id));
-            // Read relates data if guild exists
-            if (result != null)
-            {
-                // Guild roles
-                await ExecuteReader((reader) =>
-                {
-                    byte guildRole;
-                    GuildRoleData guildRoleData;
-                    while (reader.Read())
-                    {
-                        guildRole = reader.GetByte(0);
-                        guildRoleData = new GuildRoleData();
-                        guildRoleData.roleName = reader.GetString(1);
-                        guildRoleData.canInvite = reader.GetBoolean(2);
-                        guildRoleData.canKick = reader.GetBoolean(3);
-                        guildRoleData.canUseStorage = reader.GetBoolean(4);
-                        guildRoleData.shareExpPercentage = reader.GetByte(5);
-                        result.SetRole(guildRole, guildRoleData);
-                    }
-                }, "SELECT guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage FROM guildrole WHERE guildId=@id",
-                    new NpgsqlParameter("@id", id));
-                // Guild members
-                await ExecuteReader((reader) =>
-                {
-                    SocialCharacterData guildMemberData;
-                    while (reader.Read())
-                    {
-                        // Get some required data, other data will be set at server side
-                        guildMemberData = new SocialCharacterData();
-                        guildMemberData.id = reader.GetString(0);
-                        guildMemberData.dataId = reader.GetInt32(1);
-                        guildMemberData.characterName = reader.GetString(2);
-                        guildMemberData.level = reader.GetInt32(3);
-                        result.AddMember(guildMemberData, reader.GetByte(4));
-                    }
-                }, "SELECT id, dataId, characterName, level, guildRole FROM characters WHERE guildId=@id",
-                    new NpgsqlParameter("@id", id));
-                // Guild skills
-                await ExecuteReader((reader) =>
-                {
-                    while (reader.Read())
-                    {
-                        result.SetSkillLevel(reader.GetInt32(0), reader.GetInt32(1));
-                    }
-                }, "SELECT dataId, level FROM guildskill WHERE guildId=@id",
-                    new NpgsqlParameter("@id", id));
+                guild = new GuildData(id,
+                    readerGuild.GetString(0),
+                    readerGuild.GetString(1),
+                    defaultGuildRoles);
+                guild.level = readerGuild.GetInt32(2);
+                guild.exp = readerGuild.GetInt32(3);
+                guild.skillPoint = readerGuild.GetInt32(4);
+                guild.guildMessage = readerGuild.GetString(5);
+                guild.guildMessage2 = readerGuild.GetString(6);
+                guild.gold = readerGuild.GetInt32(7);
+                guild.score = readerGuild.GetInt32(8);
+                guild.options = readerGuild.GetString(9);
+                guild.autoAcceptRequests = readerGuild.GetBoolean(10);
+                guild.rank = readerGuild.GetInt32(11);
             }
-            return result;
+            if (guild == null)
+                return null;
+            // Guild roles
+            using var readerRoles = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_GUILD_ROLES,
+                connection, null,
+                "guild_roles", "role, name, can_invite, can_kick, can_use_storage, share_exp_percentage",
+                PostgreSQLHelpers.WhereEqualTo("id", id));
+            byte guildRole;
+            GuildRoleData guildRoleData;
+            while (readerRoles.Read())
+            {
+                guildRole = readerRoles.GetByte(0);
+                guildRoleData = new GuildRoleData();
+                guildRoleData.roleName = readerRoles.GetString(1);
+                guildRoleData.canInvite = readerRoles.GetBoolean(2);
+                guildRoleData.canKick = readerRoles.GetBoolean(3);
+                guildRoleData.canUseStorage = readerRoles.GetBoolean(4);
+                guildRoleData.shareExpPercentage = readerRoles.GetByte(5);
+                guild.SetRole(guildRole, guildRoleData);
+            }
+            // Guild members
+            using var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_GUILD_MEMBERS,
+                connection, null,
+                "characters", "id, data_id, character_name, level, guild_role",
+                PostgreSQLHelpers.WhereEqualTo("id", id));
+            SocialCharacterData guildMemberData;
+            while (readerMembers.Read())
+            {
+                // Get some required data, other data will be set at server side
+                guildMemberData = new SocialCharacterData();
+                guildMemberData.id = readerMembers.GetString(0);
+                guildMemberData.dataId = readerMembers.GetInt32(1);
+                guildMemberData.characterName = readerMembers.GetString(2);
+                guildMemberData.level = readerMembers.GetInt32(3);
+                guild.AddMember(guildMemberData, (byte)readerMembers.GetInt32(4));
+            }
+            // Guild skills
+            using var readerSkills = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_GUILD_SKILLS,
+                connection, null,
+                "guild_skills", "data_id, level",
+                PostgreSQLHelpers.WhereEqualTo("id", id));
+            while (readerSkills.Read())
+            {
+                guild.SetSkillLevel(readerSkills.GetInt32(0), readerSkills.GetInt32(1));
+            }
+            return guild;
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_LEVEL = "UPDATE_GUILD_LEVEL";
         public override async UniTask UpdateGuildLevel(int id, int level, int exp, int skillPoint)
         {
-            await ExecuteNonQuery("UPDATE guild SET level=@level, exp=@exp, skillPoint=@skillPoint WHERE id=@id",
-                new NpgsqlParameter("@level", level),
-                new NpgsqlParameter("@exp", exp),
-                new NpgsqlParameter("@skillPoint", skillPoint),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_LEVEL,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("level", level),
+                    new PostgreSQLHelpers.ColumnInfo("exp", exp),
+                    new PostgreSQLHelpers.ColumnInfo("skill_point", skillPoint),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_LEADER = "UPDATE_GUILD_LEADER";
         public override async UniTask UpdateGuildLeader(int id, string leaderId)
         {
-            await ExecuteNonQuery("UPDATE guild SET leaderId=@leaderId WHERE id=@id",
-                new NpgsqlParameter("@leaderId", leaderId),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_LEADER,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_MESSAGE = "UPDATE_GUILD_MESSAGE";
         public override async UniTask UpdateGuildMessage(int id, string guildMessage)
         {
-            await ExecuteNonQuery("UPDATE guild SET guildMessage=@guildMessage WHERE id=@id",
-                new NpgsqlParameter("@guildMessage", guildMessage),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_MESSAGE,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("guild_message", guildMessage),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_MESSAGE_2 = "UPDATE_GUILD_MESSAGE_2";
         public override async UniTask UpdateGuildMessage2(int id, string guildMessage)
         {
-            await ExecuteNonQuery("UPDATE guild SET guildMessage2=@guildMessage WHERE id=@id",
-                new NpgsqlParameter("@guildMessage", guildMessage),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_MESSAGE_2,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("guild_message_2", guildMessage),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_SCORE = "UPDATE_GUILD_SCORE";
         public override async UniTask UpdateGuildScore(int id, int score)
         {
-            await ExecuteNonQuery("UPDATE guild SET score=@score WHERE id=@id",
-                new NpgsqlParameter("@score", score),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_SCORE,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("score", score),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_OPTIONS = "UPDATE_GUILD_OPTIONS";
         public override async UniTask UpdateGuildOptions(int id, string options)
         {
-            await ExecuteNonQuery("UPDATE guild SET options=@options WHERE id=@id",
-                new NpgsqlParameter("@options", options),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_OPTIONS,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("options", options),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_AUTO_ACCEPT_REQUESTS = "UPDATE_GUILD_AUTO_ACCEPT_REQUESTS";
         public override async UniTask UpdateGuildAutoAcceptRequests(int id, bool autoAcceptRequests)
         {
-            await ExecuteNonQuery("UPDATE guild SET autoAcceptRequests=@autoAcceptRequests WHERE id=@id",
-                new NpgsqlParameter("@autoAcceptRequests", autoAcceptRequests),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_AUTO_ACCEPT_REQUESTS,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("auto_accept_requests", autoAcceptRequests),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_RANK = "UPDATE_GUILD_RANK";
         public override async UniTask UpdateGuildRank(int id, int rank)
         {
-            await ExecuteNonQuery("UPDATE guild SET rank=@rank WHERE id=@id",
-                new NpgsqlParameter("@rank", rank),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_RANK,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("rank", rank),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_ROLE_UPDATE = "UPDATE_GUILD_ROLE_UPDATE";
+        public const string CACHE_KEY_UPDATE_GUILD_ROLE_INSERT = "UPDATE_GUILD_ROLE_INSERT";
         public override async UniTask UpdateGuildRole(int id, byte guildRole, GuildRoleData guildRoleData)
         {
-            await ExecuteNonQuery("DELETE FROM guildrole WHERE guildId=@guildId AND guildRole=@guildRole",
-                new NpgsqlParameter("@guildId", id),
-                new NpgsqlParameter("@guildRole", guildRole));
-            await ExecuteNonQuery("INSERT INTO guildrole (guildId, guildRole, name, canInvite, canKick, canUseStorage, shareExpPercentage) " +
-                "VALUES (@guildId, @guildRole, @name, @canInvite, @canKick, @canUseStorage, @shareExpPercentage)",
-                new NpgsqlParameter("@guildId", id),
-                new NpgsqlParameter("@guildRole", guildRole),
-                new NpgsqlParameter("@name", guildRoleData.roleName),
-                new NpgsqlParameter("@canInvite", guildRoleData.canInvite),
-                new NpgsqlParameter("@canKick", guildRoleData.canKick),
-                new NpgsqlParameter("@canUseStorage", guildRoleData.canUseStorage),
-                new NpgsqlParameter("@shareExpPercentage", guildRoleData.shareExpPercentage));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            int count = await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_ROLE_UPDATE,
+                connection, null,
+                "guild_roles",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("name", guildRoleData.roleName),
+                    new PostgreSQLHelpers.ColumnInfo("can_invite", guildRoleData.canInvite),
+                    new PostgreSQLHelpers.ColumnInfo("can_kick", guildRoleData.canKick),
+                    new PostgreSQLHelpers.ColumnInfo("can_use_storage", guildRoleData.canUseStorage),
+                    new PostgreSQLHelpers.ColumnInfo("share_exp_percentage", guildRoleData.shareExpPercentage),
+                },
+                new[]
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", id),
+                    PostgreSQLHelpers.WhereEqualTo("role", guildRole),
+                });
+            if (count <= 0)
+            {
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_UPDATE_GUILD_ROLE_INSERT,
+                    connection, null,
+                    "guild_roles",
+                    new PostgreSQLHelpers.ColumnInfo("id", id),
+                    new PostgreSQLHelpers.ColumnInfo("role", guildRole),
+                    new PostgreSQLHelpers.ColumnInfo("name", guildRoleData.roleName),
+                    new PostgreSQLHelpers.ColumnInfo("can_invite", guildRoleData.canInvite),
+                    new PostgreSQLHelpers.ColumnInfo("can_kick", guildRoleData.canKick),
+                    new PostgreSQLHelpers.ColumnInfo("can_use_storage", guildRoleData.canUseStorage),
+                    new PostgreSQLHelpers.ColumnInfo("share_exp_percentage", guildRoleData.shareExpPercentage));
+            }
         }
 
+        public const string CACHE_KEY_UPDATE_GUILD_MEMBER_ROLE = "UPDATE_GUILD_MEMBER_ROLE";
         public override async UniTask UpdateGuildMemberRole(string characterId, byte guildRole)
         {
-            await ExecuteNonQuery("UPDATE characters SET guildRole=@guildRole WHERE id=@characterId",
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@guildRole", guildRole));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_MEMBER_ROLE,
+                connection, null,
+                "characters",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("guild_role", guildRole),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", characterId));
         }
 
-        public override async UniTask UpdateGuildSkillLevel(int id, int dataId, int level, int skillPoint)
+        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_UPDATE = "UPDATE_GUILD_SKILL_LEVELS_UPDATE";
+        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_INSERT = "UPDATE_GUILD_SKILL_LEVELS_INSERT";
+        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT = "UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT";
+        public override async UniTask UpdateGuildSkillLevel(int id, int dataId, int skillLevel, int skillPoint)
         {
-            await ExecuteNonQuery("DELETE FROM guildskill WHERE guildId=@guildId AND dataId=@dataId",
-                new NpgsqlParameter("@guildId", id),
-                new NpgsqlParameter("@dataId", dataId));
-            await ExecuteNonQuery("INSERT INTO guildskill (guildId, dataId, level) " +
-                "VALUES (@guildId, @dataId, @level)",
-                new NpgsqlParameter("@guildId", id),
-                new NpgsqlParameter("@dataId", dataId),
-                new NpgsqlParameter("@level", level));
-            await ExecuteNonQuery("UPDATE guild SET skillPoint=@skillPoint WHERE id=@id",
-                new NpgsqlParameter("@skillPoint", skillPoint),
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                int count = await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_UPDATE,
+                    connection, transaction,
+                    "guild_skills",
+                    new[]
+                    {
+                        new PostgreSQLHelpers.ColumnInfo("level", skillLevel),
+                    },
+                    new[]
+                    {
+                        PostgreSQLHelpers.WhereEqualTo("id", id),
+                        PostgreSQLHelpers.AndWhereEqualTo("data_id", dataId),
+                    });
+                if (count <= 0)
+                {
+                    await PostgreSQLHelpers.ExecuteInsert(
+                        CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_INSERT,
+                        connection, transaction,
+                        "guild_skills",
+                        new PostgreSQLHelpers.ColumnInfo("id", id),
+                        new PostgreSQLHelpers.ColumnInfo("data_id", dataId),
+                        new PostgreSQLHelpers.ColumnInfo("level", skillLevel));
+                }
+                await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT,
+                    connection, transaction,
+                    "guilds",
+                    new[]
+                    {
+                        new PostgreSQLHelpers.ColumnInfo("skill_point", skillPoint),
+                    },
+                    PostgreSQLHelpers.WhereEqualTo("id", id));
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update guild skill levels: " + id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+            }
         }
 
+        public const string CACHE_KEY_DELETE_GUILD_GUILD = "DELETE_GUILD_GUILD";
+        public const string CACHE_KEY_DELETE_GUILD_CHARACTER = "DELETE_GUILD_CHARACTER";
         public override async UniTask DeleteGuild(int id)
         {
-            await ExecuteNonQuery("DELETE FROM guild WHERE id=@id;" +
-                "UPDATE characters SET guildId=0 WHERE guildId=@id;",
-                new NpgsqlParameter("@id", id));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                await PostgreSQLHelpers.ExecuteDelete(
+                    CACHE_KEY_DELETE_GUILD_GUILD,
+                    connection, transaction,
+                    "guilds",
+                    PostgreSQLHelpers.WhereEqualTo("id", id));
+                await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_DELETE_GUILD_CHARACTER,
+                    connection, transaction,
+                    "characters",
+                    new[]
+                    {
+                        new PostgreSQLHelpers.ColumnInfo("guild_id", 0),
+                        new PostgreSQLHelpers.ColumnInfo("guild_role", 0),
+                    },
+                    PostgreSQLHelpers.WhereEqualTo("guild_id", id));
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while delete guild: " + id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+            }
         }
 
+        public const string CACHE_KEY_FIND_GUILD_NAME = "FIND_GUILD_NAME";
         public override async UniTask<long> FindGuildName(string guildName)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM guild WHERE guildName LIKE @guildName",
-                new NpgsqlParameter("@guildName", guildName));
-            return result != null ? (long)result : 0;
+            using var connection = await _dataSource.OpenConnectionAsync();
+            var count = await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KEY_FIND_GUILD_NAME,
+                connection, null,
+                "guilds",
+                PostgreSQLHelpers.WhereLike("guild_name", guildName));
+            return count;
         }
 
+        public const string CACHE_KEY_UPDATE_CHARACTER_GUILD = "UPDATE_CHARACTER_GUILD";
         public override async UniTask UpdateCharacterGuild(string characterId, int guildId, byte guildRole)
         {
-            await ExecuteNonQuery("UPDATE characters SET guildId=@guildId, guildRole=@guildRole WHERE id=@characterId",
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@guildId", guildId),
-                new NpgsqlParameter("@guildRole", guildRole));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_CHARACTER_GUILD,
+                connection, null,
+                "characters",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("guild_id", guildId),
+                    new PostgreSQLHelpers.ColumnInfo("guild_role", guildRole),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", characterId));
         }
 
-        public override async UniTask<int> GetGuildGold(int guildId)
+        public const string CACHE_KEY_GET_GUILD_GOLD = "GET_GUILD_GOLD";
+        public override async UniTask<int> GetGuildGold(int id)
         {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_GET_GUILD_GOLD,
+                connection, null,
+                "guilds", "gold", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("id", id));
             int gold = 0;
-            await ExecuteReader((reader) =>
-            {
-                if (reader.Read())
-                    gold = reader.GetInt32(0);
-            }, "SELECT gold FROM guild WHERE id=@id LIMIT 1",
-                new NpgsqlParameter("@id", guildId));
+            if (reader.Read())
+                gold = reader.GetInt32(0);
             return gold;
         }
 
-        public override async UniTask UpdateGuildGold(int guildId, int gold)
+        public const string CACHE_KEY_UPDATE_GUILD_GOLD = "UPDATE_GUILD_GOLD";
+        public override async UniTask UpdateGuildGold(int id, int gold)
         {
-            await ExecuteNonQuery("UPDATE guild SET gold=@gold WHERE id=@id",
-                new NpgsqlParameter("@id", guildId),
-                new NpgsqlParameter("@gold", gold));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_GOLD,
+                connection, null,
+                "guilds",
+                new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("gold", gold),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
+        public const string CACHE_KEY_FIND_GUILDS = "FIND_GUILDS";
         public override async UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
         {
-            string excludeIdsQuery = "1";
             // TODO: exclude joined guild, exclude requested guilds
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_FIND_GUILDS,
+                connection, null,
+                "guilds", "id, guild_name, level, guild_message, guild_message_2, score, options, auto_accept_requests, rank, current_members, max_members", $"ORDER BY RAND() LIMIT {skip}, {limit}",
+                PostgreSQLHelpers.WhereLike("guild_name", $"%{guildName}%"));
             List<GuildListEntry> result = new List<GuildListEntry>();
-            await ExecuteReader((reader) =>
+            GuildListEntry tempEntry;
+            while (reader.Read())
             {
-                GuildListEntry guildListEntry;
-                while (reader.Read())
-                {
-                    // Get some required data, other data will be set at server side
-                    guildListEntry = new GuildListEntry();
-                    guildListEntry.Id = reader.GetInt32(0);
-                    guildListEntry.GuildName = reader.GetString(1);
-                    guildListEntry.Level = reader.GetInt32(2);
-                    guildListEntry.FieldOptions = GuildListFieldOptions.All;
-                    guildListEntry.GuildMessage = reader.GetString(3);
-                    guildListEntry.GuildMessage2 = reader.GetString(4);
-                    guildListEntry.Score = reader.GetInt32(5);
-                    guildListEntry.Options = reader.GetString(6);
-                    guildListEntry.AutoAcceptRequests = reader.GetBoolean(7);
-                    guildListEntry.Rank = reader.GetInt32(8);
-                    guildListEntry.CurrentMembers = reader.GetInt32(9);
-                    guildListEntry.MaxMembers = reader.GetInt32(10);
-                    result.Add(guildListEntry);
-                }
-            }, "SELECT id, guildName, level, guildMessage, guildMessage2, score, options, autoAcceptRequests, rank, currentMembers, maxMembers FROM guild WHERE guildName LIKE @guildName AND " + excludeIdsQuery + " ORDER BY RAND() LIMIT " + skip + ", " + limit,
-                new NpgsqlParameter("@guildName", "%" + guildName + "%"));
+                // Get some required data, other data will be set at server side
+                tempEntry = new GuildListEntry();
+                tempEntry.Id = reader.GetInt32(0);
+                tempEntry.GuildName = reader.GetString(1);
+                tempEntry.Level = reader.GetInt32(2);
+                tempEntry.FieldOptions = GuildListFieldOptions.All;
+                tempEntry.GuildMessage = reader.GetString(3);
+                tempEntry.GuildMessage2 = reader.GetString(4);
+                tempEntry.Score = reader.GetInt32(5);
+                tempEntry.Options = reader.GetString(6);
+                tempEntry.AutoAcceptRequests = reader.GetBoolean(7);
+                tempEntry.Rank = reader.GetInt32(8);
+                tempEntry.CurrentMembers = reader.GetInt32(9);
+                tempEntry.MaxMembers = reader.GetInt32(10);
+                result.Add(tempEntry);
+            }
             return result;
         }
 
+        public const string CACHE_KEY_CREATE_GUILD_REQUEST = "CREATE_GUILD_REQUEST";
         public override async UniTask CreateGuildRequest(int guildId, string requesterId)
         {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        await ExecuteNonQuery(connection, transaction, "DELETE FROM guildrequest WHERE " +
-                           "characterId1 LIKE @guildId AND " +
-                           "requesterId LIKE @requesterId",
-                           new NpgsqlParameter("@guildId", guildId),
-                           new NpgsqlParameter("@requesterId", requesterId));
-                        await ExecuteNonQuery(connection, transaction, "INSERT INTO guildrequest " +
-                            "(guildId, requesterId, state) VALUES " +
-                            "(@guildId, @requesterId, @state)",
-                            new NpgsqlParameter("@guildId", guildId),
-                            new NpgsqlParameter("@requesterId", requesterId));
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        LogError(LogTag, "Transaction, Error occurs while creating guildrequest: " + guildId + " " + requesterId);
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
-                }
-            }
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteInsert(
+                CACHE_KEY_CREATE_GUILD_REQUEST,
+                connection, null,
+                "guild_requests",
+                new PostgreSQLHelpers.ColumnInfo("id", guildId),
+                new PostgreSQLHelpers.ColumnInfo("requester_id", requesterId));
         }
 
         public override async UniTask DeleteGuildRequest(int guildId, string requesterId)
         {
-            await ExecuteNonQuery("DELETE FROM guildrequest WHERE " +
-               "guildId LIKE @guildId AND " +
-               "requesterId LIKE @requesterId",
-               new NpgsqlParameter("@guildId", guildId),
-               new NpgsqlParameter("@requesterId", requesterId));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await DeleteGuildRequest(connection, null, guildId, requesterId);
         }
 
+        public const string CACHE_KEY_DELETE_GUILD_REQUEST = "DELETE_GUILD_REQUEST";
+        public async UniTask DeleteGuildRequest(NpgsqlConnection connection, NpgsqlTransaction transaction, int guildId, string requesterId)
+        {
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_GUILD_REQUEST,
+                connection, transaction,
+                "guild_requests",
+                PostgreSQLHelpers.WhereEqualTo("id", guildId),
+                PostgreSQLHelpers.AndWhereEqualTo("requester_id", requesterId));
+        }
+
+        public const string CACHE_KEY_GET_GUILD_REQUESTS = "GET_GUILD_REQUESTS";
         public override async UniTask<List<SocialCharacterData>> GetGuildRequests(int guildId, int skip, int limit)
         {
-            List<SocialCharacterData> result = new List<SocialCharacterData>();
+            using var connection = await _dataSource.OpenConnectionAsync();
+            // Get character IDs
+            using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_GET_GUILD_REQUESTS,
+                connection, null,
+                "guild_requests", "requester_id", $"LIMIT {skip}, {limit}",
+                PostgreSQLHelpers.WhereEqualTo("id", guildId));
             List<string> characterIds = new List<string>();
-            await ExecuteReader((reader) =>
+            while (readerIds.Read())
             {
-                while (reader.Read())
-                {
-                    characterIds.Add(reader.GetString(0));
-                }
-            }, "SELECT requesterId FROM guildrequest WHERE guildId=@guildId LIMIT " + skip + ", " + limit,
-                new NpgsqlParameter("@guildId", guildId));
-            SocialCharacterData socialCharacterData;
-            foreach (string characterId in characterIds)
-            {
-                await ExecuteReader((reader) =>
-                {
-                    while (reader.Read())
-                    {
-                        // Get some required data, other data will be set at server side
-                        socialCharacterData = new SocialCharacterData();
-                        socialCharacterData.id = reader.GetString(0);
-                        socialCharacterData.dataId = reader.GetInt32(1);
-                        socialCharacterData.characterName = reader.GetString(2);
-                        socialCharacterData.level = reader.GetInt32(3);
-                        result.Add(socialCharacterData);
-                    }
-                }, "SELECT id, dataId, characterName, level FROM characters WHERE BINARY id = @id",
-                    new NpgsqlParameter("@id", characterId));
+                characterIds.Add(readerIds.GetString(0));
             }
-            return result;
+            // Get some character data
+            List<SocialCharacterData> characters = new List<SocialCharacterData>();
+            if (characterIds.Count > 0)
+            {
+                List<PostgreSQLHelpers.WhereQuery> characterQueries = new List<PostgreSQLHelpers.WhereQuery>()
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterIds[0]),
+                };
+                for (int i = 1; i < characterIds.Count; ++i)
+                {
+                    characterQueries.Add(PostgreSQLHelpers.OrWhereEqualTo("id", characterIds[i]));
+                }
+                using var readerCharacter = await PostgreSQLHelpers.ExecuteSelect(
+                    null,
+                    connection, null,
+                    "characters",
+                    characterQueries,
+                    "id, data_id, character_name, level", "LIMIT 1");
+                SocialCharacterData tempCharacter;
+                while (readerCharacter.Read())
+                {
+                    tempCharacter = new SocialCharacterData();
+                    tempCharacter.id = readerCharacter.GetString(0);
+                    tempCharacter.dataId = readerCharacter.GetInt32(1);
+                    tempCharacter.characterName = readerCharacter.GetString(2);
+                    tempCharacter.level = readerCharacter.GetInt32(3);
+                    characters.Add(tempCharacter);
+                }
+            }
+            return characters;
         }
 
+        public const string CACHE_KEY_GET_GUILD_REQUESTS_NOTIFICATION = "GET_GUILD_REQUESTS_NOTIFICATION";
         public override async UniTask<int> GetGuildRequestsNotification(int guildId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM guildrequest WHERE guildId=@guildId",
-                new NpgsqlParameter("@guildId", guildId));
-            return (int)(long)result;
+            using var connection = await _dataSource.OpenConnectionAsync();
+            return (int)await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KEY_GET_GUILD_REQUESTS_NOTIFICATION,
+                connection, null,
+                "guild_requests",
+                PostgreSQLHelpers.WhereEqualTo("id", guildId));
         }
     }
 }
