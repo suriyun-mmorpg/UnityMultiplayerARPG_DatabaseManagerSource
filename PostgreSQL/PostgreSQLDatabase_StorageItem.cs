@@ -107,7 +107,7 @@ namespace MultiplayerARPG.MMO
                         },
                         new[]
                         {
-                            PostgreSQLHelpers.AndWhereEqualTo("id", int.Parse(storageOwnerId)),
+                            PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)),
                         });
                     if (count <= 0)
                     {
@@ -130,7 +130,7 @@ namespace MultiplayerARPG.MMO
                         },
                         new[]
                         {
-                            PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
+                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
                         });
                     if (count <= 0)
                     {
@@ -221,7 +221,7 @@ namespace MultiplayerARPG.MMO
                         },
                         new[]
                         {
-                            PostgreSQLHelpers.AndWhereEqualTo("id", int.Parse(storageOwnerId)),
+                            PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)),
                         });
                     if (count <= 0)
                     {
@@ -240,11 +240,11 @@ namespace MultiplayerARPG.MMO
                         "storage_reservation_buildings",
                         new[]
                         {
-                                new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
+                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
                         },
                         new[]
                         {
-                                PostgreSQLHelpers.AndWhereEqualTo("id", storageOwnerId),
+                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
                         });
                     if (count <= 0)
                     {
