@@ -298,8 +298,8 @@ namespace MultiplayerARPG.MMO
                    new SqliteParameter("@guildId", guildId),
                    new SqliteParameter("@requesterId", requesterId));
                 ExecuteNonQuery(transaction, "INSERT INTO guildrequest " +
-                    "(guildId, requesterId, state) VALUES " +
-                    "(@guildId, @requesterId, @state)",
+                    "(guildId, requesterId) VALUES " +
+                    "(@guildId, @requesterId)",
                     new SqliteParameter("@guildId", guildId),
                     new SqliteParameter("@requesterId", requesterId));
                 transaction.Commit();

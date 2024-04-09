@@ -285,8 +285,8 @@ namespace MultiplayerARPG.MMO
                            new MySqlParameter("@guildId", guildId),
                            new MySqlParameter("@requesterId", requesterId));
                         await ExecuteNonQuery(connection, transaction, "INSERT INTO guildrequest " +
-                            "(guildId, requesterId, state) VALUES " +
-                            "(@guildId, @requesterId, @state)",
+                            "(guildId, requesterId) VALUES " +
+                            "(@guildId, @requesterId)",
                             new MySqlParameter("@guildId", guildId),
                             new MySqlParameter("@requesterId", requesterId));
                         await transaction.CommitAsync();
