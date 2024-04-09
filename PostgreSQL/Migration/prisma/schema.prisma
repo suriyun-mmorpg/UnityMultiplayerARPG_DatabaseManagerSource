@@ -303,7 +303,6 @@ model guild_skills {
   id          Int      @db.Integer()
   data_id     Int      @db.Integer()
   level       Int      @db.Integer()
-  create_time DateTime @default(now()) @db.Timestamptz()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 
   @@id([id, data_id])
