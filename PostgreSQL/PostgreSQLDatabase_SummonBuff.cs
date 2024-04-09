@@ -1,6 +1,7 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using Npgsql;
 using NpgsqlTypes;
 using System.Collections.Generic;
 
@@ -8,14 +9,13 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public const string CACHE_KEY_SET_SUMMON_BUFFS_UPDATE = "SET_SUMMON_BUFFS_UPDATE";
-        public const string CACHE_KEY_SET_SUMMON_BUFFS_INSERT = "SET_SUMMON_BUFFS_INSERT";
-        public async UniTask UpdateSummonBuffs(string characterId, IList<CharacterBuff> characterBuffs)
+        public const string CACHE_KEY_FILL_SUMMON_BUFFS_UPDATE = "FILL_SUMMON_BUFFS_UPDATE";
+        public const string CACHE_KEY_FILL_SUMMON_BUFFS_INSERT = "FILL_SUMMON_BUFFS_INSERT";
+        public async UniTask FillSummonBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId, IList<CharacterBuff> characterBuffs)
         {
-            using var connection = await _dataSource.OpenConnectionAsync();
             int count = await PostgreSQLHelpers.ExecuteUpdate(
-                CACHE_KEY_SET_SUMMON_BUFFS_UPDATE,
-                connection, null,
+                CACHE_KEY_FILL_SUMMON_BUFFS_UPDATE,
+                connection, transaction,
                 "character_summon_buffs",
                 new[]
                 {
@@ -28,7 +28,7 @@ namespace MultiplayerARPG.MMO
             if (count <= 0)
             {
                 await PostgreSQLHelpers.ExecuteInsert(
-                    CACHE_KEY_SET_SUMMON_BUFFS_INSERT,
+                    CACHE_KEY_FILL_SUMMON_BUFFS_INSERT,
                     connection, null,
                     "character_summon_buffs",
                     new PostgreSQLHelpers.ColumnInfo("id", characterId),
