@@ -126,7 +126,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_USER_LEVEL,
-                connection, null,
+                connection,
                 "user_accesses", "level", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             byte userLevel = 0;
@@ -143,7 +143,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_GOLD,
-                connection, null,
+                connection,
                 "user_currencies", "gold", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             int gold = 0;
@@ -175,7 +175,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KET_GET_CASH,
-                connection, null,
+                connection,
                 "user_currencies", "cash", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             int cash = 0;
