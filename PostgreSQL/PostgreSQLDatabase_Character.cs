@@ -134,21 +134,22 @@ namespace MultiplayerARPG.MMO
                 result.IconDataId = reader.GetInt32(34);
                 result.FrameDataId = reader.GetInt32(35);
                 result.TitleDataId = reader.GetInt32(36);
-                result.LastDeadTime = reader.GetInt64(37);
-                result.UnmuteTime = reader.GetInt64(38);
-                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(39)).ToUnixTimeSeconds();
-                if (!reader.IsDBNull(40))
-                    result.IsPkOn = reader.GetBoolean(40);
+                result.Reputation = reader.GetInt32(37);
+                result.LastDeadTime = reader.GetInt64(38);
+                result.UnmuteTime = reader.GetInt64(39);
+                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(40)).ToUnixTimeSeconds();
                 if (!reader.IsDBNull(41))
-                    result.LastPkOnTime = reader.GetInt64(41);
+                    result.IsPkOn = reader.GetBoolean(41);
                 if (!reader.IsDBNull(42))
-                    result.PkPoint = reader.GetInt32(42);
+                    result.LastPkOnTime = reader.GetInt64(42);
                 if (!reader.IsDBNull(43))
-                    result.ConsecutivePkKills = reader.GetInt32(43);
+                    result.PkPoint = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.HighestPkPoint = reader.GetInt32(44);
+                    result.ConsecutivePkKills = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    result.HighestConsecutivePkKills = reader.GetInt32(45);
+                    result.HighestPkPoint = reader.GetInt32(45);
+                if (!reader.IsDBNull(46))
+                    result.HighestConsecutivePkKills = reader.GetInt32(46);
                 return true;
             }
             result = null;
