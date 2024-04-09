@@ -10,39 +10,26 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var transaction = await connection.BeginTransactionAsync();
-            int id = 0;
-            try
-            {
-                id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
-                    CACHE_KEY_INSERT_PARTY,
-                    connection, transaction,
-                    "parties",
-                    new[] {
-                        new PostgreSQLHelpers.ColumnInfo("share_exp", shareExp),
-                        new PostgreSQLHelpers.ColumnInfo("share_item", shareItem),
-                        new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
-                    }, "id");
-                if (id > 0)
+            int id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
+                CACHE_KEY_INSERT_PARTY,
+                connection,
+                "parties",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo("share_exp", shareExp),
+                    new PostgreSQLHelpers.ColumnInfo("share_item", shareItem),
+                    new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
+                }, "id");
+            if (id <= 0)
+                return id;
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_INSERT_PARTY_UPDATE,
+                connection, null,
+                "characters",
+                new[]
                 {
-                    await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_INSERT_PARTY_UPDATE,
-                        connection, transaction,
-                        "characters",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo("party_id", id),
-                        },
-                        PostgreSQLHelpers.WhereEqualTo("id", leaderId));
-                }
-                await transaction.CommitAsync();
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while create party: " + id);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
+                    new PostgreSQLHelpers.ColumnInfo("party_id", id),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", leaderId));
             return id;
         }
 
@@ -53,7 +40,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var readerParties = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_PARTY_PARTIES,
-                connection, null,
+                connection,
                 "parties", "share_exp, share_item, leader_id", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             PartyData result = null;

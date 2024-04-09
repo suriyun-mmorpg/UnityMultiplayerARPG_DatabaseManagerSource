@@ -158,7 +158,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             int id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
                 CACHE_KEY_CREATE_MAIL,
-                connection, null,
+                connection,
                 "mail",
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo("event_id", mail.EventId),

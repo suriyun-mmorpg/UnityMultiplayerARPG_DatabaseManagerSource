@@ -12,39 +12,26 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> CreateGuild(string guildName, string leaderId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var transaction = await connection.BeginTransactionAsync();
-            int id = 0;
-            try
-            {
-                id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
-                    CACHE_KEY_INSERT_GUILD,
-                    connection, transaction,
-                    "guilds",
-                    new[] {
-                        new PostgreSQLHelpers.ColumnInfo("guild_name", guildName),
-                        new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
-                        new PostgreSQLHelpers.ColumnInfo("options", "{}"),
-                    }, "id");
-                if (id > 0)
+            int id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
+                CACHE_KEY_INSERT_GUILD,
+                connection,
+                "guilds",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo("guild_name", guildName),
+                    new PostgreSQLHelpers.ColumnInfo("leader_id", leaderId),
+                    new PostgreSQLHelpers.ColumnInfo("options", "{}"),
+                }, "id");
+            if (id <= 0)
+                return id;
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_INSERT_GUILD_UPDATE,
+                connection, null,
+                "characters",
+                new[]
                 {
-                    await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_INSERT_GUILD_UPDATE,
-                        connection, transaction,
-                        "characters",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo("guild_id", id),
-                        },
-                        PostgreSQLHelpers.WhereEqualTo("id", leaderId));
-                }
-                await transaction.CommitAsync();
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while create guild: " + id);
-                LogException(LogTag, ex);
-                await transaction.RollbackAsync();
-            }
+                    new PostgreSQLHelpers.ColumnInfo("guild_id", id),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", leaderId));
             return id;
         }
 
@@ -387,7 +374,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_GUILD_GOLD,
-                connection, null,
+                connection,
                 "guilds", "gold", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             int gold = 0;
@@ -418,7 +405,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_FIND_GUILDS,
-                connection, null,
+                connection,
                 "guilds", "id, guild_name, level, guild_message, guild_message_2, score, options, auto_accept_requests, rank, current_members, max_members", $"ORDER BY RAND() LIMIT {skip}, {limit}",
                 PostgreSQLHelpers.WhereLike("guild_name", $"%{guildName}%"));
             List<GuildListEntry> result = new List<GuildListEntry>();
@@ -480,7 +467,7 @@ namespace MultiplayerARPG.MMO
             // Get character IDs
             using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_GUILD_REQUESTS,
-                connection, null,
+                connection,
                 "guild_requests", "requester_id", $"LIMIT {skip}, {limit}",
                 PostgreSQLHelpers.WhereEqualTo("id", guildId));
             List<string> characterIds = new List<string>();
