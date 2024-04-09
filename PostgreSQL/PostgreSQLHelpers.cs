@@ -735,7 +735,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        public static string CreateInsertCommandText(string cacheKey, string tableName, params ColumnInfo[] columns)
+        public static string CreateInsertCommandText(string cacheKey, string tableName, IList<ColumnInfo> columns, string additional = "")
         {
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
@@ -746,14 +746,14 @@ namespace MultiplayerARPG.MMO
             s_stringBuilder.Append(' ');
             s_stringBuilder.Append('(');
             int i;
-            for (i = 0; i < columns.Length; ++i)
+            for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
                     s_stringBuilder.Append(',');
                 s_stringBuilder.Append(columns[i].name);
             }
             s_stringBuilder.Append(") VALUES (");
-            for (i = 0; i < columns.Length; ++i)
+            for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
                     s_stringBuilder.Append(',');
@@ -761,6 +761,7 @@ namespace MultiplayerARPG.MMO
                 s_stringBuilder.Append(i + 1);
             }
             s_stringBuilder.Append(')');
+            s_stringBuilder.Append(additional);
             commandText = s_stringBuilder.ToString();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
@@ -859,9 +860,19 @@ namespace MultiplayerARPG.MMO
             builder.Append(additional);
         }
 
-        public static async UniTask<int> ExecuteInsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, params ColumnInfo[] columns)
+        public static async UniTask<int> ExecuteInsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, params ColumnInfo[] values)
         {
-            return await ExecuteNonQuery(connection, transaction, CreateInsertCommandText(cacheKey, tableName, columns), columns);
+            return await ExecuteNonQuery(connection, transaction, CreateInsertCommandText(cacheKey, tableName, values), values);
+        }
+
+        public static async UniTask<int> ExecuteInsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> values)
+        {
+            return await ExecuteNonQuery(connection, transaction, CreateInsertCommandText(cacheKey, tableName, values), values);
+        }
+
+        public static async UniTask<object> ExecuteInsertScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> values, string returning = "")
+        {
+            return await ExecuteScalar(connection, transaction, CreateInsertCommandText(cacheKey, tableName, values, $"RETURNING {returning}"), values);
         }
 
         public static async UniTask<int> ExecuteUpdate(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, IList<WhereQuery> wheres, string additional = "")
@@ -876,6 +887,23 @@ namespace MultiplayerARPG.MMO
                 where,
             };
             return await ExecuteUpdate(cacheKey, connection, transaction, tableName, updates, wheres, additional);
+        }
+
+        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, IList<WhereQuery> wheres, string additional = "")
+        {
+            int count = await ExecuteUpdate($"{cacheKey}:UPDATE", connection, transaction, tableName, updates, wheres, additional);
+            if (count <= 0)
+                count = await ExecuteInsert($"{cacheKey}:INSERT", connection, transaction, tableName, updates);
+            return count;
+        }
+
+        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, WhereQuery where, string additional = "")
+        {
+            var wheres = new List<WhereQuery>()
+            {
+                where,
+            };
+            return await ExecuteUpsert(cacheKey, connection, transaction, tableName, updates, wheres, additional);
         }
 
         public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
@@ -1100,6 +1128,24 @@ namespace MultiplayerARPG.MMO
             for (i = 0; i < wheres.Count; ++i)
             {
                 cmd.Parameters[0].Value = wheres[i].value;
+            }
+            object result = await cmd.ExecuteScalarAsync();
+            cmd.Dispose();
+            return result;
+        }
+
+        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> values)
+        {
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            int i;
+            for (i = 0; i < values.Count; ++i)
+            {
+                cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = values[i].type });
+            }
+            await cmd.PrepareAsync();
+            for (i = 0; i < values.Count; ++i)
+            {
+                cmd.Parameters[0].Value = values[i].value;
             }
             object result = await cmd.ExecuteScalarAsync();
             cmd.Dispose();
