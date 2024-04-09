@@ -1,61 +1,39 @@
 #if NET || NETCOREAPP
-using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        private bool ReadCharacterDataInt32(NpgsqlDataReader reader, out CharacterDataInt32 result)
+        public const string CACHE_KEY_FILL_CHARACTER_DATA_INT32S_UPDATE = "FILL_CHARACTER_DATA_INT32S_UPDATE";
+        public const string CACHE_KEY_FILL_CHARACTER_DATA_INT32S_INSERT = "FILL_CHARACTER_DATA_INT32S_INSERT";
+        public async UniTask FillCharacterDataInt32s(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> characterDataInt32s)
         {
-            if (reader.Read())
-            {
-                result = new CharacterDataInt32();
-                result.hashedKey = reader.GetInt32(0);
-                result.value = reader.GetInt32(1);
-                return true;
-            }
-            result = default;
-            return false;
-        }
-
-        public async UniTask CreateCharacterDataInt32(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, HashSet<string> insertedIds, string characterId, CharacterDataInt32 characterDataInt32)
-        {
-            string id = ZString.Concat(characterId, "_", characterDataInt32.hashedKey);
-            if (insertedIds.Contains(id))
-            {
-                LogWarning(LogTag, $"Custom Int32 {id}, for character {characterId}, already inserted to table {tableName}");
-                return;
-            }
-            insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, $"INSERT INTO {tableName} (id, characterId, hashedKey, value) VALUES (@id, @characterId, @hashedKey, @value)",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@hashedKey", characterDataInt32.hashedKey),
-                new NpgsqlParameter("@value", characterDataInt32.value));
-        }
-
-        public async UniTask<List<CharacterDataInt32>> ReadCharacterDataInt32s(string tableName, string characterId, List<CharacterDataInt32> result = null)
-        {
-            if (result == null)
-                result = new List<CharacterDataInt32>();
-            await ExecuteReader((reader) =>
-            {
-                CharacterDataInt32 tempData;
-                while (ReadCharacterDataInt32(reader, out tempData))
+            int count = await PostgreSQLHelpers.ExecuteUpdate(
+                $"{CACHE_KEY_FILL_CHARACTER_DATA_INT32S_UPDATE}_{tableName}",
+                connection, transaction,
+                tableName,
+                new[]
                 {
-                    result.Add(tempData);
-                }
-            }, $"SELECT hashedKey, value FROM {tableName} WHERE characterId=@characterId",
-                new NpgsqlParameter("@characterId", characterId));
-            return result;
-        }
-
-        public async UniTask DeleteCharacterDataInt32s(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId)
-        {
-            await ExecuteNonQuery(connection, transaction, $"DELETE FROM {tableName} WHERE characterId=@characterId", new NpgsqlParameter("@characterId", characterId));
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterDataInt32s)),
+                },
+                new[]
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
+                });
+            if (count <= 0)
+            {
+                await PostgreSQLHelpers.ExecuteInsert(
+                    $"{CACHE_KEY_FILL_CHARACTER_DATA_INT32S_INSERT}_{tableName}",
+                    connection, null,
+                    tableName,
+                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterDataInt32s)));
+            }
         }
     }
 }
