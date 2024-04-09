@@ -1,65 +1,39 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        private bool ReadCharacterBuff(NpgsqlDataReader reader, out CharacterBuff result)
+        public const string CACHE_KEY_FILL_CHARACTER_BUFFS_UPDATE = "FILL_CHARACTER_BUFFS_UPDATE";
+        public const string CACHE_KEY_FILL_CHARACTER_BUFFS_INSERT = "FILL_CHARACTER_BUFFS_INSERT";
+        public async UniTask FillCharacterBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId, IList<CharacterBuff> characterBuffs)
         {
-            if (reader.Read())
-            {
-                result = new CharacterBuff();
-                result.id = reader.GetString(0);
-                result.type = (BuffType)reader.GetByte(1);
-                result.dataId = reader.GetInt32(2);
-                result.level = reader.GetInt32(3);
-                result.buffRemainsDuration = reader.GetFloat(4);
-                return true;
-            }
-            result = CharacterBuff.Empty;
-            return false;
-        }
-
-        public async UniTask CreateCharacterBuff(NpgsqlConnection connection, NpgsqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterBuff characterBuff)
-        {
-            string id = characterBuff.id;
-            if (insertedIds.Contains(id))
-            {
-                LogWarning(LogTag, $"Buff {id}, for character {characterId}, already inserted");
-                return;
-            }
-            insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterbuff (id, characterId, type, dataId, level, buffRemainsDuration) VALUES (@id, @characterId, @type, @dataId, @level, @buffRemainsDuration)",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@type", (byte)characterBuff.type),
-                new NpgsqlParameter("@dataId", characterBuff.dataId),
-                new NpgsqlParameter("@level", characterBuff.level),
-                new NpgsqlParameter("@buffRemainsDuration", characterBuff.buffRemainsDuration));
-        }
-
-        public async UniTask<List<CharacterBuff>> ReadCharacterBuffs(string characterId, List<CharacterBuff> result = null)
-        {
-            if (result == null)
-                result = new List<CharacterBuff>();
-            await ExecuteReader((reader) =>
-            {
-                CharacterBuff tempBuff;
-                while (ReadCharacterBuff(reader, out tempBuff))
+            int count = await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_FILL_CHARACTER_BUFFS_UPDATE,
+                connection, transaction,
+                "character_buffs",
+                new[]
                 {
-                    result.Add(tempBuff);
-                }
-            }, "SELECT id, type, dataId, level, buffRemainsDuration FROM characterbuff WHERE characterId=@characterId ORDER BY buffRemainsDuration ASC",
-                new NpgsqlParameter("@characterId", characterId));
-            return result;
-        }
-
-        public async UniTask DeleteCharacterBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId)
-        {
-            await ExecuteNonQuery(connection, transaction, "DELETE FROM characterbuff WHERE characterId=@characterId", new NpgsqlParameter("@characterId", characterId));
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)),
+                },
+                new[]
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
+                });
+            if (count <= 0)
+            {
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_FILL_CHARACTER_BUFFS_INSERT,
+                    connection, null,
+                    "character_buffs",
+                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)));
+            }
         }
     }
 }
