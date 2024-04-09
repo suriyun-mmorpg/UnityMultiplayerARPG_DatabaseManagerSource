@@ -252,42 +252,22 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
-        public const string CACHE_KEY_UPDATE_GUILD_ROLE_UPDATE = "UPDATE_GUILD_ROLE_UPDATE";
-        public const string CACHE_KEY_UPDATE_GUILD_ROLE_INSERT = "UPDATE_GUILD_ROLE_INSERT";
+        public const string CACHE_KEY_UPDATE_GUILD_ROLE = "UPDATE_GUILD_ROLE";
         public override async UniTask UpdateGuildRole(int id, byte guildRole, GuildRoleData guildRoleData)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            int count = await PostgreSQLHelpers.ExecuteUpdate(
-                CACHE_KEY_UPDATE_GUILD_ROLE_UPDATE,
+            int count = await PostgreSQLHelpers.ExecuteUpsert(
+                CACHE_KEY_UPDATE_GUILD_ROLE,
                 connection, null,
                 "guild_roles",
-                new[]
-                {
-                    new PostgreSQLHelpers.ColumnInfo("name", guildRoleData.roleName),
-                    new PostgreSQLHelpers.ColumnInfo("can_invite", guildRoleData.canInvite),
-                    new PostgreSQLHelpers.ColumnInfo("can_kick", guildRoleData.canKick),
-                    new PostgreSQLHelpers.ColumnInfo("can_use_storage", guildRoleData.canUseStorage),
-                    new PostgreSQLHelpers.ColumnInfo("share_exp_percentage", guildRoleData.shareExpPercentage),
-                },
-                new[]
-                {
-                    PostgreSQLHelpers.WhereEqualTo("id", id),
-                    PostgreSQLHelpers.WhereEqualTo("role", guildRole),
-                });
-            if (count <= 0)
-            {
-                await PostgreSQLHelpers.ExecuteInsert(
-                    CACHE_KEY_UPDATE_GUILD_ROLE_INSERT,
-                    connection, null,
-                    "guild_roles",
-                    new PostgreSQLHelpers.ColumnInfo("id", id),
-                    new PostgreSQLHelpers.ColumnInfo("role", guildRole),
-                    new PostgreSQLHelpers.ColumnInfo("name", guildRoleData.roleName),
-                    new PostgreSQLHelpers.ColumnInfo("can_invite", guildRoleData.canInvite),
-                    new PostgreSQLHelpers.ColumnInfo("can_kick", guildRoleData.canKick),
-                    new PostgreSQLHelpers.ColumnInfo("can_use_storage", guildRoleData.canUseStorage),
-                    new PostgreSQLHelpers.ColumnInfo("share_exp_percentage", guildRoleData.shareExpPercentage));
-            }
+                "id, role",
+                new PostgreSQLHelpers.ColumnInfo("id", id),
+                new PostgreSQLHelpers.ColumnInfo("role", guildRole),
+                new PostgreSQLHelpers.ColumnInfo("name", guildRoleData.roleName),
+                new PostgreSQLHelpers.ColumnInfo("can_invite", guildRoleData.canInvite),
+                new PostgreSQLHelpers.ColumnInfo("can_kick", guildRoleData.canKick),
+                new PostgreSQLHelpers.ColumnInfo("can_use_storage", guildRoleData.canUseStorage),
+                new PostgreSQLHelpers.ColumnInfo("share_exp_percentage", guildRoleData.shareExpPercentage));
         }
 
         public const string CACHE_KEY_UPDATE_GUILD_MEMBER_ROLE = "UPDATE_GUILD_MEMBER_ROLE";
@@ -305,40 +285,24 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.WhereEqualTo("id", characterId));
         }
 
-        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_UPDATE = "UPDATE_GUILD_SKILL_LEVELS_UPDATE";
-        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_INSERT = "UPDATE_GUILD_SKILL_LEVELS_INSERT";
-        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT = "UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT";
+        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVEL = "UPDATE_GUILD_SKILL_LEVEL";
+        public const string CACHE_KEY_UPDATE_GUILD_SKILL_LEVEL_SKILL_POINT = "UPDATE_GUILD_SKILL_LEVEL_SKILL_POINT";
         public override async UniTask UpdateGuildSkillLevel(int id, int dataId, int skillLevel, int skillPoint)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
             try
             {
-                int count = await PostgreSQLHelpers.ExecuteUpdate(
-                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_UPDATE,
+                await PostgreSQLHelpers.ExecuteUpsert(
+                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVEL,
                     connection, transaction,
                     "guild_skills",
-                    new[]
-                    {
-                        new PostgreSQLHelpers.ColumnInfo("level", skillLevel),
-                    },
-                    new[]
-                    {
-                        PostgreSQLHelpers.WhereEqualTo("id", id),
-                        PostgreSQLHelpers.AndWhereEqualTo("data_id", dataId),
-                    });
-                if (count <= 0)
-                {
-                    await PostgreSQLHelpers.ExecuteInsert(
-                        CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_INSERT,
-                        connection, transaction,
-                        "guild_skills",
-                        new PostgreSQLHelpers.ColumnInfo("id", id),
-                        new PostgreSQLHelpers.ColumnInfo("data_id", dataId),
-                        new PostgreSQLHelpers.ColumnInfo("level", skillLevel));
-                }
+                    "id, data_id",
+                    new PostgreSQLHelpers.ColumnInfo("id", id),
+                    new PostgreSQLHelpers.ColumnInfo("data_id", dataId),
+                    new PostgreSQLHelpers.ColumnInfo("level", skillLevel));
                 await PostgreSQLHelpers.ExecuteUpdate(
-                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVELS_SKILL_POINT,
+                    CACHE_KEY_UPDATE_GUILD_SKILL_LEVEL_SKILL_POINT,
                     connection, transaction,
                     "guilds",
                     new[]
@@ -524,36 +488,7 @@ namespace MultiplayerARPG.MMO
             {
                 characterIds.Add(readerIds.GetString(0));
             }
-            // Get some character data
-            List<SocialCharacterData> characters = new List<SocialCharacterData>();
-            if (characterIds.Count > 0)
-            {
-                List<PostgreSQLHelpers.WhereQuery> characterQueries = new List<PostgreSQLHelpers.WhereQuery>()
-                {
-                    PostgreSQLHelpers.WhereEqualTo("id", characterIds[0]),
-                };
-                for (int i = 1; i < characterIds.Count; ++i)
-                {
-                    characterQueries.Add(PostgreSQLHelpers.OrWhereEqualTo("id", characterIds[i]));
-                }
-                using var readerCharacter = await PostgreSQLHelpers.ExecuteSelect(
-                    null,
-                    connection, null,
-                    "characters",
-                    characterQueries,
-                    "id, data_id, character_name, level", "LIMIT 1");
-                SocialCharacterData tempCharacter;
-                while (readerCharacter.Read())
-                {
-                    tempCharacter = new SocialCharacterData();
-                    tempCharacter.id = readerCharacter.GetString(0);
-                    tempCharacter.dataId = readerCharacter.GetInt32(1);
-                    tempCharacter.characterName = readerCharacter.GetString(2);
-                    tempCharacter.level = readerCharacter.GetInt32(3);
-                    characters.Add(tempCharacter);
-                }
-            }
-            return characters;
+            return await GetSocialCharacterByIds(connection, null, characterIds);
         }
 
         public const string CACHE_KEY_GET_GUILD_REQUESTS_NOTIFICATION = "GET_GUILD_REQUESTS_NOTIFICATION";

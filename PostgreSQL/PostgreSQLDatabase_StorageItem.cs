@@ -62,85 +62,39 @@ namespace MultiplayerARPG.MMO
         }
 
 
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE = "UPDATE_STORAGE_ITEMS_USERS_UPDATE";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT = "UPDATE_STORAGE_ITEMS_USERS_INSERT";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE = "UPDATE_STORAGE_ITEMS_GUILDS_UPDATE";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT = "UPDATE_STORAGE_ITEMS_GUILDS_INSERT";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE = "UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT = "UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS = "UPDATE_STORAGE_ITEMS_USERS";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS = "UPDATE_STORAGE_ITEMS_GUILDS";
+        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS = "UPDATE_STORAGE_ITEMS_BUILDINGS";
         public async UniTask UpdateStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
-            int count;
             switch (storageType)
             {
                 case StorageType.Player:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS,
                         connection, transaction,
                         "storage_users",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS_INSERT,
-                            connection, transaction,
-                            "storage_users",
-                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
                     break;
                 case StorageType.Guild:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS,
                         connection, transaction,
                         "storage_guilds",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS_INSERT,
-                            connection, transaction,
-                            "storage_guilds",
-                            new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
+                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
                     break;
                 case StorageType.Building:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS,
                         connection, transaction,
                         "storage_buildings",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS_INSERT,
-                            connection, transaction,
-                            "storage_buildings",
-                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                            new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
                     break;
             }
         }
@@ -175,129 +129,94 @@ namespace MultiplayerARPG.MMO
             return 0;
         }
 
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_UPDATE = "UPDATE_RESERVED_STORAGE_USERS_UPDATE";
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_INSERT = "UPDATE_RESERVED_STORAGE_USERS_INSERT";
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_UPDATE = "UPDATE_RESERVED_STORAGE_GUILDS_UPDATE";
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_INSERT = "UPDATE_RESERVED_STORAGE_GUILDS_INSERT";
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE = "UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE";
-        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT = "UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS = "UPDATE_RESERVED_STORAGE_USERS";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS = "UPDATE_RESERVED_STORAGE_GUILDS";
+        public const string CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS = "UPDATE_RESERVED_STORAGE_BUILDINGS";
         public override async UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            int count;
             switch (storageType)
             {
                 case StorageType.Player:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS,
                         connection, null,
                         "storage_reservation_users",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_RESERVED_STORAGE_USERS_INSERT,
-                            connection, null,
-                            "storage_reservation_users",
-                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                        new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
                     break;
                 case StorageType.Guild:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS,
                         connection, null,
                         "storage_reservation_guilds",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_RESERVED_STORAGE_GUILDS_INSERT,
-                            connection, null,
-                            "storage_reservation_guilds",
-                            new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
+                        new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
                     break;
                 case StorageType.Building:
-                    count = await PostgreSQLHelpers.ExecuteUpdate(
-                        CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_UPDATE,
+                    await PostgreSQLHelpers.ExecuteUpsert(
+                        CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS,
                         connection, null,
                         "storage_reservation_buildings",
-                        new[]
-                        {
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId),
-                        },
-                        new[]
-                        {
-                            PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId),
-                        });
-                    if (count <= 0)
-                    {
-                        await PostgreSQLHelpers.ExecuteInsert(
-                            CACHE_KEY_UPDATE_RESERVED_STORAGE_BUILDINGS_INSERT,
-                            connection, null,
-                            "storage_reservation_buildings",
-                            new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                            new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
-                    }
+                        "id",
+                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
+                        new PostgreSQLHelpers.ColumnInfo("reserver_id", reserverId));
                     break;
             }
+        }
+
+        public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await DeleteReservedStorage(connection, null, storageType, storageOwnerId);
         }
 
         public const string CACHE_KEY_DELETE_RESERVED_STORAGE_USERS = "DELETE_RESERVED_STORAGE_USERS";
         public const string CACHE_KEY_DELETE_RESERVED_STORAGE_GUILDS = "DELETE_RESERVED_STORAGE_GUILDS";
         public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BUILDINGS = "DELETE_RESERVED_STORAGE_BUILDINGS";
-        public override async UniTask DeleteReservedStorage(StorageType storageType, string storageOwnerId)
+        public async UniTask DeleteReservedStorage(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId)
         {
-            using var connection = await _dataSource.OpenConnectionAsync();
             switch (storageType)
             {
                 case StorageType.Player:
                     await PostgreSQLHelpers.ExecuteDelete(
                         CACHE_KEY_DELETE_RESERVED_STORAGE_USERS,
-                        connection, null,
+                        connection, transaction,
                         "storage_reservation_users",
                         PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
                     break;
                 case StorageType.Guild:
                     await PostgreSQLHelpers.ExecuteDelete(
                         CACHE_KEY_DELETE_RESERVED_STORAGE_GUILDS,
-                        connection, null,
+                        connection, transaction,
                         "storage_reservation_guilds",
                         PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
                     break;
                 case StorageType.Building:
                     await PostgreSQLHelpers.ExecuteDelete(
                         CACHE_KEY_DELETE_RESERVED_STORAGE_BUILDINGS,
-                        connection, null,
+                        connection, transaction,
                         "storage_reservation_buildings",
                         PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
                     break;
             }
         }
 
-        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_USERS = "DELETE_RESERVED_STORAGE_BY_RESERVER_USERS";
-        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS = "DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS";
-        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS = "DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS";
-        public override async UniTask DeleteReservedStorageByReserver(string reserverId)
+        public async override UniTask DeleteReservedStorageByReserver(string reserverId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
+            await DeleteReservedStorageByReserver(connection, transaction, reserverId);
+            await transaction.CommitAsync();
+        }
+
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_USERS = "DELETE_RESERVED_STORAGE_BY_RESERVER_USERS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS = "DELETE_RESERVED_STORAGE_BY_RESERVER_GUILDS";
+        public const string CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS = "DELETE_RESERVED_STORAGE_BY_RESERVER_BUILDINGS";
+        public async UniTask DeleteReservedStorageByReserver(NpgsqlConnection connection, NpgsqlTransaction transaction, string reserverId)
+        {
             await PostgreSQLHelpers.ExecuteDelete(
                 CACHE_KEY_DELETE_RESERVED_STORAGE_BY_RESERVER_USERS,
                 connection, transaction,
@@ -313,7 +232,6 @@ namespace MultiplayerARPG.MMO
                 connection, transaction,
                 "storage_reservation_buildings",
                 PostgreSQLHelpers.WhereEqualTo("reserver_id", reserverId));
-            await transaction.CommitAsync();
         }
 
         public override async UniTask DeleteAllReservedStorage()

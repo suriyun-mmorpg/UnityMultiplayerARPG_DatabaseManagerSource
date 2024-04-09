@@ -9,31 +9,16 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public const string CACHE_KEY_FILL_SUMMON_BUFFS_UPDATE = "FILL_SUMMON_BUFFS_UPDATE";
-        public const string CACHE_KEY_FILL_SUMMON_BUFFS_INSERT = "FILL_SUMMON_BUFFS_INSERT";
+        public const string CACHE_KEY_FILL_SUMMON_BUFFS = "FILL_SUMMON_BUFFS";
         public async UniTask FillSummonBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId, IList<CharacterBuff> characterBuffs)
         {
-            int count = await PostgreSQLHelpers.ExecuteUpdate(
-                CACHE_KEY_FILL_SUMMON_BUFFS_UPDATE,
+            await PostgreSQLHelpers.ExecuteUpsert(
+                CACHE_KEY_FILL_SUMMON_BUFFS,
                 connection, transaction,
                 "character_summon_buffs",
-                new[]
-                {
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)),
-                },
-                new[]
-                {
-                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
-                });
-            if (count <= 0)
-            {
-                await PostgreSQLHelpers.ExecuteInsert(
-                    CACHE_KEY_FILL_SUMMON_BUFFS_INSERT,
-                    connection, null,
-                    "character_summon_buffs",
-                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)));
-            }
+                "id",
+                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterBuffs)),
+                new PostgreSQLHelpers.ColumnInfo("id", characterId));
         }
 
         public const string CACHE_KEY_GET_SUMMON_BUFFS = "GET_SUMMON_BUFFS";

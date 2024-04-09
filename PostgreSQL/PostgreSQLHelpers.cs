@@ -768,6 +768,46 @@ namespace MultiplayerARPG.MMO
             return commandText;
         }
 
+        public static string CreateUpsertCommandText(string cacheKey, string tableName, IList<ColumnInfo> columns, string ids)
+        {
+            bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
+            if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
+                return commandText;
+            s_stringBuilder.Clear();
+            s_stringBuilder.Append("INSERT INTO ");
+            s_stringBuilder.Append(tableName);
+            s_stringBuilder.Append(' ');
+            s_stringBuilder.Append('(');
+            int i;
+            for (i = 0; i < columns.Count; ++i)
+            {
+                if (i > 0)
+                    s_stringBuilder.Append(',');
+                s_stringBuilder.Append(columns[i].name);
+            }
+            s_stringBuilder.Append(") VALUES (");
+            for (i = 0; i < columns.Count; ++i)
+            {
+                if (i > 0)
+                    s_stringBuilder.Append(',');
+                s_stringBuilder.Append('$');
+                s_stringBuilder.Append(i + 1);
+            }
+            s_stringBuilder.Append($") ON CONFLICT ({ids}) DO UPDATE SET ");
+            for (i = 0; i < columns.Count; ++i)
+            {
+                if (i > 0)
+                    s_stringBuilder.Append(',');
+                s_stringBuilder.Append(columns[i].name);
+                s_stringBuilder.Append(" = EXCLUDED.");
+                s_stringBuilder.Append(columns[i].name);
+            }
+            commandText = s_stringBuilder.ToString();
+            if (!isNullOrWhiteSpace)
+                s_cachedCommandTexts.TryAdd(cacheKey, commandText);
+            return commandText;
+        }
+
         public static string CreateUpdateCommandText(string cacheKey, string tableName, IList<ColumnInfo> updates, IList<WhereQuery> wheres, string additional = "")
         {
             return CreateUpdateCommandText(cacheKey, tableName, updates, (ref Utf16ValueStringBuilder builder, ref int positionCount) => WriteWhere(wheres, additional, ref builder, ref positionCount));
@@ -889,21 +929,14 @@ namespace MultiplayerARPG.MMO
             return await ExecuteUpdate(cacheKey, connection, transaction, tableName, updates, wheres, additional);
         }
 
-        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, IList<WhereQuery> wheres, string additional = "")
+        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string ids, params ColumnInfo[] values)
         {
-            int count = await ExecuteUpdate($"{cacheKey}:UPDATE", connection, transaction, tableName, updates, wheres, additional);
-            if (count <= 0)
-                count = await ExecuteInsert($"{cacheKey}:INSERT", connection, transaction, tableName, updates);
-            return count;
+            return await ExecuteNonQuery(connection, transaction, CreateUpsertCommandText(cacheKey, tableName, values, ids), values);
         }
 
-        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, WhereQuery where, string additional = "")
+        public static async UniTask<int> ExecuteUpsert(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string ids, IList<ColumnInfo> values)
         {
-            var wheres = new List<WhereQuery>()
-            {
-                where,
-            };
-            return await ExecuteUpsert(cacheKey, connection, transaction, tableName, updates, wheres, additional);
+            return await ExecuteNonQuery(connection, transaction, CreateUpsertCommandText(cacheKey, tableName, values, ids), values);
         }
 
         public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
@@ -1005,6 +1038,26 @@ namespace MultiplayerARPG.MMO
         public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, params WhereQuery[] wheres)
         {
             return await ExecuteDelete(cacheKey, connection, transaction, tableName, wheres);
+        }
+
+        public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idColName, string value)
+        {
+            return await ExecuteDelete(null, connection, transaction, tableName, WhereEqualTo(idColName, value));
+        }
+
+        public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string value)
+        {
+            return await ExecuteDeleteById( connection, transaction, tableName, "id", value);
+        }
+
+        public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idColName, int value)
+        {
+            return await ExecuteDelete(null, connection, transaction, tableName, WhereEqualTo(idColName, value));
+        }
+
+        public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, int value)
+        {
+            return await ExecuteDeleteById(connection, transaction, tableName, "id", value);
         }
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> columns)

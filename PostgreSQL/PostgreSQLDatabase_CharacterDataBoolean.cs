@@ -9,31 +9,16 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public const string CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS_UPDATE = "FILL_CHARACTER_DATA_BOOLEANS_UPDATE";
-        public const string CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS_INSERT = "FILL_CHARACTER_DATA_BOOLEANS_INSERT";
+        public const string CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS = "FILL_CHARACTER_DATA_BOOLEANS";
         public async UniTask FillCharacterDataBooleans(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> characterDataBooleans)
         {
-            int count = await PostgreSQLHelpers.ExecuteUpdate(
-                $"{CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS_UPDATE}_{tableName}",
+            await PostgreSQLHelpers.ExecuteUpsert(
+                $"{CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS}_{tableName}",
                 connection, transaction,
                 tableName,
-                new[]
-                {
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterDataBooleans)),
-                },
-                new[]
-                {
-                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
-                });
-            if (count <= 0)
-            {
-                await PostgreSQLHelpers.ExecuteInsert(
-                    $"{CACHE_KEY_FILL_CHARACTER_DATA_BOOLEANS_INSERT}_{tableName}",
-                    connection, null,
-                    tableName,
-                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterDataBooleans)));
-            }
+                "id",
+                new PostgreSQLHelpers.ColumnInfo("id", characterId),
+                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterDataBooleans)));
         }
     }
 }
