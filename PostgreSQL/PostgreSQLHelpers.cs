@@ -1,6 +1,7 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
 using NpgsqlTypes;
 using System.Collections.Concurrent;
@@ -910,9 +911,9 @@ namespace MultiplayerARPG.MMO
             return await ExecuteNonQuery(connection, transaction, CreateInsertCommandText(cacheKey, tableName, values), values);
         }
 
-        public static async UniTask<object> ExecuteInsertScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> values, string returning = "")
+        public static async UniTask<object> ExecuteInsertScalar(string cacheKey, NpgsqlConnection connection, string tableName, IList<ColumnInfo> values, string returning = "")
         {
-            return await ExecuteScalar(connection, transaction, CreateInsertCommandText(cacheKey, tableName, values, $"RETURNING {returning}"), values);
+            return await ExecuteScalar(connection, CreateInsertCommandText(cacheKey, tableName, values, $"RETURNING {returning}"), values);
         }
 
         public static async UniTask<int> ExecuteUpdate(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<ColumnInfo> updates, IList<WhereQuery> wheres, string additional = "")
@@ -939,57 +940,57 @@ namespace MultiplayerARPG.MMO
             return await ExecuteNonQuery(connection, transaction, CreateUpsertCommandText(cacheKey, tableName, values, ids), values);
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
+        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
         {
-            return await ExecuteReader(connection, transaction, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
+            return await ExecuteReader(connection, null, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, WhereQuery where, string select = "*", string additional = "")
+        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, string tableName, WhereQuery where, string select = "*", string additional = "")
         {
             var wheres = new List<WhereQuery>()
             {
                 where,
             };
-            return await ExecuteSelect(cacheKey, connection, transaction, tableName, wheres, select, additional);
+            return await ExecuteSelect(cacheKey, connection, tableName, wheres, select, additional);
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string select = "*", string additional = "", params WhereQuery[] wheres)
+        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, string tableName, string select = "*", string additional = "", params WhereQuery[] wheres)
         {
-            return await ExecuteSelect(cacheKey, connection, transaction, tableName, wheres, select, additional);
+            return await ExecuteSelect(cacheKey, connection, tableName, wheres, select, additional);
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string select = "*", params WhereQuery[] wheres)
+        public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, string tableName, string select = "*", params WhereQuery[] wheres)
         {
-            return await ExecuteSelect(cacheKey, connection, transaction, tableName, wheres, select);
+            return await ExecuteSelect(cacheKey, connection, tableName, wheres, select);
         }
 
-        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
+        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, string tableName, IList<WhereQuery> wheres, string select = "*", string additional = "")
         {
-            return await ExecuteScalar(connection, transaction, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
+            return await ExecuteScalar(connection, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
         }
 
-        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, WhereQuery where, string select = "*", string additional = "")
+        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, string tableName, WhereQuery where, string select = "*", string additional = "")
         {
             var wheres = new List<WhereQuery>()
             {
                 where,
             };
-            return await ExecuteSelectScalar(cacheKey, connection, transaction, tableName, wheres, select, additional);
+            return await ExecuteSelectScalar(cacheKey, connection, tableName, wheres, select, additional);
         }
 
-        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string select = "*", string additional = "", params WhereQuery[] wheres)
+        public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, string tableName, string select = "*", string additional = "", params WhereQuery[] wheres)
         {
-            return await ExecuteSelectScalar(cacheKey, connection, transaction, tableName, wheres, select, additional);
+            return await ExecuteSelectScalar(cacheKey, connection, tableName, wheres, select, additional);
         }
 
         public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string select = "*", params WhereQuery[] wheres)
         {
-            return await ExecuteSelectScalar(cacheKey, connection, transaction, tableName, wheres, select);
+            return await ExecuteSelectScalar(cacheKey, connection, tableName, wheres, select);
         }
 
         public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, IList<WhereQuery> wheres, string additional = "")
         {
-            var result = await ExecuteScalar(connection, transaction, CreateSelectCommandText(cacheKey, tableName, wheres, "COUNT(*)", additional), wheres);
+            var result = await ExecuteScalar(connection, CreateSelectCommandText(cacheKey, tableName, wheres, "COUNT(*)", additional), wheres);
             if (result == null)
             {
                 return 0;
@@ -1047,7 +1048,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string value)
         {
-            return await ExecuteDeleteById( connection, transaction, tableName, "id", value);
+            return await ExecuteDeleteById(connection, transaction, tableName, "id", value);
         }
 
         public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idColName, int value)
@@ -1058,6 +1059,88 @@ namespace MultiplayerARPG.MMO
         public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, int value)
         {
             return await ExecuteDeleteById(connection, transaction, tableName, "id", value);
+        }
+
+        public static async UniTask<int> ExecuteUpsertJson<T>(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idColName, string idValue, string dataColName, T dataValue)
+        {
+            return await ExecuteUpsert(null, connection, transaction, tableName, idColName,
+                new ColumnInfo(idColName, idValue),
+                new ColumnInfo(NpgsqlDbType.Jsonb, dataColName, JsonConvert.SerializeObject(dataValue)));
+        }
+
+        public static async UniTask<int> ExecuteUpsertJson<T>(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idValue, T dataValue)
+        {
+            return await ExecuteUpsertJson(connection, transaction, tableName, "id", idValue, "data", dataValue);
+        }
+
+        public static async UniTask<int> ExecuteUpsertJson<T>(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string idColName, int idValue, string dataColName, T dataValue)
+        {
+            return await ExecuteUpsert(null, connection, transaction, tableName, idColName,
+                new ColumnInfo(idColName, idValue),
+                new ColumnInfo(NpgsqlDbType.Jsonb, dataColName, JsonConvert.SerializeObject(dataValue)));
+        }
+
+        public static async UniTask<int> ExecuteUpsertJson<T>(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, int idValue, T dataValue)
+        {
+            return await ExecuteUpsertJson(connection, transaction, tableName, "id", idValue, "data", dataValue);
+        }
+
+        public static async UniTask<T> ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idColName, string idValue, string dataColName)
+        {
+            using var reader = await ExecuteSelect(null, connection, tableName, dataColName, "LIMIT 1", WhereEqualTo(idColName, idValue));
+            if (reader.Read())
+            {
+                return JsonConvert.DeserializeObject<T>(reader.GetString(0));
+            }
+            return default;
+        }
+
+        public static async UniTask<T> ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idValue)
+        {
+            return await ExecuteSelectJson<T>(connection, tableName, "id", idValue, "data");
+        }
+
+        public static async UniTask<T> ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idColName, int idValue, string dataColName)
+        {
+            using var reader = await ExecuteSelect(null, connection, tableName, dataColName, "LIMIT 1", WhereEqualTo(idColName, idValue));
+            if (reader.Read())
+            {
+                return JsonConvert.DeserializeObject<T>(reader.GetString(0));
+            }
+            return default;
+        }
+
+        public static async UniTask<T> ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, int idValue)
+        {
+            return await ExecuteSelectJson<T>(connection, tableName, "id", idValue, "data");
+        }
+
+        public static async UniTask ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idColName, string idValue, string dataColName, List<T> list)
+        {
+            using var reader = await ExecuteSelect(null, connection, tableName, dataColName, "LIMIT 1", WhereEqualTo(idColName, idValue));
+            if (reader.Read())
+            {
+                list.AddRange(JsonConvert.DeserializeObject<T[]>(reader.GetString(0)));
+            }
+        }
+
+        public static async UniTask ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idValue, List<T> list)
+        {
+            await ExecuteSelectJson<T>(connection, tableName, "id", idValue, "data", list);
+        }
+
+        public static async UniTask ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, string idColName, int idValue, string dataColName, List<T> list)
+        {
+            using var reader = await ExecuteSelect(null, connection, tableName, dataColName, "LIMIT 1", WhereEqualTo(idColName, idValue));
+            if (reader.Read())
+            {
+                list.AddRange(JsonConvert.DeserializeObject<T[]>(reader.GetString(0)));
+            }
+        }
+
+        public static async UniTask ExecuteSelectJson<T>(NpgsqlConnection connection, string tableName, int idValue, List<T> list)
+        {
+            await ExecuteSelectJson<T>(connection, tableName, "id", idValue, "data", list);
         }
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> columns)
@@ -1169,9 +1252,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<WhereQuery> wheres)
+        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<WhereQuery> wheres)
         {
-            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < wheres.Count; ++i)
             {
@@ -1187,9 +1270,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> values)
+        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<ColumnInfo> values)
         {
-            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < values.Count; ++i)
             {
@@ -1205,9 +1288,9 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
+        public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
         {
-            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < updates.Count; ++i)
             {
