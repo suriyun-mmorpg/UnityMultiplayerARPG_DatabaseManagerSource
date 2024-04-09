@@ -156,20 +156,23 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> CreateMail(Mail mail)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            return await PostgreSQLHelpers.ExecuteInsert(
+            int id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
                 CACHE_KEY_CREATE_MAIL,
                 connection, null,
                 "mail",
-                new PostgreSQLHelpers.ColumnInfo("event_id", mail.EventId),
-                new PostgreSQLHelpers.ColumnInfo("sender_id", mail.SenderId),
-                new PostgreSQLHelpers.ColumnInfo("sender_name", mail.SenderName),
-                new PostgreSQLHelpers.ColumnInfo("receiver_id", mail.ReceiverId),
-                new PostgreSQLHelpers.ColumnInfo("title", mail.Title),
-                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "content", mail.Content),
-                new PostgreSQLHelpers.ColumnInfo("gold", mail.Gold),
-                new PostgreSQLHelpers.ColumnInfo("cash", mail.Cash),
-                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "currencies", mail.WriteCurrencies()),
-                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "items", mail.WriteItems()));
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo("event_id", mail.EventId),
+                    new PostgreSQLHelpers.ColumnInfo("sender_id", mail.SenderId),
+                    new PostgreSQLHelpers.ColumnInfo("sender_name", mail.SenderName),
+                    new PostgreSQLHelpers.ColumnInfo("receiver_id", mail.ReceiverId),
+                    new PostgreSQLHelpers.ColumnInfo("title", mail.Title),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "content", mail.Content),
+                    new PostgreSQLHelpers.ColumnInfo("gold", mail.Gold),
+                    new PostgreSQLHelpers.ColumnInfo("cash", mail.Cash),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "currencies", mail.WriteCurrencies()),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "items", mail.WriteItems()),
+                }, "id");
+            return id;
         }
 
         public string CACHE_KEY_GET_MAIL_NOTIFICATION = "GET_MAIL_NOTIFICATION";
