@@ -300,9 +300,13 @@ model guild_roles {
 }
 
 model guild_skills {
-  id          Int      @id @db.Integer()
-  data        Json     @db.JsonB()
+  id          Int      @db.Integer()
+  data_id     Int      @db.Integer()
+  level       Int      @db.Integer()
+  create_time DateTime @default(now()) @db.Timestamptz()
   update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
+
+  @@id([id, data_id])
 }
 
 model mails {
