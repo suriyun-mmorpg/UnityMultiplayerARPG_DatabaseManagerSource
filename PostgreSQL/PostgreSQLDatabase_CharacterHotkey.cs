@@ -1,63 +1,39 @@
 ﻿#if NET || NETCOREAPP
-using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        private bool ReadCharacterHotkey(NpgsqlDataReader reader, out CharacterHotkey result)
+        public const string CACHE_KEY_FILL_CHARACTER_HOTKEYS_UPDATE = "FILL_CHARACTER_HOTKEYS_UPDATE";
+        public const string CACHE_KEY_FILL_CHARACTER_HOTKEYS_INSERT = "FILL_CHARACTER_HOTKEYS_INSERT";
+        public async UniTask FillCharacterHotkeys(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId, IList<CharacterHotkey> characterHotkeys)
         {
-            if (reader.Read())
-            {
-                result = new CharacterHotkey();
-                result.hotkeyId = reader.GetString(0);
-                result.type = (HotkeyType)reader.GetByte(1);
-                result.relateId = reader.GetString(2);
-                return true;
-            }
-            result = CharacterHotkey.Empty;
-            return false;
-        }
-
-        public async UniTask CreateCharacterHotkey(NpgsqlConnection connection, NpgsqlTransaction transaction, HashSet<string> insertedIds, string characterId, CharacterHotkey characterHotkey)
-        {
-            string id = ZString.Concat(characterId, "_", characterHotkey.hotkeyId);
-            if (insertedIds.Contains(id))
-            {
-                LogWarning(LogTag, $"Hotkey {id}, for character {characterId}, already inserted");
-                return;
-            }
-            insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO characterhotkey (id, characterId, hotkeyId, type, relateId) VALUES (@id, @characterId, @hotkeyId, @type, @relateId)",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@characterId", characterId),
-                new NpgsqlParameter("@hotkeyId", characterHotkey.hotkeyId),
-                new NpgsqlParameter("@type", characterHotkey.type),
-                new NpgsqlParameter("@relateId", characterHotkey.relateId));
-        }
-
-        public async UniTask<List<CharacterHotkey>> ReadCharacterHotkeys(string characterId, List<CharacterHotkey> result = null)
-        {
-            if (result == null)
-                result = new List<CharacterHotkey>();
-            await ExecuteReader((reader) =>
-            {
-                CharacterHotkey tempHotkey;
-                while (ReadCharacterHotkey(reader, out tempHotkey))
+            int count = await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_FILL_CHARACTER_HOTKEYS_UPDATE,
+                connection, transaction,
+                "character_hotkeys",
+                new[]
                 {
-                    result.Add(tempHotkey);
-                }
-            }, "SELECT hotkeyId, type, relateId FROM characterhotkey WHERE characterId=@characterId",
-                new NpgsqlParameter("@characterId", characterId));
-            return result;
-        }
-
-        public async UniTask DeleteCharacterHotkeys(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId)
-        {
-            await ExecuteNonQuery(connection, transaction, "DELETE FROM characterhotkey WHERE characterId=@characterId", new NpgsqlParameter("@characterId", characterId));
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterHotkeys)),
+                },
+                new[]
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterId),
+                });
+            if (count <= 0)
+            {
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_FILL_CHARACTER_HOTKEYS_INSERT,
+                    connection, null,
+                    "character_hotkeys",
+                    new PostgreSQLHelpers.ColumnInfo("id", characterId),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterHotkeys)));
+            }
         }
     }
 }
