@@ -1,8 +1,6 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using Npgsql;
-using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -15,44 +13,16 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            NpgsqlDataReader reader = null;
             switch (storageType)
             {
                 case StorageType.Player:
-                    reader = await PostgreSQLHelpers.ExecuteSelect(
-                        CACHE_KEY_READ_STORAGE_ITEMS_USERS,
-                        connection, null,
-                        "storage_users", "data",
-                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
-                    break;
+                    return await PostgreSQLHelpers.ExecuteSelectJson<List<CharacterItem>>(connection, "storage_users", storageOwnerId);
                 case StorageType.Guild:
-                    reader = await PostgreSQLHelpers.ExecuteSelect(
-                        CACHE_KEY_READ_STORAGE_ITEMS_GUILDS,
-                        connection, null,
-                        "storage_guilds", "data",
-                        PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
-                    break;
+                    return await PostgreSQLHelpers.ExecuteSelectJson<List<CharacterItem>>(connection, "storage_guilds", int.Parse(storageOwnerId));
                 case StorageType.Building:
-                    reader = await PostgreSQLHelpers.ExecuteSelect(
-                        CACHE_KEY_READ_STORAGE_ITEMS_BUILDINGS,
-                        connection, null,
-                        "storage_buildings", "data",
-                        PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
-                    break;
+                    return await PostgreSQLHelpers.ExecuteSelectJson<List<CharacterItem>>(connection, "storage_buildings", storageOwnerId);
             }
-            if (reader == null)
-                return new List<CharacterItem>();
-            List<CharacterItem> result;
-            if (reader.Read())
-            {
-                result = JsonConvert.DeserializeObject<List<CharacterItem>>(reader.GetString(0));
-            }
-            else
-            {
-                result = new List<CharacterItem>();
-            }
-            await reader.DisposeAsync();
-            return result;
+            return new List<CharacterItem>();
         }
 
         public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
@@ -61,40 +31,30 @@ namespace MultiplayerARPG.MMO
             await UpdateStorageItems(connection, null, storageType, storageOwnerId, characterItems);
         }
 
-
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS = "UPDATE_STORAGE_ITEMS_USERS";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS = "UPDATE_STORAGE_ITEMS_GUILDS";
-        public const string CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS = "UPDATE_STORAGE_ITEMS_BUILDINGS";
         public async UniTask UpdateStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
             switch (storageType)
             {
                 case StorageType.Player:
-                    await PostgreSQLHelpers.ExecuteUpsert(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_USERS,
+                    await PostgreSQLHelpers.ExecuteUpsertJson(
                         connection, transaction,
                         "storage_users",
-                        "id",
-                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
+                        storageOwnerId,
+                        characterItems);
                     break;
                 case StorageType.Guild:
-                    await PostgreSQLHelpers.ExecuteUpsert(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_GUILDS,
+                    await PostgreSQLHelpers.ExecuteUpsertJson(
                         connection, transaction,
                         "storage_guilds",
-                        "id",
-                        new PostgreSQLHelpers.ColumnInfo("id", int.Parse(storageOwnerId)),
-                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
+                        int.Parse(storageOwnerId),
+                        characterItems);
                     break;
                 case StorageType.Building:
-                    await PostgreSQLHelpers.ExecuteUpsert(
-                        CACHE_KEY_UPDATE_STORAGE_ITEMS_BUILDINGS,
+                    await PostgreSQLHelpers.ExecuteUpsertJson(
                         connection, transaction,
                         "storage_buildings",
-                        "id",
-                        new PostgreSQLHelpers.ColumnInfo("id", storageOwnerId),
-                        new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Jsonb, "data", JsonConvert.SerializeObject(characterItems)));
+                        storageOwnerId,
+                        characterItems);
                     break;
             }
         }
