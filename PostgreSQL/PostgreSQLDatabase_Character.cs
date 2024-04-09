@@ -7,307 +7,20 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        private async UniTask FillCharacterAttributes(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterAttributes(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Attributes.Count; ++i)
-                {
-                    await CreateCharacterAttribute(connection, transaction, insertedIds, characterData.Id, characterData.Attributes[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing attributes of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterBuffs(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Buffs.Count; ++i)
-                {
-                    await CreateCharacterBuff(connection, transaction, insertedIds, characterData.Id, characterData.Buffs[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing buffs of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterHotkeys(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterHotkeys(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Hotkeys.Count; ++i)
-                {
-                    await CreateCharacterHotkey(connection, transaction, insertedIds, characterData.Id, characterData.Hotkeys[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing hotkeys of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterItems(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterItems(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.SelectableWeaponSets.Count; ++i)
-                {
-                    await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
-                }
-                for (i = 0; i < characterData.EquipItems.Count; ++i)
-                {
-                    await CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.EquipItems[i]);
-                }
-                for (i = 0; i < characterData.NonEquipItems.Count; ++i)
-                {
-                    await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterQuests(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterQuests(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Quests.Count; ++i)
-                {
-                    await CreateCharacterQuest(connection, transaction, insertedIds, characterData.Id, characterData.Quests[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing quests of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterCurrencies(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterCurrencies(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Currencies.Count; ++i)
-                {
-                    await CreateCharacterCurrency(connection, transaction, insertedIds, characterData.Id, characterData.Currencies[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing currencies of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterSkills(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterSkills(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Skills.Count; ++i)
-                {
-                    await CreateCharacterSkill(connection, transaction, insertedIds, characterData.Id, characterData.Skills[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing skills of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterSkillUsages(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterSkillUsages(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.SkillUsages.Count; ++i)
-                {
-                    await CreateCharacterSkillUsage(connection, transaction, insertedIds, characterData.Id, characterData.SkillUsages[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterSummons(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData)
-        {
-            try
-            {
-                await DeleteCharacterSummons(connection, transaction, characterData.Id);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < characterData.Summons.Count; ++i)
-                {
-                    await CreateCharacterSummon(connection, transaction, insertedIds, i, characterData.Id, characterData.Summons[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing skill usages of character: " + characterData.Id);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterDataBooleans(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId, IList<CharacterDataBoolean> list)
-        {
-            try
-            {
-                await DeleteCharacterDataBooleans(connection, transaction, tableName, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < list.Count; ++i)
-                {
-                    await CreateCharacterDataBoolean(connection, transaction, tableName, insertedIds, characterId, list[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing custom boolean of character: " + characterId + ", table: " + tableName);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterDataInt32s(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId, IList<CharacterDataInt32> list)
-        {
-            try
-            {
-                await DeleteCharacterDataInt32s(connection, transaction, tableName, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < list.Count; ++i)
-                {
-                    await CreateCharacterDataInt32(connection, transaction, tableName, insertedIds, characterId, list[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing custom int32 of character: " + characterId + ", table: " + tableName);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillCharacterDataFloat32s(NpgsqlConnection connection, NpgsqlTransaction transaction, string tableName, string characterId, IList<CharacterDataFloat32> list)
-        {
-            try
-            {
-                await DeleteCharacterDataFloat32s(connection, transaction, tableName, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < list.Count; ++i)
-                {
-                    await CreateCharacterDataFloat32(connection, transaction, tableName, insertedIds, characterId, list[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing custom float32 of character: " + characterId + ", table: " + tableName);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillSummonBuffs(NpgsqlConnection connection, NpgsqlTransaction transaction, string characterId, List<CharacterBuff> summonBuffs)
-        {
-            try
-            {
-                await DeleteSummonBuff(connection, transaction, characterId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < summonBuffs.Count; ++i)
-                {
-                    await CreateSummonBuff(connection, transaction, insertedIds, characterId, summonBuffs[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing buffs of summon: " + characterId);
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillPlayerStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, string userId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Player;
-                string storageOwnerId = userId;
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
         private async UniTask FillCharacterRelatesData(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
-            await FillCharacterAttributes(connection, transaction, characterData);
-            await FillCharacterBuffs(connection, transaction, characterData);
-            await FillCharacterHotkeys(connection, transaction, characterData);
-            await FillCharacterItems(connection, transaction, characterData);
-            await FillCharacterQuests(connection, transaction, characterData);
-            await FillCharacterCurrencies(connection, transaction, characterData);
-            await FillCharacterSkills(connection, transaction, characterData);
-            await FillCharacterSkillUsages(connection, transaction, characterData);
-            await FillCharacterSummons(connection, transaction, characterData);
+            await FillCharacterAttributes(connection, transaction, characterData.Id, characterData.Attributes);
+            await FillCharacterBuffs(connection, transaction, characterData.Id, characterData.Buffs);
+            await FillCharacterHotkeys(connection, transaction, characterData.Id, characterData.Hotkeys);
+            await FillSelectableWeaponSets(connection, transaction, characterData.Id, characterData.SelectableWeaponSets);
+            await FillCharacterItems(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
+            await FillCharacterItems(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
+            await FillCharacterItems(connection, transaction, "character_protected_non_equip_items", characterData.Id, characterData.ProtectedNonEquipItems);
+            await FillCharacterQuests(connection, transaction, characterData.Id, characterData.Quests);
+            await FillCharacterCurrencies(connection, transaction, characterData.Id, characterData.Currencies);
+            await FillCharacterSkills(connection, transaction, characterData.Id, characterData.Skills);
+            await FillCharacterSkillUsages(connection, transaction, characterData.Id, characterData.SkillUsages);
+            await FillCharacterSummons(connection, transaction, characterData.Id, characterData.Summons);
 
             await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
             await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
@@ -325,65 +38,63 @@ namespace MultiplayerARPG.MMO
                 await FillSummonBuffs(connection, transaction, characterData.Id, summonBuffs);
 
             if (storageItems != null)
-                await FillPlayerStorageItems(connection, transaction, characterData.UserId, storageItems);
+                await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, storageItems);
 
         }
 
+        public const string CACHE_KEY_CREATE_CHARACTER = "CREATE_CHARACTER";
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
         {
-            using (NpgsqlConnection connection = NewConnection())
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
-                            "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, mountDataId, iconDataId, frameDataId, titleDataId) VALUES " +
-                            "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @mountDataId, @iconDataId, @frameDataId, @titleDataId)",
-                            new NpgsqlParameter("@id", character.Id),
-                            new NpgsqlParameter("@userId", userId),
-                            new NpgsqlParameter("@dataId", character.DataId),
-                            new NpgsqlParameter("@entityId", character.EntityId),
-                            new NpgsqlParameter("@factionId", character.FactionId),
-                            new NpgsqlParameter("@characterName", character.CharacterName),
-                            new NpgsqlParameter("@level", character.Level),
-                            new NpgsqlParameter("@exp", character.Exp),
-                            new NpgsqlParameter("@currentHp", character.CurrentHp),
-                            new NpgsqlParameter("@currentMp", character.CurrentMp),
-                            new NpgsqlParameter("@currentStamina", character.CurrentStamina),
-                            new NpgsqlParameter("@currentFood", character.CurrentFood),
-                            new NpgsqlParameter("@currentWater", character.CurrentWater),
-                            new NpgsqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                            new NpgsqlParameter("@statPoint", character.StatPoint),
-                            new NpgsqlParameter("@skillPoint", character.SkillPoint),
-                            new NpgsqlParameter("@gold", character.Gold),
-                            new NpgsqlParameter("@currentMapName", character.CurrentMapName),
-                            new NpgsqlParameter("@currentPositionX", character.CurrentPosition.x),
-                            new NpgsqlParameter("@currentPositionY", character.CurrentPosition.y),
-                            new NpgsqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                            new NpgsqlParameter("@currentRotationX", character.CurrentRotation.x),
-                            new NpgsqlParameter("@currentRotationY", character.CurrentRotation.y),
-                            new NpgsqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                            new NpgsqlParameter("@respawnMapName", character.RespawnMapName),
-                            new NpgsqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                            new NpgsqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                            new NpgsqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                            new NpgsqlParameter("@mountDataId", character.MountDataId),
-                            new NpgsqlParameter("@iconDataId", character.IconDataId),
-                            new NpgsqlParameter("@frameDataId", character.FrameDataId),
-                            new NpgsqlParameter("@titleDataId", character.TitleDataId));
-                        await FillCharacterRelatesData(connection, transaction, character, null, null);
-                        this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
-                }
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KEY_CREATE_CHARACTER,
+                    connection, transaction,
+                    "characters",
+                    new PostgreSQLHelpers.ColumnInfo("id", character.Id),
+                    new PostgreSQLHelpers.ColumnInfo("user_id", userId),
+                    new PostgreSQLHelpers.ColumnInfo("entity_id", character.EntityId),
+                    new PostgreSQLHelpers.ColumnInfo("data_id", character.DataId),
+                    new PostgreSQLHelpers.ColumnInfo("faction_id", character.FactionId),
+                    new PostgreSQLHelpers.ColumnInfo("character_name", character.CharacterName),
+                    new PostgreSQLHelpers.ColumnInfo("level", character.Level),
+                    new PostgreSQLHelpers.ColumnInfo("exp", character.Exp),
+                    new PostgreSQLHelpers.ColumnInfo("current_hp", character.CurrentHp),
+                    new PostgreSQLHelpers.ColumnInfo("current_mp", character.CurrentMp),
+                    new PostgreSQLHelpers.ColumnInfo("current_stamina", character.CurrentStamina),
+                    new PostgreSQLHelpers.ColumnInfo("current_food", character.CurrentFood),
+                    new PostgreSQLHelpers.ColumnInfo("current_water", character.CurrentWater),
+                    new PostgreSQLHelpers.ColumnInfo("equip_weapon_set", character.EquipWeaponSet),
+                    new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
+                    new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
+                    new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
+                    new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
+                    new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
+                    new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
+                    new PostgreSQLHelpers.ColumnInfo("current_position_z", character.CurrentPosition.z),
+                    new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
+                    new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
+                    new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+                    new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
+                    new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
+                    new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
+                    new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
+                    new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
+                    new PostgreSQLHelpers.ColumnInfo("pet_data_id", character.PetDataId),
+                    new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
+                    new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
+                    new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId));
+                await FillCharacterRelatesData(connection, transaction, character, null, null);
+                this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
             }
         }
 
@@ -627,14 +338,11 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
-            using (NpgsqlConnection connection = NewConnection())
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
+                await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
                             (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
                             (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
                             ON DUPLICATE KEY UPDATE
@@ -644,14 +352,14 @@ namespace MultiplayerARPG.MMO
                             consecutivePkKills = @consecutivePkKills,
                             highestPkPoint = @highestPkPoint,
                             highestConsecutivePkKills = @highestConsecutivePkKills",
-                            new NpgsqlParameter("@id", character.Id),
-                            new NpgsqlParameter("@isPkOn", character.IsPkOn),
-                            new NpgsqlParameter("@lastPkOnTime", character.LastPkOnTime),
-                            new NpgsqlParameter("@pkPoint", character.PkPoint),
-                            new NpgsqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
-                            new NpgsqlParameter("@highestPkPoint", character.HighestPkPoint),
-                            new NpgsqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-                        await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
+                    new NpgsqlParameter("@id", character.Id),
+                    new NpgsqlParameter("@isPkOn", character.IsPkOn),
+                    new NpgsqlParameter("@lastPkOnTime", character.LastPkOnTime),
+                    new NpgsqlParameter("@pkPoint", character.PkPoint),
+                    new NpgsqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
+                    new NpgsqlParameter("@highestPkPoint", character.HighestPkPoint),
+                    new NpgsqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
+                await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
                             dataId=@dataId,
                             entityId=@entityId,
                             factionId=@factionId,
@@ -685,257 +393,277 @@ namespace MultiplayerARPG.MMO
                             lastDeadTime=@lastDeadTime,
                             unmuteTime=@unmuteTime
                             WHERE id=@id",
-                            new NpgsqlParameter("@dataId", character.DataId),
-                            new NpgsqlParameter("@entityId", character.EntityId),
-                            new NpgsqlParameter("@factionId", character.FactionId),
-                            new NpgsqlParameter("@characterName", character.CharacterName),
-                            new NpgsqlParameter("@level", character.Level),
-                            new NpgsqlParameter("@exp", character.Exp),
-                            new NpgsqlParameter("@currentHp", character.CurrentHp),
-                            new NpgsqlParameter("@currentMp", character.CurrentMp),
-                            new NpgsqlParameter("@currentStamina", character.CurrentStamina),
-                            new NpgsqlParameter("@currentFood", character.CurrentFood),
-                            new NpgsqlParameter("@currentWater", character.CurrentWater),
-                            new NpgsqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                            new NpgsqlParameter("@statPoint", character.StatPoint),
-                            new NpgsqlParameter("@skillPoint", character.SkillPoint),
-                            new NpgsqlParameter("@gold", character.Gold),
-                            new NpgsqlParameter("@currentMapName", character.CurrentMapName),
-                            new NpgsqlParameter("@currentPositionX", character.CurrentPosition.x),
-                            new NpgsqlParameter("@currentPositionY", character.CurrentPosition.y),
-                            new NpgsqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                            new NpgsqlParameter("@currentRotationX", character.CurrentRotation.x),
-                            new NpgsqlParameter("@currentRotationY", character.CurrentRotation.y),
-                            new NpgsqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                            new NpgsqlParameter("@respawnMapName", character.RespawnMapName),
-                            new NpgsqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                            new NpgsqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                            new NpgsqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                            new NpgsqlParameter("@mountDataId", character.MountDataId),
-                            new NpgsqlParameter("@iconDataId", character.IconDataId),
-                            new NpgsqlParameter("@frameDataId", character.FrameDataId),
-                            new NpgsqlParameter("@titleDataId", character.TitleDataId),
-                            new NpgsqlParameter("@lastDeadTime", character.LastDeadTime),
-                            new NpgsqlParameter("@unmuteTime", character.UnmuteTime),
-                            new NpgsqlParameter("@id", character.Id));
-                        await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
-                        if (deleteStorageReservation)
-                        {
-                            await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
-                                new NpgsqlParameter("@reserverId", character.Id));
-                        }
-                        this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
+                    new NpgsqlParameter("@dataId", character.DataId),
+                    new NpgsqlParameter("@entityId", character.EntityId),
+                    new NpgsqlParameter("@factionId", character.FactionId),
+                    new NpgsqlParameter("@characterName", character.CharacterName),
+                    new NpgsqlParameter("@level", character.Level),
+                    new NpgsqlParameter("@exp", character.Exp),
+                    new NpgsqlParameter("@currentHp", character.CurrentHp),
+                    new NpgsqlParameter("@currentMp", character.CurrentMp),
+                    new NpgsqlParameter("@currentStamina", character.CurrentStamina),
+                    new NpgsqlParameter("@currentFood", character.CurrentFood),
+                    new NpgsqlParameter("@currentWater", character.CurrentWater),
+                    new NpgsqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                    new NpgsqlParameter("@statPoint", character.StatPoint),
+                    new NpgsqlParameter("@skillPoint", character.SkillPoint),
+                    new NpgsqlParameter("@gold", character.Gold),
+                    new NpgsqlParameter("@currentMapName", character.CurrentMapName),
+                    new NpgsqlParameter("@currentPositionX", character.CurrentPosition.x),
+                    new NpgsqlParameter("@currentPositionY", character.CurrentPosition.y),
+                    new NpgsqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                    new NpgsqlParameter("@currentRotationX", character.CurrentRotation.x),
+                    new NpgsqlParameter("@currentRotationY", character.CurrentRotation.y),
+                    new NpgsqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                    new NpgsqlParameter("@respawnMapName", character.RespawnMapName),
+                    new NpgsqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                    new NpgsqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                    new NpgsqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+                    new NpgsqlParameter("@mountDataId", character.MountDataId),
+                    new NpgsqlParameter("@iconDataId", character.IconDataId),
+                    new NpgsqlParameter("@frameDataId", character.FrameDataId),
+                    new NpgsqlParameter("@titleDataId", character.TitleDataId),
+                    new NpgsqlParameter("@lastDeadTime", character.LastDeadTime),
+                    new NpgsqlParameter("@unmuteTime", character.UnmuteTime),
+                    new NpgsqlParameter("@id", character.Id));
+                await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
+                if (deleteStorageReservation)
+                {
+                    await DeleteReservedStorageByReserver(character.Id);
                 }
+                this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
             }
         }
 
         public override async UniTask DeleteCharacter(string userId, string id)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE id=@id AND userId=@userId",
-                new NpgsqlParameter("@id", id),
-                new NpgsqlParameter("@userId", userId));
-            long count = result != null ? (long)result : 0;
-            if (count > 0)
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                using (NpgsqlConnection connection = NewConnection())
-                {
-                    await OpenConnection(connection);
-                    using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            await ExecuteNonQuery(connection, transaction, "DELETE FROM characters WHERE id=@characterId", new NpgsqlParameter("@characterId", id));
-                            await ExecuteNonQuery(connection, transaction, "DELETE FROM character_pk WHERE id=@characterId", new NpgsqlParameter("@characterId", id));
-                            await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE characterId1 LIKE @characterId OR characterId2 LIKE @characterId", new NpgsqlParameter("@characterId", id));
-                            await DeleteCharacterAttributes(connection, transaction, id);
-                            await DeleteCharacterCurrencies(connection, transaction, id);
-                            await DeleteCharacterBuffs(connection, transaction, id);
-                            await DeleteCharacterHotkeys(connection, transaction, id);
-                            await DeleteCharacterItems(connection, transaction, id);
-                            await DeleteCharacterQuests(connection, transaction, id);
-                            await DeleteCharacterSkills(connection, transaction, id);
-                            await DeleteCharacterSkillUsages(connection, transaction, id);
-                            await DeleteCharacterSummons(connection, transaction, id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_attributes", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_buffs", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_currencies", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_hotkeys", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_selectable_weapon_sets", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_equip_items", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_non_equip_items", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_protected_non_equip_items", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_quests", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skills", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skill_usages", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_summons", id);
 
-                            await DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);
-                            await DeleteCharacterDataInt32s(connection, transaction, "character_server_int32", id);
-                            await DeleteCharacterDataFloat32s(connection, transaction, "character_server_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_boolean", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_int32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_float32", id);
 
-                            await DeleteCharacterDataBooleans(connection, transaction, "character_private_boolean", id);
-                            await DeleteCharacterDataInt32s(connection, transaction, "character_private_int32", id);
-                            await DeleteCharacterDataFloat32s(connection, transaction, "character_private_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_boolean", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_int32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_float32", id);
 
-                            await DeleteCharacterDataBooleans(connection, transaction, "character_public_boolean", id);
-                            await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
-                            await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_boolean", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_int32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_float32", id);
 
-                            this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
-                            await transaction.CommitAsync();
-                        }
-                        catch (System.Exception ex)
-                        {
-                            LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
-                            LogException(LogTag, ex);
-                            await transaction.RollbackAsync();
-                        }
-                    }
-                }
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "characters", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_pk", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "friends", "character_id_1", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "friends", "character_id_2", id);
+
+                this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
             }
         }
 
+        public const string CACHE_KEY_FIND_CHARACTER_NAME = "FIND_CHARACTER_NAME";
         public override async UniTask<long> FindCharacterName(string characterName)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE characterName LIKE @characterName",
-                new NpgsqlParameter("@characterName", characterName));
-            return result != null ? (long)result : 0;
+            using var connection = await _dataSource.OpenConnectionAsync();
+            return await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KEY_FIND_CHARACTER_NAME,
+                connection, null,
+                "characters",
+                PostgreSQLHelpers.WhereLike("character_name", characterName));
         }
 
+        public const string CACHE_KEY_GET_ID_BY_CHARACTER_NAME = "GET_ID_BY_CHARACTER_NAME";
         public override async UniTask<string> GetIdByCharacterName(string characterName)
         {
-            object result = await ExecuteScalar("SELECT id FROM characters WHERE characterName LIKE @characterName LIMIT 1",
-                new NpgsqlParameter("@characterName", characterName));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            object result = PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_GET_ID_BY_CHARACTER_NAME,
+                connection, null,
+                "characters", "id", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("character_name", characterName));
             return result != null ? (string)result : string.Empty;
         }
 
+        public const string CACHE_KEY_GET_USER_ID_BY_CHARACTER_NAME = "GET_USER_ID_BY_CHARACTER_NAME";
         public override async UniTask<string> GetUserIdByCharacterName(string characterName)
         {
-            object result = await ExecuteScalar("SELECT userId FROM characters WHERE characterName LIKE @characterName LIMIT 1",
-                new NpgsqlParameter("@characterName", characterName));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            object result = PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_GET_USER_ID_BY_CHARACTER_NAME,
+                connection, null,
+                "characters", "user_id", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("character_name", characterName));
             return result != null ? (string)result : string.Empty;
         }
 
+        public const string CACHE_KEY_FIND_CHARACTERS_SELECT_FRIENDS = "FIND_CHARACTERS_SELECT_FRIENDS";
         public override async UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit)
         {
-            string excludeIdsQuery = "(id!='" + finderId + "'";
+            using var connection = await _dataSource.OpenConnectionAsync();
             // Exclude friend, requested characters
-            await ExecuteReader((reader) =>
+            using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_FIND_CHARACTERS_SELECT_FRIENDS,
+                connection, null,
+                "friends", "character_id_2",
+                PostgreSQLHelpers.WhereEqualTo("character_id_1", finderId));
+            string excludeIdsQuery = $"(id != '{finderId}'";
+            while (readerIds.Read())
             {
-                while (reader.Read())
-                {
-                    excludeIdsQuery += " AND id!='" + reader.GetString(0) + "'";
-                }
-            }, "SELECT characterId2 FROM friend WHERE characterId1='" + finderId + "'");
+                excludeIdsQuery += $" AND id != '{readerIds.GetString(0)}'";
+            }
             excludeIdsQuery += ")";
-            List<SocialCharacterData> result = new List<SocialCharacterData>();
-            await ExecuteReader((reader) =>
+            // Read some character data
+            using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
+                null,
+                connection, null,
+                "characters", "id, data_id, character_name, level", $" AND {excludeIdsQuery} ORDER BY RAND() LIMIT {skip}, {limit}",
+                PostgreSQLHelpers.WhereLike("character_name", $"%{characterName}%"));
+            List<SocialCharacterData> characters = new List<SocialCharacterData>();
+            SocialCharacterData tempCharacter;
+            while (readerCharacters.Read())
             {
-                SocialCharacterData socialCharacterData;
-                while (reader.Read())
-                {
-                    // Get some required data, other data will be set at server side
-                    socialCharacterData = new SocialCharacterData();
-                    socialCharacterData.id = reader.GetString(0);
-                    socialCharacterData.dataId = reader.GetInt32(1);
-                    socialCharacterData.characterName = reader.GetString(2);
-                    socialCharacterData.level = reader.GetInt32(3);
-                    result.Add(socialCharacterData);
-                }
-            }, "SELECT id, dataId, characterName, level FROM characters WHERE characterName LIKE @characterName AND " + excludeIdsQuery + " ORDER BY RAND() LIMIT " + skip + ", " + limit,
-                new NpgsqlParameter("@characterName", "%" + characterName + "%"));
-            return result;
+                tempCharacter = new SocialCharacterData();
+                tempCharacter.id = readerCharacters.GetString(0);
+                tempCharacter.dataId = readerCharacters.GetInt32(1);
+                tempCharacter.characterName = readerCharacters.GetString(2);
+                tempCharacter.level = readerCharacters.GetInt32(3);
+                characters.Add(tempCharacter);
+            }
+            return characters;
         }
 
+        public const string CACHE_KEY_CREATE_FRIEND = "CREATE_FRIEND";
         public override async UniTask CreateFriend(string id1, string id2, byte state)
         {
-            using (NpgsqlConnection connection = NewConnection())
-            {
-                await OpenConnection(connection);
-                using (NpgsqlTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        await ExecuteNonQuery(connection, transaction, "DELETE FROM friend WHERE " +
-                           "characterId1 LIKE @characterId1 AND " +
-                           "characterId2 LIKE @characterId2",
-                           new NpgsqlParameter("@characterId1", id1),
-                           new NpgsqlParameter("@characterId2", id2));
-                        await ExecuteNonQuery(connection, transaction, "INSERT INTO friend " +
-                            "(characterId1, characterId2, state) VALUES " +
-                            "(@characterId1, @characterId2, @state)",
-                            new NpgsqlParameter("@characterId1", id1),
-                            new NpgsqlParameter("@characterId2", id2),
-                            new NpgsqlParameter("@state", state));
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        LogError(LogTag, "Transaction, Error occurs while creating friend: " + id1 + " " + id2);
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
-                }
-            }
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpsert(
+                CACHE_KEY_CREATE_FRIEND,
+                connection, null,
+                "friends",
+                "character_id_1, character_id_2",
+                new PostgreSQLHelpers.ColumnInfo("state", state),
+                new PostgreSQLHelpers.ColumnInfo("character_id_1", id1),
+                new PostgreSQLHelpers.ColumnInfo("character_id_2", id2));
         }
 
+        public const string CACHE_KEY_DELETE_FRIEND = "DELETE_FRIEND";
         public override async UniTask DeleteFriend(string id1, string id2)
         {
-            await ExecuteNonQuery("DELETE FROM friend WHERE " +
-               "characterId1 LIKE @characterId1 AND " +
-               "characterId2 LIKE @characterId2",
-               new NpgsqlParameter("@characterId1", id1),
-               new NpgsqlParameter("@characterId2", id2));
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteDelete(
+                CACHE_KEY_DELETE_FRIEND,
+                connection, null,
+                "friends",
+                PostgreSQLHelpers.WhereEqualTo("character_id_1", id1),
+                PostgreSQLHelpers.AndWhereEqualTo("character_id_2", id2));
         }
 
+        public const string CACHE_KEY_READ_FRIENDS_ID_1 = "READ_FRIENDS_ID_1";
+        public const string CACHE_KEY_READ_FRIENDS_ID_2 = "READ_FRIENDS_ID_2";
         public override async UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
         {
-            List<SocialCharacterData> result = new List<SocialCharacterData>();
+            using var connection = await _dataSource.OpenConnectionAsync();
             List<string> characterIds = new List<string>();
             if (readById2)
             {
-                await ExecuteReader((reader) =>
+                using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                    CACHE_KEY_READ_FRIENDS_ID_1,
+                    connection, null,
+                    "friends", "character_id_1", $"LIMIT {skip}, {limit}",
+                    PostgreSQLHelpers.WhereEqualTo("character_id_2", id),
+                    PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
+                while (readerIds.Read())
                 {
-                    while (reader.Read())
-                    {
-                        characterIds.Add(reader.GetString(0));
-                    }
-                }, "SELECT characterId1 FROM friend WHERE characterId2=@id AND state=" + state + " LIMIT " + skip + ", " + limit,
-                    new NpgsqlParameter("@id", id));
+                    characterIds.Add(readerIds.GetString(0));
+                }
             }
             else
             {
-                await ExecuteReader((reader) =>
+                using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                    CACHE_KEY_READ_FRIENDS_ID_2,
+                    connection, null,
+                    "friends", "character_id_2", $"LIMIT {skip}, {limit}",
+                    PostgreSQLHelpers.WhereEqualTo("character_id_1", id),
+                    PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
+                while (readerIds.Read())
                 {
-                    while (reader.Read())
-                    {
-                        characterIds.Add(reader.GetString(0));
-                    }
-                }, "SELECT characterId2 FROM friend WHERE characterId1=@id AND state=" + state + " LIMIT " + skip + ", " + limit,
-                    new NpgsqlParameter("@id", id));
+                    characterIds.Add(readerIds.GetString(0));
+                }
             }
-            SocialCharacterData socialCharacterData;
-            foreach (string characterId in characterIds)
-            {
-                await ExecuteReader((reader) =>
-                {
-                    while (reader.Read())
-                    {
-                        // Get some required data, other data will be set at server side
-                        socialCharacterData = new SocialCharacterData();
-                        socialCharacterData.id = reader.GetString(0);
-                        socialCharacterData.dataId = reader.GetInt32(1);
-                        socialCharacterData.characterName = reader.GetString(2);
-                        socialCharacterData.level = reader.GetInt32(3);
-                        result.Add(socialCharacterData);
-                    }
-                }, "SELECT id, dataId, characterName, level FROM characters WHERE BINARY id = @id",
-                    new NpgsqlParameter("@id", characterId));
-            }
-            return result;
+            return await GetSocialCharacterByIds(connection, null, characterIds);
         }
 
+        public const string CACHE_KEY_GET_FRIEND_REQUESTS_NOTIFICATION = "GET_FRIEND_REQUESTS_NOTIFICATION";
         public override async UniTask<int> GetFriendRequestNotification(string characterId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM friend WHERE characterId2=@characterId AND state=1",
-                new NpgsqlParameter("@characterId", characterId));
-            return (int)(long)result;
+            using var connection = await _dataSource.OpenConnectionAsync();
+            return (int)await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KEY_GET_FRIEND_REQUESTS_NOTIFICATION,
+                connection, null,
+                "friends",
+                PostgreSQLHelpers.WhereEqualTo("character_id_2", characterId),
+                PostgreSQLHelpers.AndWhereSmallEqualTo("state", 1));
+        }
+
+        public async UniTask<List<SocialCharacterData>> GetSocialCharacterByIds(NpgsqlConnection connection, NpgsqlTransaction transaction, IList<string> characterIds, string select = "id, data_id, character_name, level")
+        {
+            List<SocialCharacterData> characters = new List<SocialCharacterData>();
+            if (characterIds.Count > 0)
+            {
+                List<PostgreSQLHelpers.WhereQuery> characterQueries = new List<PostgreSQLHelpers.WhereQuery>()
+                {
+                    PostgreSQLHelpers.WhereEqualTo("id", characterIds[0]),
+                };
+                for (int i = 1; i < characterIds.Count; ++i)
+                {
+                    characterQueries.Add(PostgreSQLHelpers.OrWhereEqualTo("id", characterIds[i]));
+                }
+                using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
+                    null,
+                    connection, transaction,
+                    "characters",
+                    characterQueries,
+                    select, "LIMIT 1");
+                SocialCharacterData tempCharacter;
+                while (readerCharacters.Read())
+                {
+                    tempCharacter = new SocialCharacterData();
+                    tempCharacter.id = readerCharacters.GetString(0);
+                    tempCharacter.dataId = readerCharacters.GetInt32(1);
+                    tempCharacter.characterName = readerCharacters.GetString(2);
+                    tempCharacter.level = readerCharacters.GetInt32(3);
+                    characters.Add(tempCharacter);
+                }
+            }
+            return characters;
         }
     }
 }
