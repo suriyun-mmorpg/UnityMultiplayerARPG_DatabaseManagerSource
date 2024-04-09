@@ -16,7 +16,6 @@ namespace MultiplayerARPG.MMO
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_selectable_weapon_sets", characterData.Id, characterData.SelectableWeaponSets);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_protected_non_equip_items", characterData.Id, characterData.ProtectedNonEquipItems);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_quests", characterData.Id, characterData.Quests);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_currencies", characterData.Id, characterData.Currencies);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skills", characterData.Id, characterData.Skills);
@@ -82,7 +81,6 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
                     new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
-                    new PostgreSQLHelpers.ColumnInfo("pet_data_id", character.PetDataId),
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId));
@@ -130,11 +128,9 @@ namespace MultiplayerARPG.MMO
                 result.RespawnMapName = reader.GetString(28);
                 result.RespawnPosition = new Vec3(reader.GetFloat(29), reader.GetFloat(30), reader.GetFloat(31));
                 result.MountDataId = reader.GetInt32(32);
-                result.PetDataId = reader.GetInt32(33);
                 result.IconDataId = reader.GetInt32(34);
                 result.FrameDataId = reader.GetInt32(35);
                 result.TitleDataId = reader.GetInt32(36);
-                result.Reputation = reader.GetInt32(37);
                 result.LastDeadTime = reader.GetInt64(38);
                 result.UnmuteTime = reader.GetInt64(39);
                 result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(40)).ToUnixTimeSeconds();
@@ -443,11 +439,9 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
                         new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
-                        new PostgreSQLHelpers.ColumnInfo("pet_data_id", character.PetDataId),
                         new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                         new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                         new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
-                        new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation),
                         new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
                         new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
                     },
