@@ -1,6 +1,7 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Npgsql;
+using NpgsqlTypes;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
@@ -9,37 +10,36 @@ namespace MultiplayerARPG.MMO
     {
         private async UniTask FillCharacterRelatesData(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
-            await FillCharacterAttributes(connection, transaction, characterData.Id, characterData.Attributes);
-            await FillCharacterBuffs(connection, transaction, characterData.Id, characterData.Buffs);
-            await FillCharacterHotkeys(connection, transaction, characterData.Id, characterData.Hotkeys);
-            await FillSelectableWeaponSets(connection, transaction, characterData.Id, characterData.SelectableWeaponSets);
-            await FillCharacterItems(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
-            await FillCharacterItems(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
-            await FillCharacterItems(connection, transaction, "character_protected_non_equip_items", characterData.Id, characterData.ProtectedNonEquipItems);
-            await FillCharacterQuests(connection, transaction, characterData.Id, characterData.Quests);
-            await FillCharacterCurrencies(connection, transaction, characterData.Id, characterData.Currencies);
-            await FillCharacterSkills(connection, transaction, characterData.Id, characterData.Skills);
-            await FillCharacterSkillUsages(connection, transaction, characterData.Id, characterData.SkillUsages);
-            await FillCharacterSummons(connection, transaction, characterData.Id, characterData.Summons);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_buffs", characterData.Id, characterData.Buffs);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_hotkeys", characterData.Id, characterData.Hotkeys);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_selectable_weapon_sets", characterData.Id, characterData.SelectableWeaponSets);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_protected_non_equip_items", characterData.Id, characterData.ProtectedNonEquipItems);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_quests", characterData.Id, characterData.Quests);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_currencies", characterData.Id, characterData.Currencies);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skills", characterData.Id, characterData.Skills);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skill_usages", characterData.Id, characterData.SkillUsages);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summons", characterData.Id, characterData.Summons);
 
-            await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
 
-            await FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
 
-            await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
 
             if (summonBuffs != null)
-                await FillSummonBuffs(connection, transaction, characterData.Id, summonBuffs);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
 
             if (storageItems != null)
                 await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, storageItems);
-
         }
 
         public const string CACHE_KEY_CREATE_CHARACTER = "CREATE_CHARACTER";
@@ -130,24 +130,25 @@ namespace MultiplayerARPG.MMO
                 result.RespawnMapName = reader.GetString(28);
                 result.RespawnPosition = new Vec3(reader.GetFloat(29), reader.GetFloat(30), reader.GetFloat(31));
                 result.MountDataId = reader.GetInt32(32);
-                result.IconDataId = reader.GetInt32(33);
-                result.FrameDataId = reader.GetInt32(34);
-                result.TitleDataId = reader.GetInt32(35);
-                result.LastDeadTime = reader.GetInt64(36);
-                result.UnmuteTime = reader.GetInt64(37);
-                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(38)).ToUnixTimeSeconds();
-                if (!reader.IsDBNull(39))
-                    result.IsPkOn = reader.GetBoolean(39);
+                result.PetDataId = reader.GetInt32(33);
+                result.IconDataId = reader.GetInt32(34);
+                result.FrameDataId = reader.GetInt32(35);
+                result.TitleDataId = reader.GetInt32(36);
+                result.LastDeadTime = reader.GetInt64(37);
+                result.UnmuteTime = reader.GetInt64(38);
+                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(39)).ToUnixTimeSeconds();
                 if (!reader.IsDBNull(40))
-                    result.LastPkOnTime = reader.GetInt64(40);
+                    result.IsPkOn = reader.GetBoolean(40);
                 if (!reader.IsDBNull(41))
-                    result.PkPoint = reader.GetInt32(41);
+                    result.LastPkOnTime = reader.GetInt64(41);
                 if (!reader.IsDBNull(42))
-                    result.ConsecutivePkKills = reader.GetInt32(42);
+                    result.PkPoint = reader.GetInt32(42);
                 if (!reader.IsDBNull(43))
-                    result.HighestPkPoint = reader.GetInt32(43);
+                    result.ConsecutivePkKills = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.HighestConsecutivePkKills = reader.GetInt32(44);
+                    result.HighestPkPoint = reader.GetInt32(44);
+                if (!reader.IsDBNull(45))
+                    result.HighestConsecutivePkKills = reader.GetInt32(45);
                 return true;
             }
             result = null;
@@ -171,261 +172,285 @@ namespace MultiplayerARPG.MMO
             bool withPrivateCustomData = true,
             bool withPublicCustomData = true)
         {
-            PlayerCharacterData result = null;
-            await ExecuteReader((reader) =>
-            {
-                ReadCharacter(reader, out result);
-            }, @"SELECT
-                c.id, c.userId, c.dataId, c.entityId, c.factionId, c.characterName, c.level, c.exp,
-                c.currentHp, c.currentMp, c.currentStamina, c.currentFood, c.currentWater,
-                c.equipWeaponSet, c.statPoint, c.skillPoint, c.gold, c.partyId, c.guildId, c.guildRole, c.sharedGuildExp,
-                c.currentMapName, c.currentPositionX, c.currentPositionY, c.currentPositionZ, c.currentRotationX, currentRotationY, currentRotationZ,
-                c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
-                c.mountDataId, c.iconDataId, c.frameDataId, c.titleDataId, c.lastDeadTime, c.unmuteTime, c.updateAt,
-                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills
+            using var connection = await _dataSource.OpenConnectionAsync();
+            return await ReadCharacter(
+                connection,
+                id,
+                withEquipWeapons,
+                withAttributes,
+                withSkills,
+                withSkillUsages,
+                withBuffs,
+                withEquipItems,
+                withNonEquipItems,
+                withSummons,
+                withHotkeys,
+                withQuests,
+                withCurrencies,
+                withServerCustomData,
+                withPrivateCustomData,
+                withPublicCustomData);
+        }
+
+        public async UniTask<PlayerCharacterData> ReadCharacter(
+            NpgsqlConnection connection,
+            string id,
+            bool withEquipWeapons,
+            bool withAttributes,
+            bool withSkills,
+            bool withSkillUsages,
+            bool withBuffs,
+            bool withEquipItems,
+            bool withNonEquipItems,
+            bool withSummons,
+            bool withHotkeys,
+            bool withQuests,
+            bool withCurrencies,
+            bool withServerCustomData,
+            bool withPrivateCustomData,
+            bool withPublicCustomData)
+        {
+            PlayerCharacterData result;
+            NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT
+                c.id, c.userId, c.data_id, c.entity_id, c.faction_id, c.character_name, c.level, c.exp,
+                c.current_hp, c.current_mp, c.current_stamina, c.current_food, c.current_water,
+                c.equip_weapon_set, c.stat_point, c.skill_point, c.gold, c.party_id, c.guild_id, c.guild_role, c.shared_guild_exp,
+                c.current_map_name, c.current_position_x, c.current_position_y, c.current_position_z, c.current_rotation_x, current_rotation_y, current_rotation_z,
+                c.respawn_map_name, c.respawn_position_x, c.respawn_position_y, c.respawn_position_z,
+                c.mount_data_id, c.pet_data_id, c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
+                cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills
                 FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
-                WHERE c.id=@id LIMIT 1",
-                new NpgsqlParameter("@id", id));
+                WHERE c.id=$1 LIMIT 1", connection);
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = id;
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (!ReadCharacter(reader, out result))
+                return result;
             // Found character, then read its relates data
-            if (result != null)
+            List<EquipWeapons> selectableWeaponSets = new List<EquipWeapons>();
+            List<CharacterAttribute> attributes = new List<CharacterAttribute>();
+            List<CharacterSkill> skills = new List<CharacterSkill>();
+            List<CharacterSkillUsage> skillUsages = new List<CharacterSkillUsage>();
+            List<CharacterBuff> buffs = new List<CharacterBuff>();
+            List<CharacterItem> equipItems = new List<CharacterItem>();
+            List<CharacterItem> nonEquipItems = new List<CharacterItem>();
+            List<CharacterItem> protectedNonEquipItems = new List<CharacterItem>();
+            List<CharacterSummon> summons = new List<CharacterSummon>();
+            List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
+            List<CharacterQuest> quests = new List<CharacterQuest>();
+            List<CharacterCurrency> currencies = new List<CharacterCurrency>();
+
+            List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
+            List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
+            List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
+
+            List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
+            List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
+            List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
+
+            List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
+            List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
+            List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
+
+            // Read data
+            List<UniTask> tasks = new List<UniTask>();
+            if (withEquipWeapons)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_selectable_weapon_sets", id, selectableWeaponSets));
+            if (withAttributes)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_attributes", id, attributes));
+            if (withSkills)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_skills", id, skills));
+            if (withSkillUsages)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_skill_usages", id, skillUsages));
+            if (withBuffs)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_buffs", id, buffs));
+            if (withEquipItems)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_equip_items", id, equipItems));
+            if (withNonEquipItems)
             {
-                List<EquipWeapons> selectableWeaponSets = new List<EquipWeapons>();
-                List<CharacterAttribute> attributes = new List<CharacterAttribute>();
-                List<CharacterSkill> skills = new List<CharacterSkill>();
-                List<CharacterSkillUsage> skillUsages = new List<CharacterSkillUsage>();
-                List<CharacterBuff> buffs = new List<CharacterBuff>();
-                List<CharacterItem> equipItems = new List<CharacterItem>();
-                List<CharacterItem> nonEquipItems = new List<CharacterItem>();
-                List<CharacterSummon> summons = new List<CharacterSummon>();
-                List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
-                List<CharacterQuest> quests = new List<CharacterQuest>();
-                List<CharacterCurrency> currencies = new List<CharacterCurrency>();
-
-                List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
-                List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
-                List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
-
-                List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
-                List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
-                List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
-
-                List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
-                List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
-                List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
-
-                // Read data
-                List<UniTask> tasks = new List<UniTask>();
-                if (withEquipWeapons)
-                    tasks.Add(ReadCharacterEquipWeapons(id, selectableWeaponSets));
-                if (withAttributes)
-                    tasks.Add(ReadCharacterAttributes(id, attributes));
-                if (withSkills)
-                    tasks.Add(ReadCharacterSkills(id, skills));
-                if (withSkillUsages)
-                    tasks.Add(ReadCharacterSkillUsages(id, skillUsages));
-                if (withBuffs)
-                    tasks.Add(ReadCharacterBuffs(id, buffs));
-                if (withEquipItems)
-                    tasks.Add(ReadCharacterEquipItems(id, equipItems));
-                if (withNonEquipItems)
-                    tasks.Add(ReadCharacterNonEquipItems(id, nonEquipItems));
-                if (withSummons)
-                    tasks.Add(ReadCharacterSummons(id, summons));
-                if (withHotkeys)
-                    tasks.Add(ReadCharacterHotkeys(id, hotkeys));
-                if (withQuests)
-                    tasks.Add(ReadCharacterQuests(id, quests));
-                if (withCurrencies)
-                    tasks.Add(ReadCharacterCurrencies(id, currencies));
-                if (withServerCustomData)
-                {
-                    tasks.Add(ReadCharacterDataBooleans("character_server_boolean", id, serverBools));
-                    tasks.Add(ReadCharacterDataInt32s("character_server_int32", id, serverInts));
-                    tasks.Add(ReadCharacterDataFloat32s("character_server_float32", id, serverFloats));
-                }
-                if (withPrivateCustomData)
-                {
-                    tasks.Add(ReadCharacterDataBooleans("character_private_boolean", id, privateBools));
-                    tasks.Add(ReadCharacterDataInt32s("character_private_int32", id, privateInts));
-                    tasks.Add(ReadCharacterDataFloat32s("character_private_float32", id, privateFloats));
-                }
-                if (withPublicCustomData)
-                {
-                    tasks.Add(ReadCharacterDataBooleans("character_public_boolean", id, publicBools));
-                    tasks.Add(ReadCharacterDataInt32s("character_public_int32", id, publicInts));
-                    tasks.Add(ReadCharacterDataFloat32s("character_public_float32", id, publicFloats));
-                }
-                await UniTask.WhenAll(tasks);
-                // Assign read data
-                if (withEquipWeapons)
-                    result.SelectableWeaponSets = selectableWeaponSets;
-                if (withAttributes)
-                    result.Attributes = attributes;
-                if (withSkills)
-                    result.Skills = skills;
-                if (withSkillUsages)
-                    result.SkillUsages = skillUsages;
-                if (withBuffs)
-                    result.Buffs = buffs;
-                if (withEquipItems)
-                    result.EquipItems = equipItems;
-                if (withNonEquipItems)
-                    result.NonEquipItems = nonEquipItems;
-                if (withSummons)
-                    result.Summons = summons;
-                if (withHotkeys)
-                    result.Hotkeys = hotkeys;
-                if (withQuests)
-                    result.Quests = quests;
-                if (withCurrencies)
-                    result.Currencies = currencies;
-                if (withServerCustomData)
-                {
-                    result.ServerBools = serverBools;
-                    result.ServerInts = serverInts;
-                    result.ServerFloats = serverFloats;
-                }
-                if (withPrivateCustomData)
-                {
-                    result.PrivateBools = privateBools;
-                    result.PrivateInts = privateInts;
-                    result.PrivateFloats = privateFloats;
-                }
-                if (withPublicCustomData)
-                {
-                    result.PublicBools = publicBools;
-                    result.PublicInts = publicInts;
-                    result.PublicFloats = publicFloats;
-                }
-                // Invoke dev extension methods
-                this.InvokeInstanceDevExtMethods("ReadCharacter",
-                    result,
-                    withEquipWeapons,
-                    withAttributes,
-                    withSkills,
-                    withSkillUsages,
-                    withBuffs,
-                    withEquipItems,
-                    withNonEquipItems,
-                    withSummons,
-                    withHotkeys,
-                    withQuests,
-                    withCurrencies,
-                    withServerCustomData,
-                    withPrivateCustomData,
-                    withPublicCustomData);
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_non_equip_items", id, nonEquipItems));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_protected_non_equip_items", id, protectedNonEquipItems));
             }
+            if (withSummons)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_summons", id, summons));
+            if (withHotkeys)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_hotkeys", id, hotkeys));
+            if (withQuests)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_quests", id, quests));
+            if (withCurrencies)
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_currencies", id, currencies));
+            if (withServerCustomData)
+            {
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_boolean", id, serverBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_int32", id, serverInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_float32", id, serverFloats));
+            }
+            if (withPrivateCustomData)
+            {
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_boolean", id, privateBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_int32", id, privateInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_float32", id, privateFloats));
+            }
+            if (withPublicCustomData)
+            {
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_boolean", id, publicBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_int32", id, publicInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_float32", id, publicFloats));
+            }
+            await UniTask.WhenAll(tasks);
+            // Assign read data
+            if (withEquipWeapons)
+                result.SelectableWeaponSets = selectableWeaponSets;
+            if (withAttributes)
+                result.Attributes = attributes;
+            if (withSkills)
+                result.Skills = skills;
+            if (withSkillUsages)
+                result.SkillUsages = skillUsages;
+            if (withBuffs)
+                result.Buffs = buffs;
+            if (withEquipItems)
+                result.EquipItems = equipItems;
+            if (withNonEquipItems)
+                result.NonEquipItems = nonEquipItems;
+            if (withSummons)
+                result.Summons = summons;
+            if (withHotkeys)
+                result.Hotkeys = hotkeys;
+            if (withQuests)
+                result.Quests = quests;
+            if (withCurrencies)
+                result.Currencies = currencies;
+            if (withServerCustomData)
+            {
+                result.ServerBools = serverBools;
+                result.ServerInts = serverInts;
+                result.ServerFloats = serverFloats;
+            }
+            if (withPrivateCustomData)
+            {
+                result.PrivateBools = privateBools;
+                result.PrivateInts = privateInts;
+                result.PrivateFloats = privateFloats;
+            }
+            if (withPublicCustomData)
+            {
+                result.PublicBools = publicBools;
+                result.PublicInts = publicInts;
+                result.PublicFloats = publicFloats;
+            }
+            // Invoke dev extension methods
+            this.InvokeInstanceDevExtMethods("ReadCharacter",
+                result,
+                withEquipWeapons,
+                withAttributes,
+                withSkills,
+                withSkillUsages,
+                withBuffs,
+                withEquipItems,
+                withNonEquipItems,
+                withSummons,
+                withHotkeys,
+                withQuests,
+                withCurrencies,
+                withServerCustomData,
+                withPrivateCustomData,
+                withPublicCustomData);
             return result;
         }
 
+        public const string CACHE_KEY_READ_CHARACTERS = "READ_CHARACTERS";
         public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
         {
-            List<PlayerCharacterData> result = new List<PlayerCharacterData>();
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_CHARACTERS,
+                connection,
+                "characters", "id", "ORDER BY update_time DESC",
+                PostgreSQLHelpers.WhereEqualTo("user_id", userId));
+
             List<string> characterIds = new List<string>();
-            await ExecuteReader((reader) =>
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    characterIds.Add(reader.GetString(0));
-                }
-            }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new NpgsqlParameter("@userId", userId));
+                characterIds.Add(reader.GetString(0));
+            }
+
+            List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             foreach (string characterId in characterIds)
             {
-                result.Add(await ReadCharacter(characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await ReadCharacter(connection, characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
 
+        public const string CACHE_KEY_UPDATE_CHARACTER_PK = "UPDATE_CHARACTER_PK";
+        public async UniTask UpdateCharacterPk(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData character)
+        {
+            await PostgreSQLHelpers.ExecuteUpsert(
+                CACHE_KEY_UPDATE_CHARACTER_PK,
+                connection, transaction,
+                "character_pk",
+                "id",
+                new PostgreSQLHelpers.ColumnInfo("id", character.Id),
+                new PostgreSQLHelpers.ColumnInfo("is_pk_on", character.IsPkOn),
+                new PostgreSQLHelpers.ColumnInfo("last_pk_on_time", character.LastPkOnTime),
+                new PostgreSQLHelpers.ColumnInfo("pk_point", character.PkPoint),
+                new PostgreSQLHelpers.ColumnInfo("consecutive_pk_kills", character.ConsecutivePkKills),
+                new PostgreSQLHelpers.ColumnInfo("highest_pk_point", character.HighestPkPoint),
+                new PostgreSQLHelpers.ColumnInfo("highest_consecutive_pk_kills", character.HighestConsecutivePkKills));
+        }
+
+        public const string CACHE_KEY_UPDATE_CHARACTER = "UPDATE_CHARACTER";
         public override async UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
             try
             {
-                await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
-                            (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
-                            (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
-                            ON DUPLICATE KEY UPDATE
-                            isPkOn = @isPkOn,
-                            lastPkOnTime = @lastPkOnTime,
-                            pkPoint = @pkPoint,
-                            consecutivePkKills = @consecutivePkKills,
-                            highestPkPoint = @highestPkPoint,
-                            highestConsecutivePkKills = @highestConsecutivePkKills",
-                    new NpgsqlParameter("@id", character.Id),
-                    new NpgsqlParameter("@isPkOn", character.IsPkOn),
-                    new NpgsqlParameter("@lastPkOnTime", character.LastPkOnTime),
-                    new NpgsqlParameter("@pkPoint", character.PkPoint),
-                    new NpgsqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
-                    new NpgsqlParameter("@highestPkPoint", character.HighestPkPoint),
-                    new NpgsqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-                await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
-                            dataId=@dataId,
-                            entityId=@entityId,
-                            factionId=@factionId,
-                            characterName=@characterName,
-                            level=@level,
-                            exp=@exp,
-                            currentHp=@currentHp,
-                            currentMp=@currentMp,
-                            currentStamina=@currentStamina,
-                            currentFood=@currentFood,
-                            currentWater=@currentWater,
-                            equipWeaponSet=@equipWeaponSet,
-                            statPoint=@statPoint,
-                            skillPoint=@skillPoint,
-                            gold=@gold,
-                            currentMapName=@currentMapName,
-                            currentPositionX=@currentPositionX,
-                            currentPositionY=@currentPositionY,
-                            currentPositionZ=@currentPositionZ,
-                            currentRotationX=@currentRotationX,
-                            currentRotationY=@currentRotationY,
-                            currentRotationZ=@currentRotationZ,
-                            respawnMapName=@respawnMapName,
-                            respawnPositionX=@respawnPositionX,
-                            respawnPositionY=@respawnPositionY,
-                            respawnPositionZ=@respawnPositionZ,
-                            mountDataId=@mountDataId,
-                            iconDataId=@iconDataId,
-                            frameDataId=@frameDataId,
-                            titleDataId=@titleDataId,
-                            lastDeadTime=@lastDeadTime,
-                            unmuteTime=@unmuteTime
-                            WHERE id=@id",
-                    new NpgsqlParameter("@dataId", character.DataId),
-                    new NpgsqlParameter("@entityId", character.EntityId),
-                    new NpgsqlParameter("@factionId", character.FactionId),
-                    new NpgsqlParameter("@characterName", character.CharacterName),
-                    new NpgsqlParameter("@level", character.Level),
-                    new NpgsqlParameter("@exp", character.Exp),
-                    new NpgsqlParameter("@currentHp", character.CurrentHp),
-                    new NpgsqlParameter("@currentMp", character.CurrentMp),
-                    new NpgsqlParameter("@currentStamina", character.CurrentStamina),
-                    new NpgsqlParameter("@currentFood", character.CurrentFood),
-                    new NpgsqlParameter("@currentWater", character.CurrentWater),
-                    new NpgsqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                    new NpgsqlParameter("@statPoint", character.StatPoint),
-                    new NpgsqlParameter("@skillPoint", character.SkillPoint),
-                    new NpgsqlParameter("@gold", character.Gold),
-                    new NpgsqlParameter("@currentMapName", character.CurrentMapName),
-                    new NpgsqlParameter("@currentPositionX", character.CurrentPosition.x),
-                    new NpgsqlParameter("@currentPositionY", character.CurrentPosition.y),
-                    new NpgsqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                    new NpgsqlParameter("@currentRotationX", character.CurrentRotation.x),
-                    new NpgsqlParameter("@currentRotationY", character.CurrentRotation.y),
-                    new NpgsqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                    new NpgsqlParameter("@respawnMapName", character.RespawnMapName),
-                    new NpgsqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                    new NpgsqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                    new NpgsqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-                    new NpgsqlParameter("@mountDataId", character.MountDataId),
-                    new NpgsqlParameter("@iconDataId", character.IconDataId),
-                    new NpgsqlParameter("@frameDataId", character.FrameDataId),
-                    new NpgsqlParameter("@titleDataId", character.TitleDataId),
-                    new NpgsqlParameter("@lastDeadTime", character.LastDeadTime),
-                    new NpgsqlParameter("@unmuteTime", character.UnmuteTime),
-                    new NpgsqlParameter("@id", character.Id));
+                await UpdateCharacterPk(connection, transaction, character);
+                await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_UPDATE_CHARACTER,
+                    connection, transaction,
+                    "characters",
+                    new[]
+                    {
+                        new PostgreSQLHelpers.ColumnInfo("entity_id", character.EntityId),
+                        new PostgreSQLHelpers.ColumnInfo("data_id", character.DataId),
+                        new PostgreSQLHelpers.ColumnInfo("faction_id", character.FactionId),
+                        new PostgreSQLHelpers.ColumnInfo("character_name", character.CharacterName),
+                        new PostgreSQLHelpers.ColumnInfo("level", character.Level),
+                        new PostgreSQLHelpers.ColumnInfo("exp", character.Exp),
+                        new PostgreSQLHelpers.ColumnInfo("current_hp", character.CurrentHp),
+                        new PostgreSQLHelpers.ColumnInfo("current_mp", character.CurrentMp),
+                        new PostgreSQLHelpers.ColumnInfo("current_stamina", character.CurrentStamina),
+                        new PostgreSQLHelpers.ColumnInfo("current_food", character.CurrentFood),
+                        new PostgreSQLHelpers.ColumnInfo("current_water", character.CurrentWater),
+                        new PostgreSQLHelpers.ColumnInfo("equip_weapon_set", character.EquipWeaponSet),
+                        new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
+                        new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
+                        new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
+                        new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
+                        new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
+                        new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
+                        new PostgreSQLHelpers.ColumnInfo("current_position_z", character.CurrentPosition.z),
+                        new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
+                        new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
+                        new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+                        new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
+                        new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
+                        new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
+                        new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
+                        new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
+                        new PostgreSQLHelpers.ColumnInfo("pet_data_id", character.PetDataId),
+                        new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
+                        new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
+                        new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
+                        new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation),
+                        new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
+                        new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
+                    },
+                    PostgreSQLHelpers.WhereEqualTo("id", character.Id));
                 await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
                 if (deleteStorageReservation)
                 {
@@ -506,7 +531,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             object result = PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KEY_GET_ID_BY_CHARACTER_NAME,
-                connection, null,
+                connection,
                 "characters", "id", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("character_name", characterName));
             return result != null ? (string)result : string.Empty;
@@ -518,7 +543,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             object result = PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KEY_GET_USER_ID_BY_CHARACTER_NAME,
-                connection, null,
+                connection,
                 "characters", "user_id", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("character_name", characterName));
             return result != null ? (string)result : string.Empty;
@@ -543,7 +568,7 @@ namespace MultiplayerARPG.MMO
             // Read some character data
             using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
                 null,
-                connection, null,
+                connection,
                 "characters", "id, data_id, character_name, level", $" AND {excludeIdsQuery} ORDER BY RAND() LIMIT {skip}, {limit}",
                 PostgreSQLHelpers.WhereLike("character_name", $"%{characterName}%"));
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
@@ -596,7 +621,7 @@ namespace MultiplayerARPG.MMO
             {
                 using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                     CACHE_KEY_READ_FRIENDS_ID_1,
-                    connection, null,
+                    connection,
                     "friends", "character_id_1", $"LIMIT {skip}, {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_2", id),
                     PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
@@ -609,7 +634,7 @@ namespace MultiplayerARPG.MMO
             {
                 using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                     CACHE_KEY_READ_FRIENDS_ID_2,
-                    connection, null,
+                    connection,
                     "friends", "character_id_2", $"LIMIT {skip}, {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_1", id),
                     PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
@@ -648,7 +673,7 @@ namespace MultiplayerARPG.MMO
                 }
                 using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
                     null,
-                    connection, transaction,
+                    connection,
                     "characters",
                     characterQueries,
                     select, "LIMIT 1");
