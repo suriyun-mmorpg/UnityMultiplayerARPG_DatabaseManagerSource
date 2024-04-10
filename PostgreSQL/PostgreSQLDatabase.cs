@@ -25,7 +25,7 @@ namespace MultiplayerARPG.MMO
             // Json file read
             bool configFileFound = false;
             string configFolder = "./Config";
-            string configFilePath = configFolder + "/NpgsqlConfig.json";
+            string configFilePath = configFolder + "/pgsqlConfig.json";
             PostgreSQLConfig config = new PostgreSQLConfig()
             {
                 pgAddress = _address,
