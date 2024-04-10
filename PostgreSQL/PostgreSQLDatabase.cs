@@ -354,7 +354,7 @@ namespace MultiplayerARPG.MMO
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
-            using var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM server_statistic WHERE 1", connection, transaction);
+            using var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM server_statistic", connection, transaction);
             await cmd.PrepareAsync();
             var result = await cmd.ExecuteScalarAsync();
 
@@ -375,6 +375,8 @@ namespace MultiplayerARPG.MMO
                 cmd2.Parameters[0].Value = userCount;
                 await cmd2.ExecuteNonQueryAsync();
             }
+
+            await transaction.CommitAsync();
         }
     }
 }
