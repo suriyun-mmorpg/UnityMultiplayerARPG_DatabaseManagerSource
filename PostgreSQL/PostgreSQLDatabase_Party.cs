@@ -38,40 +38,40 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<PartyData> ReadParty(int id)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var readerParties = await PostgreSQLHelpers.ExecuteSelect(
+            var readerParty = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_PARTY_PARTIES,
                 connection,
                 "parties", "share_exp, share_item, leader_id", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             PartyData result = null;
-            if (readerParties.Read())
+            if (readerParty.Read())
             {
                 result = new PartyData(id,
-                    readerParties.GetBoolean(0),
-                    readerParties.GetBoolean(1),
-                    readerParties.GetString(2));
+                    readerParty.GetBoolean(0),
+                    readerParty.GetBoolean(1),
+                    readerParty.GetString(2));
             }
-            // Read relates data if party exists
-            if (result != null)
+            readerParty.Dispose();
+            if (result == null)
+                return null;
+            // Party members
+            var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_READ_PARTY_MEMBERS,
+                connection,
+                "characters", "id, data_id, character_name, level",
+                PostgreSQLHelpers.WhereEqualTo("party_id", id));
+            SocialCharacterData partyMemberData;
+            while (readerMembers.Read())
             {
-                // Party members
-                using var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
-                    CACHE_KEY_READ_PARTY_MEMBERS,
-                    connection,
-                    "characters", "id, data_id, character_name, level",
-                    PostgreSQLHelpers.WhereEqualTo("party_id", id));
-                SocialCharacterData partyMemberData;
-                while (readerMembers.Read())
-                {
-                    // Get some required data, other data will be set at server side
-                    partyMemberData = new SocialCharacterData();
-                    partyMemberData.id = readerMembers.GetString(0);
-                    partyMemberData.dataId = readerMembers.GetInt32(1);
-                    partyMemberData.characterName = readerMembers.GetString(2);
-                    partyMemberData.level = readerMembers.GetInt32(3);
-                    result.AddMember(partyMemberData);
-                }
+                // Get some required data, other data will be set at server side
+                partyMemberData = new SocialCharacterData();
+                partyMemberData.id = readerMembers.GetString(0);
+                partyMemberData.dataId = readerMembers.GetInt32(1);
+                partyMemberData.characterName = readerMembers.GetString(2);
+                partyMemberData.level = readerMembers.GetInt32(3);
+                result.AddMember(partyMemberData);
             }
+            readerMembers.Dispose();
             return result;
         }
 
