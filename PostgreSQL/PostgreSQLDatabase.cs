@@ -93,8 +93,8 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_VALIDATE_USER_LOGIN,
-                connection, null,
-                "users",
+                connection,
+                "users", "id, password",
                 PostgreSQLHelpers.WhereEqualTo("username", username));
             string id = string.Empty;
             if (reader.Read())
@@ -113,7 +113,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_VALIDATE_ACCESS_TOKEN,
-                connection, null,
+                connection,
                 "user_accesses",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("access_token", accessToken));
@@ -261,7 +261,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_USERNAME,
-                connection, null,
+                connection,
                 "users",
                 PostgreSQLHelpers.WhereLike("username", username));
             return count;
@@ -273,7 +273,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_USER_UNBAN_TIME,
-                connection, null,
+                connection,
                 "user_accesses", "unban_time",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             long unbanTime = 0;
@@ -291,7 +291,7 @@ namespace MultiplayerARPG.MMO
             var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID,
-                connection, null,
+                connection,
                 "characters", "user_id",
                 PostgreSQLHelpers.WhereLike("character_name", characterName));
             string userId = null;
@@ -331,7 +331,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_VALIDATE_EMAIL_VERIFICATION,
-                connection, null,
+                connection,
                 "users",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_verify", true));
@@ -344,7 +344,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_EMAIL,
-                connection, null,
+                connection,
                 "users",
                 PostgreSQLHelpers.WhereLike("email", email));
             return count;
