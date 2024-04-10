@@ -376,15 +376,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> GetGuildGold(int id)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KEY_GET_GUILD_GOLD,
                 connection,
                 "guilds", "gold", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
-            int gold = 0;
-            if (reader.Read())
-                gold = reader.GetInt32(0);
-            return gold;
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KEY_UPDATE_GUILD_GOLD = "UPDATE_GUILD_GOLD";
@@ -402,36 +399,67 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.WhereEqualTo("id", id));
         }
 
-        public const string CACHE_KEY_FIND_GUILDS = "FIND_GUILDS";
+        public const string CACHE_KEY_FIND_GUILDS_FINDER = "FIND_GUILDS_FINDER";
+        public const string CACHE_KEY_FIND_GUILDS_REQUESTS = "FIND_GUILDS_REQUESTS";
         public override async UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
         {
-            // TODO: exclude joined guild, exclude requested guilds
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_FIND_GUILDS,
+            var excludeGuildIds = new List<int>();
+            // Find excluding guild ID from characters table
+            var finderGuildId = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_FIND_GUILDS_FINDER,
                 connection,
-                "guilds", "id, guild_name, level, guild_message, guild_message_2, score, options, auto_accept_requests, rank, current_members, max_members", $"ORDER BY RAND() LIMIT {skip}, {limit}",
-                PostgreSQLHelpers.WhereLike("guild_name", $"%{guildName}%"));
+                "characters", "guild_id",
+                PostgreSQLHelpers.WhereEqualTo("id", finderId));
+            if (finderGuildId != null)
+                excludeGuildIds.Add((int)finderGuildId);
+            // Find excluding guild ID from guild requests table
+            var readerRequests = await PostgreSQLHelpers.ExecuteSelect(
+                CACHE_KEY_FIND_GUILDS_REQUESTS,
+                connection,
+                "guild_requests", "id",
+                PostgreSQLHelpers.WhereEqualTo("requester_id", finderId));
+            while (readerRequests.Read())
+            {
+                excludeGuildIds.Add(readerRequests.GetInt32(0));
+            }
+            readerRequests.Dispose();
+            // Find guilds
+            var wheres = new List<PostgreSQLHelpers.WhereQuery>()
+            {
+                PostgreSQLHelpers.WhereLike("guild_name", $"%{guildName}%"),
+            };
+            for (int i = 0; i < excludeGuildIds.Count; ++i)
+            {
+                PostgreSQLHelpers.AndWhereNotEqualTo("id", excludeGuildIds[i]);
+            }
+            var readerGuilds = await PostgreSQLHelpers.ExecuteSelect(
+                null,
+                connection,
+                "guilds", wheres,
+                "id, guild_name, level, guild_message, guild_message_2, score, options, auto_accept_requests, rank, current_members, max_members",
+                $"ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}");
             List<GuildListEntry> result = new List<GuildListEntry>();
             GuildListEntry tempEntry;
-            while (reader.Read())
+            while (readerGuilds.Read())
             {
                 // Get some required data, other data will be set at server side
                 tempEntry = new GuildListEntry();
-                tempEntry.Id = reader.GetInt32(0);
-                tempEntry.GuildName = reader.GetString(1);
-                tempEntry.Level = reader.GetInt32(2);
+                tempEntry.Id = readerGuilds.GetInt32(0);
+                tempEntry.GuildName = readerGuilds.GetString(1);
+                tempEntry.Level = readerGuilds.GetInt32(2);
                 tempEntry.FieldOptions = GuildListFieldOptions.All;
-                tempEntry.GuildMessage = reader.GetString(3);
-                tempEntry.GuildMessage2 = reader.GetString(4);
-                tempEntry.Score = reader.GetInt32(5);
-                tempEntry.Options = reader.GetString(6);
-                tempEntry.AutoAcceptRequests = reader.GetBoolean(7);
-                tempEntry.Rank = reader.GetInt32(8);
-                tempEntry.CurrentMembers = reader.GetInt32(9);
-                tempEntry.MaxMembers = reader.GetInt32(10);
+                tempEntry.GuildMessage = readerGuilds.GetString(3);
+                tempEntry.GuildMessage2 = readerGuilds.GetString(4);
+                tempEntry.Score = readerGuilds.GetInt32(5);
+                tempEntry.Options = readerGuilds.GetString(6);
+                tempEntry.AutoAcceptRequests = readerGuilds.GetBoolean(7);
+                tempEntry.Rank = readerGuilds.GetInt32(8);
+                tempEntry.CurrentMembers = readerGuilds.GetInt32(9);
+                tempEntry.MaxMembers = readerGuilds.GetInt32(10);
                 result.Add(tempEntry);
             }
+            readerGuilds.Dispose();
             return result;
         }
 
@@ -469,17 +497,18 @@ namespace MultiplayerARPG.MMO
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             // Get character IDs
-            using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+            var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_GUILD_REQUESTS,
                 connection,
-                "guild_requests", "requester_id", $"LIMIT {skip}, {limit}",
+                "guild_requests", "requester_id", $"OFFSET {skip} LIMIT {limit}",
                 PostgreSQLHelpers.WhereEqualTo("id", guildId));
             List<string> characterIds = new List<string>();
             while (readerIds.Read())
             {
                 characterIds.Add(readerIds.GetString(0));
             }
-            return await GetSocialCharacterByIds(connection, null, characterIds);
+            readerIds.Dispose();
+            return await GetSocialCharacterByIds(connection, characterIds);
         }
 
         public const string CACHE_KEY_GET_GUILD_REQUESTS_NOTIFICATION = "GET_GUILD_REQUESTS_NOTIFICATION";
