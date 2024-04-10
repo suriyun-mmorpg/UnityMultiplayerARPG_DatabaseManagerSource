@@ -42,7 +42,7 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
+            var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD,
                 connection,
                 "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank",
@@ -66,10 +66,11 @@ namespace MultiplayerARPG.MMO
                 guild.autoAcceptRequests = readerGuild.GetBoolean(10);
                 guild.rank = readerGuild.GetInt32(11);
             }
+            readerGuild.Dispose();
             if (guild == null)
                 return null;
             // Guild roles
-            using var readerRoles = await PostgreSQLHelpers.ExecuteSelect(
+            var readerRoles = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_ROLES,
                 connection,
                 "guild_roles", "role, name, can_invite, can_kick, can_use_storage, share_exp_percentage",
@@ -87,8 +88,9 @@ namespace MultiplayerARPG.MMO
                 guildRoleData.shareExpPercentage = readerRoles.GetByte(5);
                 guild.SetRole(guildRole, guildRoleData);
             }
+            readerRoles.Dispose();
             // Guild members
-            using var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
+            var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_MEMBERS,
                 connection,
                 "characters", "id, data_id, character_name, level, guild_role",
@@ -104,8 +106,9 @@ namespace MultiplayerARPG.MMO
                 guildMemberData.level = readerMembers.GetInt32(3);
                 guild.AddMember(guildMemberData, (byte)readerMembers.GetInt32(4));
             }
+            readerMembers.Dispose();
             // Guild skills
-            using var readerSkills = await PostgreSQLHelpers.ExecuteSelect(
+            var readerSkills = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_SKILLS,
                 connection,
                 "guild_skills", "data_id, level",
@@ -114,6 +117,7 @@ namespace MultiplayerARPG.MMO
             {
                 guild.SetSkillLevel(readerSkills.GetInt32(0), readerSkills.GetInt32(1));
             }
+            readerSkills.Dispose();
             return guild;
         }
 
