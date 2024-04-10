@@ -22,17 +22,17 @@ namespace MultiplayerARPG.MMO
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skill_usages", characterData.Id, characterData.SkillUsages);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summons", characterData.Id, characterData.Summons);
 
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_booleans", characterData.Id, characterData.ServerBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32s", characterData.Id, characterData.ServerInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32s", characterData.Id, characterData.ServerFloats);
 
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_booleans", characterData.Id, characterData.PrivateBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_int32s", characterData.Id, characterData.PrivateInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_float32s", characterData.Id, characterData.PrivateFloats);
 
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_booleans", characterData.Id, characterData.PublicBools);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32s", characterData.Id, characterData.PublicInts);
+            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32s", characterData.Id, characterData.PublicFloats);
 
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
@@ -279,21 +279,21 @@ namespace MultiplayerARPG.MMO
                 tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_currencies", id, currencies));
             if (withServerCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_boolean", id, serverBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_int32", id, serverInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_float32", id, serverFloats));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_booleans", id, serverBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_int32s", id, serverInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_float32s", id, serverFloats));
             }
             if (withPrivateCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_boolean", id, privateBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_int32", id, privateInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_float32", id, privateFloats));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_booleans", id, privateBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_int32s", id, privateInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_float32s", id, privateFloats));
             }
             if (withPublicCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_boolean", id, publicBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_int32", id, publicInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_float32", id, publicFloats));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_booleans", id, publicBools));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_int32s", id, publicInts));
+                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_float32s", id, publicFloats));
             }
             await UniTask.WhenAll(tasks);
             // Assign read data
@@ -481,17 +481,17 @@ namespace MultiplayerARPG.MMO
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skill_usages", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_summons", id);
 
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_boolean", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_int32", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_booleans", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_int32s", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_float32s", id);
 
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_boolean", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_int32", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_booleans", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_int32s", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_private_float32s", id);
 
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_boolean", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_int32", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_float32", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_booleans", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_int32s", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_public_float32s", id);
 
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "characters", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_pk", id);
@@ -515,7 +515,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             return await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_CHARACTER_NAME,
-                connection, null,
+                connection,
                 "characters",
                 PostgreSQLHelpers.WhereLike("character_name", characterName));
         }
@@ -551,7 +551,7 @@ namespace MultiplayerARPG.MMO
             // Exclude friend, requested characters
             using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_FIND_CHARACTERS_SELECT_FRIENDS,
-                connection, null,
+                connection,
                 "friends", "character_id_2",
                 PostgreSQLHelpers.WhereEqualTo("character_id_1", finderId));
             string excludeIdsQuery = $"(id != '{finderId}'";
@@ -647,7 +647,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             return (int)await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_GET_FRIEND_REQUESTS_NOTIFICATION,
-                connection, null,
+                connection,
                 "friends",
                 PostgreSQLHelpers.WhereEqualTo("character_id_2", characterId),
                 PostgreSQLHelpers.AndWhereSmallEqualTo("state", 1));
