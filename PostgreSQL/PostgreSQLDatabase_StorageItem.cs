@@ -196,15 +196,18 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask DeleteAllReservedStorage()
         {
-            using var cmd = _dataSource.CreateCommand("DELETE FROM storage_reservation_users WHERE 1");
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            using var cmd = new NpgsqlCommand("DELETE FROM storage_reservation_users", connection, transaction);
             await cmd.PrepareAsync();
             await cmd.ExecuteNonQueryAsync();
-            using var cmd2 = _dataSource.CreateCommand("DELETE FROM storage_reservation_guilds WHERE 1");
+            using var cmd2 = new NpgsqlCommand("DELETE FROM storage_reservation_guilds", connection, transaction);
             await cmd2.PrepareAsync();
             await cmd2.ExecuteNonQueryAsync();
-            using var cmd3 = _dataSource.CreateCommand("DELETE FROM storage_reservation_buildings WHERE 1");
+            using var cmd3 = new NpgsqlCommand("DELETE FROM storage_reservation_buildings", connection, transaction);
             await cmd3.PrepareAsync();
             await cmd3.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
         }
     }
 }
