@@ -352,14 +352,16 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask UpdateUserCount(int userCount)
         {
-            using var cmd = _dataSource.CreateCommand("SELECT COUNT(*) FROM server_statistic WHERE 1");
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            using var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM server_statistic WHERE 1", connection, transaction);
             await cmd.PrepareAsync();
             var result = await cmd.ExecuteScalarAsync();
 
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                using var cmd2 = _dataSource.CreateCommand("UPDATE server_statistic SET user_count=$1");
+                using var cmd2 = new NpgsqlCommand("UPDATE server_statistic SET user_count=$1", connection, transaction);
                 cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
                 await cmd2.PrepareAsync();
                 cmd2.Parameters[0].Value = userCount;
@@ -367,7 +369,7 @@ namespace MultiplayerARPG.MMO
             }
             else
             {
-                using var cmd2 = _dataSource.CreateCommand("INSERT INTO server_statistic (user_count) VALUES ($1)");
+                using var cmd2 = new NpgsqlCommand("INSERT INTO server_statistic (user_count) VALUES ($1)", connection, transaction);
                 cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
                 await cmd2.PrepareAsync();
                 cmd2.Parameters[0].Value = userCount;
