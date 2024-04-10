@@ -209,7 +209,7 @@ namespace MultiplayerARPG.MMO
         {
             PlayerCharacterData result;
             NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT
-                c.id, c.userId, c.data_id, c.entity_id, c.faction_id, c.character_name, c.level, c.exp,
+                c.id, c.user_id, c.data_id, c.entity_id, c.faction_id, c.character_name, c.level, c.exp,
                 c.current_hp, c.current_mp, c.current_stamina, c.current_food, c.current_water,
                 c.equip_weapon_set, c.stat_point, c.skill_point, c.gold, c.party_id, c.guild_id, c.guild_role, c.shared_guild_exp,
                 c.current_map_name, c.current_position_x, c.current_position_y, c.current_position_z, c.current_rotation_x, current_rotation_y, current_rotation_z,
@@ -221,121 +221,57 @@ namespace MultiplayerARPG.MMO
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
             await cmd.PrepareAsync();
             cmd.Parameters[0].Value = id;
-            using var reader = await cmd.ExecuteReaderAsync();
+            var reader = await cmd.ExecuteReaderAsync();
             if (!ReadCharacter(reader, out result))
+            {
+                reader.Dispose();
                 return result;
+            }
+            reader.Dispose();
+
             // Found character, then read its relates data
-            List<EquipWeapons> selectableWeaponSets = new List<EquipWeapons>();
-            List<CharacterAttribute> attributes = new List<CharacterAttribute>();
-            List<CharacterSkill> skills = new List<CharacterSkill>();
-            List<CharacterSkillUsage> skillUsages = new List<CharacterSkillUsage>();
-            List<CharacterBuff> buffs = new List<CharacterBuff>();
-            List<CharacterItem> equipItems = new List<CharacterItem>();
-            List<CharacterItem> nonEquipItems = new List<CharacterItem>();
-            List<CharacterItem> protectedNonEquipItems = new List<CharacterItem>();
-            List<CharacterSummon> summons = new List<CharacterSummon>();
-            List<CharacterHotkey> hotkeys = new List<CharacterHotkey>();
-            List<CharacterQuest> quests = new List<CharacterQuest>();
-            List<CharacterCurrency> currencies = new List<CharacterCurrency>();
-
-            List<CharacterDataBoolean> serverBools = new List<CharacterDataBoolean>();
-            List<CharacterDataInt32> serverInts = new List<CharacterDataInt32>();
-            List<CharacterDataFloat32> serverFloats = new List<CharacterDataFloat32>();
-
-            List<CharacterDataBoolean> privateBools = new List<CharacterDataBoolean>();
-            List<CharacterDataInt32> privateInts = new List<CharacterDataInt32>();
-            List<CharacterDataFloat32> privateFloats = new List<CharacterDataFloat32>();
-
-            List<CharacterDataBoolean> publicBools = new List<CharacterDataBoolean>();
-            List<CharacterDataInt32> publicInts = new List<CharacterDataInt32>();
-            List<CharacterDataFloat32> publicFloats = new List<CharacterDataFloat32>();
-
-            // Read data
-            List<UniTask> tasks = new List<UniTask>();
             if (withEquipWeapons)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_selectable_weapon_sets", id, selectableWeaponSets));
+                result.SelectableWeaponSets = await PostgreSQLHelpers.ExecuteSelectJson<EquipWeapons[]>(connection, "character_selectable_weapon_sets", id);
             if (withAttributes)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_attributes", id, attributes));
+                result.Attributes = await PostgreSQLHelpers.ExecuteSelectJson<CharacterAttribute[]>(connection, "character_attributes", id);
             if (withSkills)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_skills", id, skills));
+                result.Skills = await PostgreSQLHelpers.ExecuteSelectJson<CharacterSkill[]>(connection, "character_skills", id);
             if (withSkillUsages)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_skill_usages", id, skillUsages));
+                result.SkillUsages = await PostgreSQLHelpers.ExecuteSelectJson<CharacterSkillUsage[]>(connection, "character_skill_usages", id);
             if (withBuffs)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_buffs", id, buffs));
+                result.Buffs = await PostgreSQLHelpers.ExecuteSelectJson<CharacterBuff[]>(connection, "character_buffs", id);
             if (withEquipItems)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_equip_items", id, equipItems));
+                result.EquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_equip_items", id);
             if (withNonEquipItems)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_non_equip_items", id, nonEquipItems));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_protected_non_equip_items", id, protectedNonEquipItems));
+                result.NonEquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_non_equip_items", id);
+                result.ProtectedNonEquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_protected_non_equip_items", id);
             }
             if (withSummons)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_summons", id, summons));
+                result.Summons = await PostgreSQLHelpers.ExecuteSelectJson<CharacterSummon[]>(connection, "character_summons", id);
             if (withHotkeys)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_hotkeys", id, hotkeys));
+                result.Hotkeys = await PostgreSQLHelpers.ExecuteSelectJson<CharacterHotkey[]>(connection, "character_hotkeys", id);
             if (withQuests)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_quests", id, quests));
+                result.Quests = await PostgreSQLHelpers.ExecuteSelectJson<CharacterQuest[]>(connection, "character_quests", id);
             if (withCurrencies)
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_currencies", id, currencies));
+                result.Currencies = await PostgreSQLHelpers.ExecuteSelectJson<CharacterCurrency[]>(connection, "character_currencies", id);
             if (withServerCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_booleans", id, serverBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_int32s", id, serverInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_server_float32s", id, serverFloats));
+                result.ServerBools = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataBoolean[]>(connection, "character_server_booleans", id);
+                result.ServerInts = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataInt32[]>(connection, "character_server_int32s", id);
+                result.ServerFloats = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataFloat32[]>(connection, "character_server_float32s", id);
             }
             if (withPrivateCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_booleans", id, privateBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_int32s", id, privateInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_private_float32s", id, privateFloats));
+                result.PrivateBools = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataBoolean[]>(connection, "character_private_booleans", id);
+                result.PrivateInts = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataInt32[]>(connection, "character_private_int32s", id);
+                result.PrivateFloats = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataFloat32[]>(connection, "character_private_float32s", id);
             }
             if (withPublicCustomData)
             {
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_booleans", id, publicBools));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_int32s", id, publicInts));
-                tasks.Add(PostgreSQLHelpers.ExecuteSelectJson(connection, "character_public_float32s", id, publicFloats));
-            }
-            await UniTask.WhenAll(tasks);
-            // Assign read data
-            if (withEquipWeapons)
-                result.SelectableWeaponSets = selectableWeaponSets;
-            if (withAttributes)
-                result.Attributes = attributes;
-            if (withSkills)
-                result.Skills = skills;
-            if (withSkillUsages)
-                result.SkillUsages = skillUsages;
-            if (withBuffs)
-                result.Buffs = buffs;
-            if (withEquipItems)
-                result.EquipItems = equipItems;
-            if (withNonEquipItems)
-                result.NonEquipItems = nonEquipItems;
-            if (withSummons)
-                result.Summons = summons;
-            if (withHotkeys)
-                result.Hotkeys = hotkeys;
-            if (withQuests)
-                result.Quests = quests;
-            if (withCurrencies)
-                result.Currencies = currencies;
-            if (withServerCustomData)
-            {
-                result.ServerBools = serverBools;
-                result.ServerInts = serverInts;
-                result.ServerFloats = serverFloats;
-            }
-            if (withPrivateCustomData)
-            {
-                result.PrivateBools = privateBools;
-                result.PrivateInts = privateInts;
-                result.PrivateFloats = privateFloats;
-            }
-            if (withPublicCustomData)
-            {
-                result.PublicBools = publicBools;
-                result.PublicInts = publicInts;
-                result.PublicFloats = publicFloats;
+                result.PublicBools = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataBoolean[]>(connection, "character_public_booleans", id);
+                result.PublicInts = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataInt32[]>(connection, "character_public_int32s", id);
+                result.PublicFloats = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataFloat32[]>(connection, "character_public_float32s", id);
             }
             // Invoke dev extension methods
             this.InvokeInstanceDevExtMethods("ReadCharacter",
@@ -361,7 +297,7 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+            var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_CHARACTERS,
                 connection,
                 "characters", "id", "ORDER BY update_time DESC",
@@ -372,6 +308,7 @@ namespace MultiplayerARPG.MMO
             {
                 characterIds.Add(reader.GetString(0));
             }
+            reader.Dispose();
 
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             foreach (string characterId in characterIds)
