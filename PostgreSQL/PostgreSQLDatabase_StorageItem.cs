@@ -70,19 +70,19 @@ namespace MultiplayerARPG.MMO
                 case StorageType.Player:
                     return await PostgreSQLHelpers.ExecuteCount(
                         CACHE_KEY_FIND_RESERVED_STORAGE_USERS,
-                        connection, null,
+                        connection,
                         "storage_reservation_users",
                         PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
                 case StorageType.Guild:
                     return await PostgreSQLHelpers.ExecuteCount(
                         CACHE_KEY_FIND_RESERVED_STORAGE_GUILDS,
-                        connection, null,
+                        connection,
                         "storage_reservation_guilds",
                         PostgreSQLHelpers.WhereEqualTo("id", int.Parse(storageOwnerId)));
                 case StorageType.Building:
                     return await PostgreSQLHelpers.ExecuteCount(
                         CACHE_KEY_FIND_RESERVED_STORAGE_BUILDINGS,
-                        connection, null,
+                        connection,
                         "storage_reservation_buildings",
                         PostgreSQLHelpers.WhereEqualTo("id", storageOwnerId));
             }

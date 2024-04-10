@@ -57,7 +57,7 @@ namespace MultiplayerARPG.MMO
                 // Party members
                 using var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
                     CACHE_KEY_READ_PARTY_MEMBERS,
-                    connection, null,
+                    connection,
                     "characters", "id, data_id, character_name, level",
                     PostgreSQLHelpers.WhereEqualTo("party_id", id));
                 SocialCharacterData partyMemberData;

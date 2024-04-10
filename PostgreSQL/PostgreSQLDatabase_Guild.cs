@@ -44,7 +44,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD,
-                connection, null,
+                connection,
                 "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             // Guild data
@@ -71,7 +71,7 @@ namespace MultiplayerARPG.MMO
             // Guild roles
             using var readerRoles = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_ROLES,
-                connection, null,
+                connection,
                 "guild_roles", "role, name, can_invite, can_kick, can_use_storage, share_exp_percentage",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             byte guildRole;
@@ -90,7 +90,7 @@ namespace MultiplayerARPG.MMO
             // Guild members
             using var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_MEMBERS,
-                connection, null,
+                connection,
                 "characters", "id, data_id, character_name, level, guild_role",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             SocialCharacterData guildMemberData;
@@ -107,7 +107,7 @@ namespace MultiplayerARPG.MMO
             // Guild skills
             using var readerSkills = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_GUILD_SKILLS,
-                connection, null,
+                connection,
                 "guild_skills", "data_id, level",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             while (readerSkills.Read())
@@ -346,7 +346,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_FIND_GUILD_NAME,
-                connection, null,
+                connection,
                 "guilds",
                 PostgreSQLHelpers.WhereLike("guild_name", guildName));
             return count;
@@ -484,7 +484,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             return (int)await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_GET_GUILD_REQUESTS_NOTIFICATION,
-                connection, null,
+                connection,
                 "guild_requests",
                 PostgreSQLHelpers.WhereEqualTo("id", guildId));
         }

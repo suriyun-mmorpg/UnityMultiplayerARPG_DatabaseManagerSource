@@ -56,7 +56,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_MAIL,
-                connection, null,
+                connection,
                 "mail", "id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time",
                 PostgreSQLHelpers.WhereBigEqualTo("id", long.Parse(mailId)),
                 PostgreSQLHelpers.AndWhereEqualTo("receiver_id", userId),
@@ -182,7 +182,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_MAIL_NOTIFICATION,
-                connection, null,
+                connection,
                 "mail", "gold, cash, currencies, items, is_read, is_claim",
                 PostgreSQLHelpers.WhereEqualTo("receiver_id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));

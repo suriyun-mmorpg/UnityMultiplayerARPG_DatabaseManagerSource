@@ -38,7 +38,7 @@ namespace MultiplayerARPG.MMO
             using var connection = await _dataSource.OpenConnectionAsync();
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_READ_BUILDINGS,
-                connection, null,
+                connection,
                 "buildings", "id, parent_id, entity_id, current_hp, remains_lifetime, is_locked, lock_password, creator_id, creator_name, extra_data, is_scene_object, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z",
                 PostgreSQLHelpers.WhereEqualTo("channel", channel),
                 PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName));
