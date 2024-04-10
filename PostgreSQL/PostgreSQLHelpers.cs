@@ -997,7 +997,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, [NotNull] string select = "*", params WhereQuery[] wheres)
         {
-            return await ExecuteSelect(cacheKey, connection, tableName, wheres, select);
+            return await ExecuteSelect(cacheKey, connection, tableName, wheres, select, "");
         }
 
         public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, IList<WhereQuery> wheres, [NotNull] string select = "*", [NotNull] string additional = "")
@@ -1021,7 +1021,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<object> ExecuteSelectScalar(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, [NotNull] string select = "*", params WhereQuery[] wheres)
         {
-            return await ExecuteSelectScalar(cacheKey, connection, tableName, wheres, select);
+            return await ExecuteSelectScalar(cacheKey, connection, tableName, wheres, select, "");
         }
 
         public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, IList<WhereQuery> wheres, [NotNull] string additional = "")
@@ -1050,7 +1050,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<long> ExecuteCount(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, params WhereQuery[] wheres)
         {
-            return await ExecuteCount(cacheKey, connection, tableName, wheres);
+            return await ExecuteCount(cacheKey, connection, tableName, wheres, "");
         }
 
         public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, [NotNull] string tableName, IList<WhereQuery> wheres, [NotNull] string additional = "")
@@ -1074,7 +1074,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<int> ExecuteDelete(string cacheKey, NpgsqlConnection connection, NpgsqlTransaction transaction, [NotNull] string tableName, params WhereQuery[] wheres)
         {
-            return await ExecuteDelete(cacheKey, connection, transaction, tableName, wheres);
+            return await ExecuteDelete(cacheKey, connection, transaction, tableName, wheres, "");
         }
 
         public static async UniTask<int> ExecuteDeleteById(NpgsqlConnection connection, NpgsqlTransaction transaction, [NotNull] string tableName, string idColName, string value)
