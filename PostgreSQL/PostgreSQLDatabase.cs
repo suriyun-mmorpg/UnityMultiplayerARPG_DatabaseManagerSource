@@ -94,7 +94,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_VALIDATE_USER_LOGIN,
                 connection,
-                "users", "id, password",
+                "users", "id, password", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("username", username));
             string id = string.Empty;
             if (reader.Read())
@@ -141,17 +141,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> GetGold(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KET_GET_GOLD,
                 connection,
                 "user_currencies", "gold", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
-            int gold = 0;
-            if (reader.Read())
-            {
-                gold = reader.GetInt32(0);
-            }
-            return gold;
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KEY_UPDATE_GOLD = "UPDATE_GOLD";
@@ -173,17 +168,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<int> GetCash(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KET_GET_CASH,
                 connection,
                 "user_currencies", "cash", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
-            int cash = 0;
-            if (reader.Read())
-            {
-                cash = reader.GetInt32(0);
-            }
-            return cash;
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KEY_UPDATE_CASH = "UPDATE_CASH";
@@ -274,7 +264,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_USER_UNBAN_TIME,
                 connection,
-                "user_accesses", "unban_time",
+                "user_accesses", "unban_time", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
             long unbanTime = 0;
             if (reader.Read())
@@ -292,7 +282,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID,
                 connection,
-                "characters", "user_id",
+                "characters", "user_id", "LIMIT 1",
                 PostgreSQLHelpers.WhereLike("character_name", characterName));
             string userId = null;
             if (reader.Read())
