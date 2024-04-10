@@ -231,7 +231,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("id", id),
                     new PostgreSQLHelpers.ColumnInfo("username", username),
                     new PostgreSQLHelpers.ColumnInfo("password", _userLoginManager.GetHashedPassword(password)),
-                    new PostgreSQLHelpers.ColumnInfo("email", email));
+                    new PostgreSQLHelpers.ColumnInfo("email", string.IsNullOrWhiteSpace(email) ? null : email));
 
                 await PostgreSQLHelpers.ExecuteInsert(
                     CACHE_KEY_CREATE_USER_LOGIN_ACCESSES,
