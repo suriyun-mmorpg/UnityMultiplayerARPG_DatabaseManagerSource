@@ -483,7 +483,7 @@ namespace MultiplayerARPG.MMO
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             // Exclude friend, requested characters
-            using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+            var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_FIND_CHARACTERS_SELECT_FRIENDS,
                 connection,
                 "friends", "character_id_2",
@@ -494,11 +494,12 @@ namespace MultiplayerARPG.MMO
                 excludeIdsQuery += $" AND id != '{readerIds.GetString(0)}'";
             }
             excludeIdsQuery += ")";
+            readerIds.Dispose();
             // Read some character data
             using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
                 null,
                 connection,
-                "characters", "id, data_id, character_name, level", $" AND {excludeIdsQuery} ORDER BY RAND() LIMIT {skip}, {limit}",
+                "characters", "id, data_id, character_name, level", $"AND {excludeIdsQuery} ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}",
                 PostgreSQLHelpers.WhereLike("character_name", $"%{characterName}%"));
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
             SocialCharacterData tempCharacter;
@@ -548,31 +549,33 @@ namespace MultiplayerARPG.MMO
             List<string> characterIds = new List<string>();
             if (readById2)
             {
-                using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                     CACHE_KEY_READ_FRIENDS_ID_1,
                     connection,
-                    "friends", "character_id_1", $"LIMIT {skip}, {limit}",
+                    "friends", "character_id_1", $"OFFSET {skip} LIMIT {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_2", id),
                     PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
                 while (readerIds.Read())
                 {
                     characterIds.Add(readerIds.GetString(0));
                 }
+                readerIds.Dispose();
             }
             else
             {
-                using var readerIds = await PostgreSQLHelpers.ExecuteSelect(
+                var readerIds = await PostgreSQLHelpers.ExecuteSelect(
                     CACHE_KEY_READ_FRIENDS_ID_2,
                     connection,
-                    "friends", "character_id_2", $"LIMIT {skip}, {limit}",
+                    "friends", "character_id_2", $"OFFSET {skip} LIMIT {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_1", id),
                     PostgreSQLHelpers.AndWhereSmallEqualTo("state", state));
                 while (readerIds.Read())
                 {
                     characterIds.Add(readerIds.GetString(0));
                 }
+                readerIds.Dispose();
             }
-            return await GetSocialCharacterByIds(connection, null, characterIds);
+            return await GetSocialCharacterByIds(connection, characterIds);
         }
 
         public const string CACHE_KEY_GET_FRIEND_REQUESTS_NOTIFICATION = "GET_FRIEND_REQUESTS_NOTIFICATION";
@@ -587,7 +590,7 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.AndWhereSmallEqualTo("state", 1));
         }
 
-        public async UniTask<List<SocialCharacterData>> GetSocialCharacterByIds(NpgsqlConnection connection, NpgsqlTransaction transaction, IList<string> characterIds, string select = "id, data_id, character_name, level")
+        public async UniTask<List<SocialCharacterData>> GetSocialCharacterByIds(NpgsqlConnection connection, IList<string> characterIds, string select = "id, data_id, character_name, level")
         {
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
             if (characterIds.Count > 0)
@@ -605,7 +608,7 @@ namespace MultiplayerARPG.MMO
                     connection,
                     "characters",
                     characterQueries,
-                    select, "LIMIT 1");
+                    select);
                 SocialCharacterData tempCharacter;
                 while (readerCharacters.Read())
                 {
