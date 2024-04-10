@@ -129,7 +129,6 @@ namespace MultiplayerARPG.MMO
         public const string OPERATOR_NOT = " NOT ";
 
         private static readonly ConcurrentDictionary<string, string> s_cachedCommandTexts = new ConcurrentDictionary<string, string>();
-        private static Utf16ValueStringBuilder s_stringBuilder = new Utf16ValueStringBuilder(false);
 
         public static WhereQuery Where(NpgsqlDbType type, IList<EOperators> preOperators, string name, IList<EOperators> operators, object value)
         {
@@ -771,30 +770,31 @@ namespace MultiplayerARPG.MMO
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
                 return commandText;
-            s_stringBuilder.Clear();
-            s_stringBuilder.Append("INSERT INTO ");
-            s_stringBuilder.Append(tableName);
-            s_stringBuilder.Append(' ');
-            s_stringBuilder.Append('(');
+            var stringBuilder = new Utf16ValueStringBuilder(false);
+            stringBuilder.Append("INSERT INTO ");
+            stringBuilder.Append(tableName);
+            stringBuilder.Append(' ');
+            stringBuilder.Append('(');
             int i;
             for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append(columns[i].name);
+                    stringBuilder.Append(',');
+                stringBuilder.Append(columns[i].name);
             }
-            s_stringBuilder.Append(") VALUES (");
+            stringBuilder.Append(") VALUES (");
             for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append('$');
-                s_stringBuilder.Append(i + 1);
+                    stringBuilder.Append(',');
+                stringBuilder.Append('$');
+                stringBuilder.Append(i + 1);
             }
-            s_stringBuilder.Append(')');
-            s_stringBuilder.Append(' ');
-            s_stringBuilder.Append(additional);
-            commandText = s_stringBuilder.ToString();
+            stringBuilder.Append(')');
+            stringBuilder.Append(' ');
+            stringBuilder.Append(additional);
+            commandText = stringBuilder.ToString();
+            stringBuilder.Dispose();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
             return commandText;
@@ -805,36 +805,37 @@ namespace MultiplayerARPG.MMO
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
                 return commandText;
-            s_stringBuilder.Clear();
-            s_stringBuilder.Append("INSERT INTO ");
-            s_stringBuilder.Append(tableName);
-            s_stringBuilder.Append(' ');
-            s_stringBuilder.Append('(');
+            var stringBuilder = new Utf16ValueStringBuilder(false);
+            stringBuilder.Append("INSERT INTO ");
+            stringBuilder.Append(tableName);
+            stringBuilder.Append(' ');
+            stringBuilder.Append('(');
             int i;
             for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append(columns[i].name);
+                    stringBuilder.Append(',');
+                stringBuilder.Append(columns[i].name);
             }
-            s_stringBuilder.Append(") VALUES (");
+            stringBuilder.Append(") VALUES (");
             for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append('$');
-                s_stringBuilder.Append(i + 1);
+                    stringBuilder.Append(',');
+                stringBuilder.Append('$');
+                stringBuilder.Append(i + 1);
             }
-            s_stringBuilder.Append($") ON CONFLICT ({ids}) DO UPDATE SET ");
+            stringBuilder.Append($") ON CONFLICT ({ids}) DO UPDATE SET ");
             for (i = 0; i < columns.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append(columns[i].name);
-                s_stringBuilder.Append(" = EXCLUDED.");
-                s_stringBuilder.Append(columns[i].name);
+                    stringBuilder.Append(',');
+                stringBuilder.Append(columns[i].name);
+                stringBuilder.Append(" = EXCLUDED.");
+                stringBuilder.Append(columns[i].name);
             }
-            commandText = s_stringBuilder.ToString();
+            commandText = stringBuilder.ToString();
+            stringBuilder.Dispose();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
             return commandText;
@@ -850,24 +851,25 @@ namespace MultiplayerARPG.MMO
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
                 return commandText;
-            s_stringBuilder.Clear();
-            s_stringBuilder.Append("UPDATE ");
-            s_stringBuilder.Append(tableName);
-            s_stringBuilder.Append(" SET ");
+            var stringBuilder = new Utf16ValueStringBuilder(false);
+            stringBuilder.Append("UPDATE ");
+            stringBuilder.Append(tableName);
+            stringBuilder.Append(" SET ");
             int i;
             int positionCount = 1;
             for (i = 0; i < updates.Count; ++i)
             {
                 if (i > 0)
-                    s_stringBuilder.Append(',');
-                s_stringBuilder.Append(updates[i].name);
-                s_stringBuilder.Append('=');
-                s_stringBuilder.Append('$');
-                s_stringBuilder.Append(positionCount++);
+                    stringBuilder.Append(',');
+                stringBuilder.Append(updates[i].name);
+                stringBuilder.Append('=');
+                stringBuilder.Append('$');
+                stringBuilder.Append(positionCount++);
             }
-            s_stringBuilder.Append(" WHERE ");
-            writeWhere?.Invoke(ref s_stringBuilder, ref positionCount);
-            commandText = s_stringBuilder.ToString();
+            stringBuilder.Append(" WHERE ");
+            writeWhere?.Invoke(ref stringBuilder, ref positionCount);
+            commandText = stringBuilder.ToString();
+            stringBuilder.Dispose();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
             return commandText;
@@ -883,15 +885,16 @@ namespace MultiplayerARPG.MMO
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
                 return commandText;
-            s_stringBuilder.Clear();
-            s_stringBuilder.Append("SELECT ");
-            s_stringBuilder.Append(select);
-            s_stringBuilder.Append(" FROM ");
-            s_stringBuilder.Append(tableName);
+            var stringBuilder = new Utf16ValueStringBuilder(false);
+            stringBuilder.Append("SELECT ");
+            stringBuilder.Append(select);
+            stringBuilder.Append(" FROM ");
+            stringBuilder.Append(tableName);
             int positionCount = 1;
-            s_stringBuilder.Append(" WHERE ");
-            writeWhere?.Invoke(ref s_stringBuilder, ref positionCount);
-            commandText = s_stringBuilder.ToString();
+            stringBuilder.Append(" WHERE ");
+            writeWhere?.Invoke(ref stringBuilder, ref positionCount);
+            commandText = stringBuilder.ToString();
+            stringBuilder.Dispose();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
             return commandText;
@@ -907,13 +910,14 @@ namespace MultiplayerARPG.MMO
             bool isNullOrWhiteSpace = string.IsNullOrWhiteSpace(cacheKey);
             if (!isNullOrWhiteSpace && s_cachedCommandTexts.TryGetValue(cacheKey, out string commandText))
                 return commandText;
-            s_stringBuilder.Clear();
-            s_stringBuilder.Append("DELETE FROM ");
-            s_stringBuilder.Append(tableName);
+            var stringBuilder = new Utf16ValueStringBuilder(false);
+            stringBuilder.Append("DELETE FROM ");
+            stringBuilder.Append(tableName);
             int positionCount = 1;
-            s_stringBuilder.Append(" WHERE ");
-            writeWhere?.Invoke(ref s_stringBuilder, ref positionCount);
-            commandText = s_stringBuilder.ToString();
+            stringBuilder.Append(" WHERE ");
+            writeWhere?.Invoke(ref stringBuilder, ref positionCount);
+            commandText = stringBuilder.ToString();
+            stringBuilder.Dispose();
             if (!isNullOrWhiteSpace)
                 s_cachedCommandTexts.TryAdd(cacheKey, commandText);
             return commandText;
