@@ -57,7 +57,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_MAIL,
                 connection,
-                "mails", "id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time",
+                "mails", "id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time", "LIMIT 1",
                 PostgreSQLHelpers.WhereBigEqualTo("id", long.Parse(mailId)),
                 PostgreSQLHelpers.AndWhereEqualTo("receiver_id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));
