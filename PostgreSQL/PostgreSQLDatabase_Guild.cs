@@ -94,7 +94,7 @@ namespace MultiplayerARPG.MMO
                 CACHE_KEY_READ_GUILD_MEMBERS,
                 connection,
                 "characters", "id, data_id, character_name, level, guild_role",
-                PostgreSQLHelpers.WhereEqualTo("id", id));
+                PostgreSQLHelpers.WhereEqualTo("guild_id", id));
             SocialCharacterData guildMemberData;
             while (readerMembers.Read())
             {
