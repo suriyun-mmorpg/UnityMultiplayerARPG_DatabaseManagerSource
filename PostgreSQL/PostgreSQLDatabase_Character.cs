@@ -243,10 +243,7 @@ namespace MultiplayerARPG.MMO
             if (withEquipItems)
                 result.EquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_equip_items", id);
             if (withNonEquipItems)
-            {
                 result.NonEquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_non_equip_items", id);
-                result.ProtectedNonEquipItems = await PostgreSQLHelpers.ExecuteSelectJson<CharacterItem[]>(connection, "character_protected_non_equip_items", id);
-            }
             if (withSummons)
                 result.Summons = await PostgreSQLHelpers.ExecuteSelectJson<CharacterSummon[]>(connection, "character_summons", id);
             if (withHotkeys)
