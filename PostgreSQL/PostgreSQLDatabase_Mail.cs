@@ -15,7 +15,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_MAIL_LIST,
                 connection,
-                "mail", "id, senderName, title, gold, cash, currencies, items, is_read, is_claim, sent_time", "ORDER BY is_read ASC, sent_time DESC",
+                "mails", "id, senderName, title, gold, cash, currencies, items, is_read, is_claim, sent_time", "ORDER BY is_read ASC, sent_time DESC",
                 PostgreSQLHelpers.WhereEqualTo("receiver_id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));
             List<MailListEntry> result = new List<MailListEntry>();
@@ -57,7 +57,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_MAIL,
                 connection,
-                "mail", "id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time",
+                "mails", "id, event_id, sender_id, sender_name, receiver_id, title, content, gold, cash, currencies, items, is_read, read_time, is_claim, claim_time, sent_time",
                 PostgreSQLHelpers.WhereBigEqualTo("id", long.Parse(mailId)),
                 PostgreSQLHelpers.AndWhereEqualTo("receiver_id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));
@@ -93,7 +93,7 @@ namespace MultiplayerARPG.MMO
             long count = await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_READ_MAIL_STATE,
                 connection, null,
-                "mail",
+                "mails",
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_read", true),
@@ -115,7 +115,7 @@ namespace MultiplayerARPG.MMO
             long count = await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_CLAIM_MAIL_ITEMS_STATE,
                 connection, null,
-                "mail",
+                "mails",
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_claim", true),
@@ -137,7 +137,7 @@ namespace MultiplayerARPG.MMO
             long count = await PostgreSQLHelpers.ExecuteUpdate(
                 CACHE_KEY_UPDATE_DELETE_ITEMS_STATE,
                 connection, null,
-                "mail",
+                "mails",
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_delete", true),
@@ -159,7 +159,7 @@ namespace MultiplayerARPG.MMO
             int id = (int)await PostgreSQLHelpers.ExecuteInsertScalar(
                 CACHE_KEY_CREATE_MAIL,
                 connection,
-                "mail",
+                "mails",
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo("event_id", mail.EventId),
                     new PostgreSQLHelpers.ColumnInfo("sender_id", mail.SenderId),
@@ -183,7 +183,7 @@ namespace MultiplayerARPG.MMO
             using var reader = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_MAIL_NOTIFICATION,
                 connection,
-                "mail", "gold, cash, currencies, items, is_read, is_claim",
+                "mails", "gold, cash, currencies, items, is_read, is_claim",
                 PostgreSQLHelpers.WhereEqualTo("receiver_id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));
             while (reader.Read())
