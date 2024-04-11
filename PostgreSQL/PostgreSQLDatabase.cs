@@ -276,14 +276,12 @@ namespace MultiplayerARPG.MMO
             }
             if (string.IsNullOrWhiteSpace(userId))
                 return;
-            await PostgreSQLHelpers.ExecuteUpdate(
+            await PostgreSQLHelpers.ExecuteUpsert(
                 CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_UPDATE,
                 connection, null,
-                "user_accesses",
-                new[] {
-                    new PostgreSQLHelpers.ColumnInfo("unban_time", unbanTime),
-                },
-                PostgreSQLHelpers.WhereEqualTo("id", userId));
+                "user_accesses", "id",
+                new PostgreSQLHelpers.ColumnInfo("unban_time", unbanTime),
+                new PostgreSQLHelpers.ColumnInfo("id", userId));
         }
 
         public const string CACHE_KEY_SET_CHARACTER_UNMUTE_TIME_BY_NAME = "SET_CHARACTER_UNMUTE_TIME_BY_NAME";
