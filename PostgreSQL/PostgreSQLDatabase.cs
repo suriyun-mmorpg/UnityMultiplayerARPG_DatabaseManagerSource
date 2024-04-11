@@ -138,17 +138,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<byte> GetUserLevel(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KET_GET_USER_LEVEL,
                 connection,
                 "user_accesses", "level", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
-            byte userLevel = 0;
-            if (reader.Read())
-            {
-                userLevel = reader.GetByte(0);
-            }
-            return userLevel;
+            return (byte)(result == null ? 0 : (short)result);
         }
 
         public const string CACHE_KET_GET_GOLD = "GET_GOLD";
