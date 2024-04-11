@@ -25,6 +25,7 @@ model users {
   steam_id     String?  @unique @db.VarChar(128)
   custom_id    String?  @unique @db.VarChar(128)
   password     String?  @db.VarChar(128)
+  access_token String?  @db.VarChar(128)
   create_time  DateTime @default(now()) @db.Timestamptz()
   update_time  DateTime @default(now()) @updatedAt @db.Timestamptz()
   is_verify    Boolean  @default(false)
@@ -34,10 +35,9 @@ model users {
 }
 
 model user_accesses {
-  id           String  @id @db.VarChar(40)
-  level        Int     @default(0) @db.Integer()
-  access_token String? @db.VarChar(128)
-  unban_time   BigInt  @default(0) @db.BigInt()
+  id         String @id @db.VarChar(40)
+  level      Int    @default(0) @db.Integer()
+  unban_time BigInt @default(0) @db.BigInt()
 }
 
 model user_currencies {

@@ -114,10 +114,24 @@ namespace MultiplayerARPG.MMO
             var count = await PostgreSQLHelpers.ExecuteCount(
                 CACHE_KEY_VALIDATE_ACCESS_TOKEN,
                 connection,
-                "user_accesses",
+                "users",
                 PostgreSQLHelpers.WhereEqualTo("id", userId),
                 PostgreSQLHelpers.AndWhereEqualTo("access_token", accessToken));
             return count > 0;
+        }
+
+        public const string CACHE_KEY_UPDATE_ACCESS_TOKEN = "UPDATE_ACCESS_TOKEN";
+        public override async UniTask UpdateAccessToken(string userId, string accessToken)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_ACCESS_TOKEN,
+                connection, null,
+                "users",
+                new[] {
+                    new PostgreSQLHelpers.ColumnInfo("access_token", accessToken),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
         public const string CACHE_KET_GET_USER_LEVEL = "GET_USER_LEVEL";
@@ -183,20 +197,6 @@ namespace MultiplayerARPG.MMO
                 "user_currencies", "id",
                 new PostgreSQLHelpers.ColumnInfo("cash", cash),
                 new PostgreSQLHelpers.ColumnInfo("id", userId));
-        }
-
-        public const string CACHE_KEY_UPDATE_ACCESS_TOKEN = "UPDATE_ACCESS_TOKEN";
-        public override async UniTask UpdateAccessToken(string userId, string accessToken)
-        {
-            using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpdate(
-                CACHE_KEY_UPDATE_ACCESS_TOKEN,
-                connection, null,
-                "user_accesses",
-                new[] {
-                    new PostgreSQLHelpers.ColumnInfo("access_token", accessToken),
-                },
-                PostgreSQLHelpers.WhereEqualTo("id", userId));
         }
 
         public const string CACHE_KEY_CREATE_USER_LOGIN_USERS = "CREATE_USER_LOGIN_USERS";
