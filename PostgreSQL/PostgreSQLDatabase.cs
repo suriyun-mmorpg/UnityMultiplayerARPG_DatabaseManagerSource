@@ -146,6 +146,18 @@ namespace MultiplayerARPG.MMO
             return (byte)(result == null ? 0 : (short)result);
         }
 
+        public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
+        public override async UniTask<long> GetUserUnbanTime(string userId)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            var result = await PostgreSQLHelpers.ExecuteSelectScalar(
+                CACHE_KEY_GET_USER_UNBAN_TIME,
+                connection,
+                "user_accesses", "unban_time", "LIMIT 1",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
+            return result == null ? 0 : (long)result;
+        }
+
         public const string CACHE_KET_GET_GOLD = "GET_GOLD";
         public override async UniTask<int> GetGold(string userId)
         {
@@ -245,23 +257,6 @@ namespace MultiplayerARPG.MMO
                 "users",
                 PostgreSQLHelpers.WhereLike("username", username));
             return count;
-        }
-
-        public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
-        public override async UniTask<long> GetUserUnbanTime(string userId)
-        {
-            using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_GET_USER_UNBAN_TIME,
-                connection,
-                "user_accesses", "unban_time", "LIMIT 1",
-                PostgreSQLHelpers.WhereEqualTo("id", userId));
-            long unbanTime = 0;
-            if (reader.Read())
-            {
-                unbanTime = reader.GetInt64(0);
-            }
-            return unbanTime;
         }
 
         public const string CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID = "SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID";
