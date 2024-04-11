@@ -153,15 +153,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask UpdateGold(string userId, int gold)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpdate(
+            await PostgreSQLHelpers.ExecuteUpsert(
                 CACHE_KEY_UPDATE_GOLD,
                 connection, null,
-                "user_currencies",
-                new List<PostgreSQLHelpers.ColumnInfo>()
-                {
-                    new PostgreSQLHelpers.ColumnInfo("gold", gold),
-                },
-                PostgreSQLHelpers.WhereEqualTo("id", userId));
+                "user_currencies", "id",
+                new PostgreSQLHelpers.ColumnInfo("gold", gold),
+                new PostgreSQLHelpers.ColumnInfo("id", userId));
         }
 
         public const string CACHE_KET_GET_CASH = "GET_CASH";
@@ -180,14 +177,12 @@ namespace MultiplayerARPG.MMO
         public override async UniTask UpdateCash(string userId, int cash)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpdate(
+            await PostgreSQLHelpers.ExecuteUpsert(
                 CACHE_KEY_UPDATE_CASH,
                 connection, null,
-                "user_currencies",
-                new[] {
-                    new PostgreSQLHelpers.ColumnInfo("cash", cash),
-                },
-                PostgreSQLHelpers.WhereEqualTo("id", userId));
+                "user_currencies", "id",
+                new PostgreSQLHelpers.ColumnInfo("cash", cash),
+                new PostgreSQLHelpers.ColumnInfo("id", userId));
         }
 
         public const string CACHE_KEY_UPDATE_ACCESS_TOKEN = "UPDATE_ACCESS_TOKEN";
