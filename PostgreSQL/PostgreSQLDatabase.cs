@@ -77,8 +77,8 @@ namespace MultiplayerARPG.MMO
 
         public string GetConnectionString()
         {
-            if (!string.IsNullOrWhiteSpace(this._connectionString))
-                return this._connectionString;
+            if (!string.IsNullOrWhiteSpace(_connectionString))
+                return _connectionString;
             string connectionString = "Host=" + _address + ";" +
                 "Port=" + _port + ";" +
                 "Username=" + _username + ";" +
