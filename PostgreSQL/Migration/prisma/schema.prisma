@@ -68,6 +68,7 @@ model characters {
   guild_id           Int      @default(0) @db.Integer()
   guild_role         Int      @default(0) @db.Integer()
   shared_guild_exp   Int      @default(0) @db.Integer()
+  current_channel    String   @default("") @db.VarChar(50)
   current_map_name   String   @default("") @db.VarChar(50)
   current_position_x Float    @default(0) @db.Real()
   current_position_y Float    @default(0) @db.Real()
@@ -75,6 +76,7 @@ model characters {
   current_rotation_x Float    @default(0) @db.Real()
   current_rotation_y Float    @default(0) @db.Real()
   current_rotation_z Float    @default(0) @db.Real()
+  current_safe_area  String   @default("") @db.VarChar(50)
   respawn_map_name   String   @default("") @db.VarChar(50)
   respawn_position_x Float    @default(0) @db.Real()
   respawn_position_y Float    @default(0) @db.Real()
@@ -89,6 +91,12 @@ model characters {
   unmute_time        BigInt   @default(0) @db.BigInt()
   create_time        DateTime @default(now()) @db.Timestamptz()
   update_time        DateTime @default(now()) @updatedAt @db.Timestamptz()
+}
+
+model character_appearances {
+  id          String   @id @db.VarChar(40)
+  data        Json     @db.JsonB()
+  update_time DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
 model character_attributes {
