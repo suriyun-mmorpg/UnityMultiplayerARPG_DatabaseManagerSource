@@ -335,33 +335,16 @@ namespace MultiplayerARPG.MMO
             return count;
         }
 
+        public const string CACHE_KEY_UPDATE_USER_COUNT = "UPDATE_USER_COUNT";
         public override async UniTask UpdateUserCount(int userCount)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var transaction = await connection.BeginTransactionAsync();
-            using var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM server_statistic", connection, transaction);
-            await cmd.PrepareAsync();
-            var result = await cmd.ExecuteScalarAsync();
-
-            long count = result != null ? (long)result : 0;
-            if (count > 0)
-            {
-                using var cmd2 = new NpgsqlCommand("UPDATE server_statistic SET user_count=$1", connection, transaction);
-                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
-                await cmd2.PrepareAsync();
-                cmd2.Parameters[0].Value = userCount;
-                await cmd2.ExecuteNonQueryAsync();
-            }
-            else
-            {
-                using var cmd2 = new NpgsqlCommand("INSERT INTO server_statistic (user_count) VALUES ($1)", connection, transaction);
-                cmd2.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
-                await cmd2.PrepareAsync();
-                cmd2.Parameters[0].Value = userCount;
-                await cmd2.ExecuteNonQueryAsync();
-            }
-
-            await transaction.CommitAsync();
+            await PostgreSQLHelpers.ExecuteUpsert(
+                CACHE_KEY_UPDATE_USER_COUNT,
+                connection, null,
+                "server_statistic", "id",
+                new PostgreSQLHelpers.ColumnInfo("user_count", userCount),
+                new PostgreSQLHelpers.ColumnInfo("id", 1));
         }
     }
 }
