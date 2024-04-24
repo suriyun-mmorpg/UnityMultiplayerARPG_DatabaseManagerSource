@@ -1181,7 +1181,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> columns)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteNonQuery {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
             int i;
             for (i = 0; i < columns.Count; ++i)
@@ -1200,7 +1202,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteNonQuery {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
             int i;
             for (i = 0; i < wheres.Count; ++i)
@@ -1220,7 +1224,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<int> ExecuteNonQuery(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteNonQuery {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
             int i;
             for (i = 0; i < updates.Count; ++i)
@@ -1248,7 +1254,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteReader {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
             int i;
             for (i = 0; i < wheres.Count; ++i)
@@ -1267,7 +1275,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteReader {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
             int i;
             for (i = 0; i < updates.Count; ++i)
@@ -1295,7 +1305,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteScalar {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < wheres.Count; ++i)
@@ -1314,7 +1326,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<ColumnInfo> values)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteScalar {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < values.Count; ++i)
@@ -1333,7 +1347,9 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<object> ExecuteScalar(NpgsqlConnection connection, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
         {
+#if DEBUG
             Console.WriteLine($"ExecuteScalar {sql}");
+#endif
             NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < updates.Count; ++i)
