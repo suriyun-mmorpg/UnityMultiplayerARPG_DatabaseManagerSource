@@ -432,11 +432,12 @@ namespace MultiplayerARPG.MMO
             return gold;
         }
 
-        public override async UniTask UpdateGold(string userId, int gold)
+        public override async UniTask<int> ChangeGold(string userId, int gold)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
+            await ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@gold", gold));
+            return await GetGold(userId);
         }
 
         public override async UniTask<int> GetCash(string userId)
@@ -451,11 +452,12 @@ namespace MultiplayerARPG.MMO
             return cash;
         }
 
-        public override async UniTask UpdateCash(string userId, int cash)
+        public override async UniTask<int> ChangeCash(string userId, int cash)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
+            await ExecuteNonQuery("UPDATE userlogin SET cash = cash + @cash WHERE id=@id",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@cash", cash));
+            return await GetCash(userId);
         }
 
         public override async UniTask UpdateAccessToken(string userId, string accessToken)

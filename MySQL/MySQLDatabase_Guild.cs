@@ -232,11 +232,12 @@ namespace MultiplayerARPG.MMO
             return gold;
         }
 
-        public override async UniTask UpdateGuildGold(int guildId, int gold)
+        public override async UniTask<int> ChangeGuildGold(int guildId, int gold)
         {
-            await ExecuteNonQuery("UPDATE guild SET gold=@gold WHERE id=@id",
+            await ExecuteNonQuery("UPDATE guild SET gold = gold + @gold WHERE id=@id",
                 new MySqlParameter("@id", guildId),
                 new MySqlParameter("@gold", gold));
+            return await GetGuildGold(guildId);
         }
 
         public override async UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
