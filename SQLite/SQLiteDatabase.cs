@@ -669,12 +669,12 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(gold);
         }
 
-        public override UniTask UpdateGold(string userId, int gold)
+        public override UniTask<int> ChangeGold(string userId, int gold)
         {
-            ExecuteNonQuery("UPDATE userlogin SET gold=@gold WHERE id=@id",
+            ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@gold", gold));
-            return new UniTask();
+            return GetGold(userId);
         }
 
         public override UniTask<int> GetCash(string userId)
@@ -689,12 +689,12 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(cash);
         }
 
-        public override UniTask UpdateCash(string userId, int cash)
+        public override UniTask<int> ChangeCash(string userId, int cash)
         {
-            ExecuteNonQuery("UPDATE userlogin SET cash=@cash WHERE id=@id",
+            ExecuteNonQuery("UPDATE userlogin SET cash = cash + @cash WHERE id=@id",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@cash", cash));
-            return new UniTask();
+            return GetCash(userId);
         }
 
         public override UniTask UpdateAccessToken(string userId, string accessToken)
