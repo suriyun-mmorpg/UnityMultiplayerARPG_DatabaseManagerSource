@@ -13,9 +13,9 @@ namespace MultiplayerARPG.MMO
         UniTask<long> FindEmail(string email);
         UniTask<byte> GetUserLevel(string userId);
         UniTask<int> GetGold(string userId);
-        UniTask UpdateGold(string userId, int amount);
+        UniTask<int> ChangeGold(string userId, int amount);
         UniTask<int> GetCash(string userId);
-        UniTask UpdateCash(string userId, int amount);
+        UniTask<int> ChangeCash(string userId, int amount);
         UniTask UpdateAccessToken(string userId, string accessToken);
         UniTask CreateUserLogin(string username, string password, string email);
         UniTask<long> FindUsername(string username);
@@ -82,7 +82,7 @@ namespace MultiplayerARPG.MMO
         UniTask<long> FindGuildName(string guildName);
         UniTask UpdateCharacterGuild(string characterId, int guildId, byte guildRole);
         UniTask<int> GetGuildGold(int guildId);
-        UniTask UpdateGuildGold(int guildId, int gold);
+        UniTask<int> ChangeGuildGold(int guildId, int gold);
         UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit);
         UniTask CreateGuildRequest(int guildId, string requesterId);
         UniTask DeleteGuildRequest(int guildId, string requesterId);
