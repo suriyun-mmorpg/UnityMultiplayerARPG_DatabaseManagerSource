@@ -384,19 +384,17 @@ namespace MultiplayerARPG.MMO
             return result == null ? 0 : (int)result;
         }
 
-        public const string CACHE_KEY_UPDATE_GUILD_GOLD = "UPDATE_GUILD_GOLD";
-        public override async UniTask UpdateGuildGold(int id, int gold)
+        public override async UniTask<int> ChangeGuildGold(int id, int gold)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpdate(
-                CACHE_KEY_UPDATE_GUILD_GOLD,
-                connection, null,
-                "guilds",
-                new[]
-                {
-                    new PostgreSQLHelpers.ColumnInfo("gold", gold),
-                },
-                PostgreSQLHelpers.WhereEqualTo("id", id));
+            NpgsqlCommand cmd = new NpgsqlCommand("UPDATE guilds SET gold = gold + $1 WHERE id = $2 RETURNING gold", connection);
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Integer });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Integer });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = gold;
+            cmd.Parameters[1].Value = id;
+            object result = await cmd.ExecuteScalarAsync();
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KEY_FIND_GUILDS_FINDER = "FIND_GUILDS_FINDER";

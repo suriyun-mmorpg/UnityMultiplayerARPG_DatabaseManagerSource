@@ -170,16 +170,17 @@ namespace MultiplayerARPG.MMO
             return result == null ? 0 : (int)result;
         }
 
-        public const string CACHE_KEY_UPDATE_GOLD = "UPDATE_GOLD";
-        public override async UniTask UpdateGold(string userId, int gold)
+        public override async UniTask<int> ChangeGold(string userId, int gold)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpsert(
-                CACHE_KEY_UPDATE_GOLD,
-                connection, null,
-                "user_currencies", "id",
-                new PostgreSQLHelpers.ColumnInfo("gold", gold),
-                new PostgreSQLHelpers.ColumnInfo("id", userId));
+            NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET gold = gold + $1 WHERE id = $2 RETURNING gold", connection);
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = gold;
+            cmd.Parameters[1].Value = userId;
+            object result = await cmd.ExecuteScalarAsync();
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KET_GET_CASH = "GET_CASH";
@@ -194,16 +195,17 @@ namespace MultiplayerARPG.MMO
             return result == null ? 0 : (int)result;
         }
 
-        public const string CACHE_KEY_UPDATE_CASH = "UPDATE_CASH";
-        public override async UniTask UpdateCash(string userId, int cash)
+        public override async UniTask<int> ChangeCash(string userId, int cash)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            await PostgreSQLHelpers.ExecuteUpsert(
-                CACHE_KEY_UPDATE_CASH,
-                connection, null,
-                "user_currencies", "id",
-                new PostgreSQLHelpers.ColumnInfo("cash", cash),
-                new PostgreSQLHelpers.ColumnInfo("id", userId));
+            NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET cash = cash + $1 WHERE id = $2 RETURNING cash", connection);
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = cash;
+            cmd.Parameters[1].Value = userId;
+            object result = await cmd.ExecuteScalarAsync();
+            return result == null ? 0 : (int)result;
         }
 
         public const string CACHE_KEY_CREATE_USER_LOGIN_USERS = "CREATE_USER_LOGIN_USERS";
