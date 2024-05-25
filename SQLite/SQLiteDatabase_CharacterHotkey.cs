@@ -39,7 +39,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@id", id),
                 new SqliteParameter("@characterId", characterId),
                 new SqliteParameter("@hotkeyId", characterHotkey.hotkeyId),
-                new SqliteParameter("@type", characterHotkey.type),
+                new SqliteParameter("@type", (byte)characterHotkey.type),
                 new SqliteParameter("@relateId", characterHotkey.relateId));
         }
 

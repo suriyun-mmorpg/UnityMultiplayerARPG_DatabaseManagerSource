@@ -35,7 +35,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@hotkeyId", characterHotkey.hotkeyId),
-                new MySqlParameter("@type", characterHotkey.type),
+                new MySqlParameter("@type", (byte)characterHotkey.type),
                 new MySqlParameter("@relateId", characterHotkey.relateId));
         }
 
