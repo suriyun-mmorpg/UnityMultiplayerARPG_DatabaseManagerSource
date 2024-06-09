@@ -363,6 +363,18 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@guildId", guildId));
             return new UniTask<int>((int)(long)result);
         }
+
+        public override UniTask UpdateGuildMemberCount(int guildId, int maxMember)
+        {
+            object countResult = ExecuteScalar("SELECT COUNT(*) FROM characters WHERE guildId=@guildId",
+                new SqliteParameter("@guildId", guildId));
+            int count = (int)(long)countResult;
+            ExecuteNonQuery("UPDATE guild SET currentMembers=@currentMembers, maxMembers=@maxMembers WHERE guildId=@guildId",
+                new SqliteParameter("@currentMembers", count),
+                new SqliteParameter("@maxMembers", maxMember),
+                new SqliteParameter("@guildId", guildId));
+            return default;
+        }
     }
 }
 #endif

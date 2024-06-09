@@ -519,6 +519,26 @@ namespace MultiplayerARPG.MMO
                 "guild_requests",
                 PostgreSQLHelpers.WhereEqualTo("id", guildId));
         }
+
+        public const string CACHE_KEY_UPDATE_GUILD_MEMBER_COUNT_COUNT = "UPDATE_GUILD_MEMBER_COUNT_COUNT";
+        public const string CACHE_KEY_UPDATE_GUILD_MEMBER_COUNT_UPDATE = "UPDATE_GUILD_MEMBER_COUNT_UPDATE";
+        public override async UniTask UpdateGuildMemberCount(int guildId, int maxMember)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            int count = (int)await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KEY_UPDATE_GUILD_MEMBER_COUNT_COUNT,
+                connection, "characters",
+                PostgreSQLHelpers.WhereEqualTo("guild_id", guildId));
+            await PostgreSQLHelpers.ExecuteUpdate(
+                CACHE_KEY_UPDATE_GUILD_MEMBER_COUNT_UPDATE,
+                connection, null,
+                "guilds", new[]
+                {
+                    new PostgreSQLHelpers.ColumnInfo("current_members", count),
+                    new PostgreSQLHelpers.ColumnInfo("max_members", maxMember),
+                },
+                PostgreSQLHelpers.WhereEqualTo("id", guildId));
+        }
     }
 }
 #endif

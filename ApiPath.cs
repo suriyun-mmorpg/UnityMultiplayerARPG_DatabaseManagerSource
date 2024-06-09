@@ -78,5 +78,6 @@
         public const string DeleteGuildRequest = "delete-guild-request";
         public const string GetGuildRequests = "get-guild-requests";
         public const string GetGuildRequestNotification = "get-guild-request-notification";
+        public const string UpdateGuildMemberCount = "update-guild-member-count";
     }
 }

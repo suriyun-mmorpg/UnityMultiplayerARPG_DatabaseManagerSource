@@ -151,5 +151,7 @@ namespace MultiplayerARPG.MMO
         UniTask<DatabaseApiResult<GetFriendRequestNotificationResp>> GetFriendRequestNotificationAsync(GetFriendRequestNotificationReq request);
 
         UniTask<DatabaseApiResult> UpdateUserCount(UpdateUserCountReq request);
+        
+        UniTask<DatabaseApiResult> UpdateGuildMemberCountAsync(UpdateGuildMemberCountReq request);
     }
 }

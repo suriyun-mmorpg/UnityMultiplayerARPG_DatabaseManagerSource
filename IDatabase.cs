@@ -88,6 +88,7 @@ namespace MultiplayerARPG.MMO
         UniTask DeleteGuildRequest(int guildId, string requesterId);
         UniTask<List<SocialCharacterData>> GetGuildRequests(int guildId, int skip, int limit);
         UniTask<int> GetGuildRequestsNotification(int guildId);
+        UniTask UpdateGuildMemberCount(int guildId, int maxGuildMembers);
 
         UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageCharacterItems);
         UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId);
