@@ -31,7 +31,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@buffRemainsDuration", summonBuff.buffRemainsDuration));
         }
 
-        private bool ReadSummonBuff(SqliteDataReader reader, out CharacterBuff result)
+        private bool GetSummonBuff(SqliteDataReader reader, out CharacterBuff result)
         {
             if (reader.Read())
             {
@@ -58,7 +58,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterBuff tempBuff;
-                while (ReadSummonBuff(reader, out tempBuff))
+                while (GetSummonBuff(reader, out tempBuff))
                 {
                     result.Add(tempBuff);
                 }

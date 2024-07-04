@@ -8,7 +8,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private bool ReadCharacterDataInt32(MySqlDataReader reader, out CharacterDataInt32 result)
+        private bool GetCharacterDataInt32(MySqlDataReader reader, out CharacterDataInt32 result)
         {
             if (reader.Read())
             {
@@ -44,7 +44,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 CharacterDataInt32 tempData;
-                while (ReadCharacterDataInt32(reader, out tempData))
+                while (GetCharacterDataInt32(reader, out tempData))
                 {
                     result.Add(tempData);
                 }

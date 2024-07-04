@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadCharacterSkillUsage(SqliteDataReader reader, out CharacterSkillUsage result)
+        private bool GetCharacterSkillUsage(SqliteDataReader reader, out CharacterSkillUsage result)
         {
             if (reader.Read())
             {
@@ -50,7 +50,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterSkillUsage tempSkillUsage;
-                while (ReadCharacterSkillUsage(reader, out tempSkillUsage))
+                while (GetCharacterSkillUsage(reader, out tempSkillUsage))
                 {
                     result.Add(tempSkillUsage);
                 }

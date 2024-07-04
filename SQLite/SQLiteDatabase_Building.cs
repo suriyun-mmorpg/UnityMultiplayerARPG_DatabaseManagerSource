@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadBuilding(SqliteDataReader reader, out BuildingSaveData result)
+        private bool GetBuilding(SqliteDataReader reader, out BuildingSaveData result)
         {
             if (reader.Read())
             {
@@ -87,7 +87,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 BuildingSaveData tempBuilding;
-                while (ReadBuilding(reader, out tempBuilding))
+                while (GetBuilding(reader, out tempBuilding))
                 {
                     result.Add(tempBuilding);
                 }

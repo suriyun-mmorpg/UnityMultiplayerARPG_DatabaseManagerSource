@@ -41,7 +41,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@version", characterItem.version));
         }
 
-        private bool ReadCharacterItem(SqliteDataReader reader, out CharacterItem result)
+        private bool GetCharacterItem(SqliteDataReader reader, out CharacterItem result)
         {
             if (reader.Read())
             {
@@ -72,7 +72,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterItem tempInventory;
-                while (ReadCharacterItem(reader, out tempInventory))
+                while (GetCharacterItem(reader, out tempInventory))
                 {
                     result.Add(tempInventory);
                 }
@@ -92,7 +92,7 @@ namespace MultiplayerARPG.MMO
                 CharacterItem tempInventory;
                 byte equipWeaponSet;
                 InventoryType inventoryType;
-                while (ReadCharacterItem(reader, out tempInventory))
+                while (GetCharacterItem(reader, out tempInventory))
                 {
                     equipWeaponSet = reader.GetByte(13);
                     inventoryType = (InventoryType)reader.GetByte(14);

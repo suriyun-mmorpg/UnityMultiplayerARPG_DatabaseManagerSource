@@ -26,7 +26,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@buffRemainsDuration", summonBuff.buffRemainsDuration));
         }
 
-        private bool ReadSummonBuff(MySqlDataReader reader, out CharacterBuff result)
+        private bool GetSummonBuff(MySqlDataReader reader, out CharacterBuff result)
         {
             if (reader.Read())
             {
@@ -53,7 +53,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 CharacterBuff tempBuff;
-                while (ReadSummonBuff(reader, out tempBuff))
+                while (GetSummonBuff(reader, out tempBuff))
                 {
                     result.Add(tempBuff);
                 }

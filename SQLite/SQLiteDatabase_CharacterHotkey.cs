@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadCharacterHotkey(SqliteDataReader reader, out CharacterHotkey result)
+        private bool GetCharacterHotkey(SqliteDataReader reader, out CharacterHotkey result)
         {
             if (reader.Read())
             {
@@ -50,7 +50,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterHotkey tempHotkey;
-                while (ReadCharacterHotkey(reader, out tempHotkey))
+                while (GetCharacterHotkey(reader, out tempHotkey))
                 {
                     result.Add(tempHotkey);
                 }

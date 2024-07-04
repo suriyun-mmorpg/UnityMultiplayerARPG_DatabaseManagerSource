@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadCharacterQuest(SqliteDataReader reader, out CharacterQuest result)
+        private bool GetCharacterQuest(SqliteDataReader reader, out CharacterQuest result)
         {
             if (reader.Read())
             {
@@ -59,7 +59,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterQuest tempQuest;
-                while (ReadCharacterQuest(reader, out tempQuest))
+                while (GetCharacterQuest(reader, out tempQuest))
                 {
                     result.Add(tempQuest);
                 }

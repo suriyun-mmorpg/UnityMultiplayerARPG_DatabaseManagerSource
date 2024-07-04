@@ -387,7 +387,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask();
         }
 
-        private bool ReadCharacter(SqliteDataReader reader, out PlayerCharacterData result)
+        private bool GetCharacter(SqliteDataReader reader, out PlayerCharacterData result)
         {
             if (reader.Read())
             {
@@ -463,7 +463,7 @@ namespace MultiplayerARPG.MMO
             PlayerCharacterData result = null;
             ExecuteReader((reader) =>
             {
-                ReadCharacter(reader, out result);
+                GetCharacter(reader, out result);
             }, @"SELECT
                 c.id, c.userId, c.dataId, c.entityId, c.factionId, c.characterName, c.level, c.exp,
                 c.currentHp, c.currentMp, c.currentStamina, c.currentFood, c.currentWater,

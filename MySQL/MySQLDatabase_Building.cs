@@ -7,7 +7,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private bool ReadBuilding(MySqlDataReader reader, out BuildingSaveData result)
+        private bool GetBuilding(MySqlDataReader reader, out BuildingSaveData result)
         {
             if (reader.Read())
             {
@@ -85,7 +85,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 BuildingSaveData tempBuilding;
-                while (ReadBuilding(reader, out tempBuilding))
+                while (GetBuilding(reader, out tempBuilding))
                 {
                     result.Add(tempBuilding);
                 }

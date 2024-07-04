@@ -8,7 +8,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private bool ReadCharacterCurrency(MySqlDataReader reader, out CharacterCurrency result)
+        private bool GetCharacterCurrency(MySqlDataReader reader, out CharacterCurrency result)
         {
             if (reader.Read())
             {
@@ -44,7 +44,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 CharacterCurrency tempCurrency;
-                while (ReadCharacterCurrency(reader, out tempCurrency))
+                while (GetCharacterCurrency(reader, out tempCurrency))
                 {
                     result.Add(tempCurrency);
                 }

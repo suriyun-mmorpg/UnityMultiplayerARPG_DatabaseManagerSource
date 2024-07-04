@@ -8,7 +8,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class MySQLDatabase
     {
-        private bool ReadCharacterHotkey(MySqlDataReader reader, out CharacterHotkey result)
+        private bool GetCharacterHotkey(MySqlDataReader reader, out CharacterHotkey result)
         {
             if (reader.Read())
             {
@@ -46,7 +46,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 CharacterHotkey tempHotkey;
-                while (ReadCharacterHotkey(reader, out tempHotkey))
+                while (GetCharacterHotkey(reader, out tempHotkey))
                 {
                     result.Add(tempHotkey);
                 }

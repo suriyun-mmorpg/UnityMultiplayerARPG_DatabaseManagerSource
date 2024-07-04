@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadCharacterCurrency(SqliteDataReader reader, out CharacterCurrency result)
+        private bool GetCharacterCurrency(SqliteDataReader reader, out CharacterCurrency result)
         {
             if (reader.Read())
             {
@@ -49,7 +49,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterCurrency tempCurrency;
-                while (ReadCharacterCurrency(reader, out tempCurrency))
+                while (GetCharacterCurrency(reader, out tempCurrency))
                 {
                     result.Add(tempCurrency);
                 }

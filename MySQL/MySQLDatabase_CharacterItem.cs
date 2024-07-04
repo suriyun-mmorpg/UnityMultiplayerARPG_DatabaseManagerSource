@@ -37,7 +37,7 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@version", characterItem.version));
         }
 
-        private bool ReadCharacterItem(MySqlDataReader reader, out CharacterItem result)
+        private bool GetCharacterItem(MySqlDataReader reader, out CharacterItem result)
         {
             if (reader.Read())
             {
@@ -68,7 +68,7 @@ namespace MultiplayerARPG.MMO
             await ExecuteReader((reader) =>
             {
                 CharacterItem tempInventory;
-                while (ReadCharacterItem(reader, out tempInventory))
+                while (GetCharacterItem(reader, out tempInventory))
                 {
                     result.Add(tempInventory);
                 }
@@ -88,7 +88,7 @@ namespace MultiplayerARPG.MMO
                 CharacterItem tempInventory;
                 byte equipWeaponSet;
                 InventoryType inventoryType;
-                while (ReadCharacterItem(reader, out tempInventory))
+                while (GetCharacterItem(reader, out tempInventory))
                 {
                     equipWeaponSet = reader.GetByte(13);
                     inventoryType = (InventoryType)reader.GetByte(14);

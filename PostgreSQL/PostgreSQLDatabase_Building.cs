@@ -8,7 +8,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        private bool ReadBuilding(NpgsqlDataReader reader, out BuildingSaveData result)
+        private bool GetBuilding(NpgsqlDataReader reader, out BuildingSaveData result)
         {
             if (reader.Read())
             {
@@ -44,7 +44,7 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName));
             List<BuildingSaveData> result = new List<BuildingSaveData>();
             BuildingSaveData tempBuilding;
-            while (ReadBuilding(reader, out tempBuilding))
+            while (GetBuilding(reader, out tempBuilding))
             {
                 result.Add(tempBuilding);
             }

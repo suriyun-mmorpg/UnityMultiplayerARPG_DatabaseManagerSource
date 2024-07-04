@@ -12,7 +12,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
     {
-        private bool ReadCharacterAttribute(SqliteDataReader reader, out CharacterAttribute result)
+        private bool GetCharacterAttribute(SqliteDataReader reader, out CharacterAttribute result)
         {
             if (reader.Read())
             {
@@ -49,7 +49,7 @@ namespace MultiplayerARPG.MMO
             ExecuteReader((reader) =>
             {
                 CharacterAttribute tempAttribute;
-                while (ReadCharacterAttribute(reader, out tempAttribute))
+                while (GetCharacterAttribute(reader, out tempAttribute))
                 {
                     result.Add(tempAttribute);
                 }
