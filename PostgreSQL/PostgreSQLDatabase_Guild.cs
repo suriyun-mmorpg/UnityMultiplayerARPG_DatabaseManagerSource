@@ -45,7 +45,7 @@ namespace MultiplayerARPG.MMO
             var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
                 CACHE_KEY_GET_GUILD,
                 connection,
-                "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank",
+                "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
             // Guild data
             GuildData guild = null;
@@ -352,7 +352,7 @@ namespace MultiplayerARPG.MMO
                 CACHE_KEY_FIND_GUILD_NAME,
                 connection,
                 "guilds",
-                PostgreSQLHelpers.WhereLike("guild_name", guildName));
+                PostgreSQLHelpers.WhereLike("LOWER(guild_name)", guildName.ToLower()));
             return count;
         }
 
@@ -401,6 +401,8 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_FIND_GUILDS_REQUESTS = "FIND_GUILDS_REQUESTS";
         public override async UniTask<List<GuildListEntry>> FindGuilds(string finderId, string guildName, int skip, int limit)
         {
+            if (limit <= 0)
+                limit = 25;
             using var connection = await _dataSource.OpenConnectionAsync();
             var excludeGuildIds = new List<int>();
             // Find excluding guild ID from characters table
@@ -425,7 +427,7 @@ namespace MultiplayerARPG.MMO
             // Find guilds
             var wheres = new List<PostgreSQLHelpers.WhereQuery>()
             {
-                PostgreSQLHelpers.WhereLike("guild_name", $"%{guildName}%"),
+                PostgreSQLHelpers.WhereLike("LOWER(guild_name)", $"%{guildName.ToLower()}%"),
             };
             for (int i = 0; i < excludeGuildIds.Count; ++i)
             {
@@ -493,6 +495,8 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_GET_GUILD_REQUESTS = "GET_GUILD_REQUESTS";
         public override async UniTask<List<SocialCharacterData>> GetGuildRequests(int guildId, int skip, int limit)
         {
+            if (limit <= 0)
+                limit = 25;
             using var connection = await _dataSource.OpenConnectionAsync();
             // Get character IDs
             var readerIds = await PostgreSQLHelpers.ExecuteSelect(

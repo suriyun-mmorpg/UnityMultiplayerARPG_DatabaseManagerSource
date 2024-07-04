@@ -1,5 +1,6 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
+using Npgsql;
 using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
@@ -175,31 +176,15 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public string CACHE_KEY_GET_MAIL_NOTIFICATION = "GET_MAIL_NOTIFICATION";
         public override async UniTask<int> GetMailNotification(string userId)
         {
-            int count = 0;
             using var connection = await _dataSource.OpenConnectionAsync();
-            using var reader = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_GET_MAIL_NOTIFICATION,
-                connection,
-                "mails", "gold, cash, currencies, items, is_read, is_claim",
-                PostgreSQLHelpers.WhereEqualTo("receiver_id", userId),
-                PostgreSQLHelpers.AndWhereEqualTo("is_delete", false));
-            while (reader.Read())
-            {
-                int gold = reader.GetInt32(0);
-                int cash = reader.GetInt32(1);
-                string currencies = reader.GetString(2);
-                string items = reader.GetString(3);
-                bool isRead = reader.GetBoolean(4);
-                bool isClaim = reader.GetBoolean(5);
-                if (!isClaim && (gold != 0 || !string.IsNullOrEmpty(currencies) || !string.IsNullOrEmpty(items)))
-                    count++;
-                else if (!isRead)
-                    count++;
-            }
-            return count;
+            using NpgsqlCommand cmd = new NpgsqlCommand("SELECT COUNT(*) FROM mails WHERE (((gold != 0 || currencies != '' || items != '') && !is_claim) || !is_read) AND !is_delete AND receiver_id = $1", connection);
+            cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
+            await cmd.PrepareAsync();
+            cmd.Parameters[0].Value = userId;
+            object result = await cmd.ExecuteScalarAsync();
+            return result == null ? 0 : (int)result;
         }
     }
 }

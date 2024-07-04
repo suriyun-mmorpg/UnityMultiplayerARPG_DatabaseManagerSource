@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public const string CACHE_KEY_GET_BUILDINGS = "READ_BUILDINGS";
+        public const string CACHE_KEY_GET_BUILDINGS = "GET_BUILDINGS";
         public override async UniTask<List<BuildingSaveData>> GetBuildings(string channel, string mapName)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
@@ -55,6 +55,9 @@ namespace MultiplayerARPG.MMO
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
+            string extraData = building.ExtraData;
+            if (string.IsNullOrEmpty(extraData))
+                extraData = "";
             await PostgreSQLHelpers.ExecuteInsert(
                 CACHE_KEY_CREATE_BUILDING,
                 connection, null,
@@ -63,7 +66,7 @@ namespace MultiplayerARPG.MMO
                 new PostgreSQLHelpers.ColumnInfo("channel", channel),
                 new PostgreSQLHelpers.ColumnInfo("parent_id", building.ParentId),
                 new PostgreSQLHelpers.ColumnInfo("entity_id", building.EntityId),
-                new PostgreSQLHelpers.ColumnInfo("current_hp", building.Id),
+                new PostgreSQLHelpers.ColumnInfo("current_hp", building.CurrentHp),
                 new PostgreSQLHelpers.ColumnInfo("remains_lifetime", building.RemainsLifeTime),
                 new PostgreSQLHelpers.ColumnInfo("map_name", mapName),
                 new PostgreSQLHelpers.ColumnInfo("position_x", building.Position.x),
@@ -74,7 +77,7 @@ namespace MultiplayerARPG.MMO
                 new PostgreSQLHelpers.ColumnInfo("rotation_z", building.Rotation.z),
                 new PostgreSQLHelpers.ColumnInfo("creator_id", building.CreatorId),
                 new PostgreSQLHelpers.ColumnInfo("creator_name", building.CreatorName),
-                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "extra_data", building.ExtraData),
+                new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.Text, "extra_data", extraData),
                 new PostgreSQLHelpers.ColumnInfo("is_scene_object", building.IsSceneObject));
         }
 

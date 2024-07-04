@@ -62,7 +62,31 @@ namespace MultiplayerARPG.MMO
             _password = config.pgPassword;
             _dbName = config.pgDbName;
             _connectionString = config.pgConnectionString;
-            _dataSource = new NpgsqlDataSourceBuilder(GetConnectionString()).Build();
+
+            // Read configs from ENV
+            string envVal;
+            envVal = Environment.GetEnvironmentVariable("pgAddress");
+            if (!string.IsNullOrEmpty(envVal))
+                _address = envVal;
+            envVal = Environment.GetEnvironmentVariable("pgPort");
+            if (!string.IsNullOrEmpty(envVal) && int.TryParse(envVal, out int envPort))
+                _port = envPort;
+            envVal = Environment.GetEnvironmentVariable("pgUsername");
+            if (!string.IsNullOrEmpty(envVal))
+                _username = envVal;
+            envVal = Environment.GetEnvironmentVariable("pgPassword");
+            if (!string.IsNullOrEmpty(envVal))
+                _password = envVal;
+            envVal = Environment.GetEnvironmentVariable("pgDbName");
+            if (!string.IsNullOrEmpty(envVal))
+                _dbName = envVal;
+            envVal = Environment.GetEnvironmentVariable("pgConnectionString");
+            if (!string.IsNullOrEmpty(envVal))
+                _connectionString = envVal;
+
+            string connectionString = GetConnectionString();
+            LogInformation(LogTag, $"Connecting with connection string: {connectionString}");
+            _dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
 
             if (!configFileFound)
             {
@@ -158,9 +182,33 @@ namespace MultiplayerARPG.MMO
             return result == null ? 0 : (long)result;
         }
 
+        public const string CACHE_KET_COUNT_USER_CURRENCIES = "COUNT_USER_CURRENCIES";
+        public const string CACHE_KET_CREATE_USER_CURRENCIES = "CREATE_USER_CURRENCIES";
+        public async UniTask PrepareUserCurrencies(string userId)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            var count = await PostgreSQLHelpers.ExecuteCount(
+                CACHE_KET_COUNT_USER_CURRENCIES,
+                connection,
+                "user_currencies",
+                PostgreSQLHelpers.WhereEqualTo("id", userId));
+            if (count <= 0)
+            {
+                // Insert a new one with some amount of currencies
+                await PostgreSQLHelpers.ExecuteInsert(
+                    CACHE_KET_CREATE_USER_CURRENCIES,
+                    connection, null,
+                    "user_currencies",
+                    new PostgreSQLHelpers.ColumnInfo("id", userId),
+                    new PostgreSQLHelpers.ColumnInfo("gold", 0),
+                    new PostgreSQLHelpers.ColumnInfo("cash", 0));
+            }
+        }
+
         public const string CACHE_KET_GET_GOLD = "GET_GOLD";
         public override async UniTask<int> GetGold(string userId)
         {
+            await PrepareUserCurrencies(userId);
             using var connection = await _dataSource.OpenConnectionAsync();
             var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KET_GET_GOLD,
@@ -172,6 +220,7 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> ChangeGold(string userId, int gold)
         {
+            await PrepareUserCurrencies(userId);
             using var connection = await _dataSource.OpenConnectionAsync();
             NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET gold = gold + $1 WHERE id = $2 RETURNING gold", connection);
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
@@ -186,6 +235,7 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KET_GET_CASH = "GET_CASH";
         public override async UniTask<int> GetCash(string userId)
         {
+            await PrepareUserCurrencies(userId);
             using var connection = await _dataSource.OpenConnectionAsync();
             var result = await PostgreSQLHelpers.ExecuteSelectScalar(
                 CACHE_KET_GET_CASH,
@@ -197,6 +247,7 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> ChangeCash(string userId, int cash)
         {
+            await PrepareUserCurrencies(userId);
             using var connection = await _dataSource.OpenConnectionAsync();
             NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET cash = cash + $1 WHERE id = $2 RETURNING cash", connection);
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
@@ -270,7 +321,7 @@ namespace MultiplayerARPG.MMO
                 CACHE_KEY_SET_USER_UNBAN_TIME_BY_CHARACTER_NAME_SELECT_USER_ID,
                 connection,
                 "characters", "user_id", "LIMIT 1",
-                PostgreSQLHelpers.WhereLike("character_name", characterName));
+                PostgreSQLHelpers.WhereLike("LOWER(character_name)", characterName.ToLower()));
             string userId = null;
             if (reader.Read())
             {
@@ -297,7 +348,7 @@ namespace MultiplayerARPG.MMO
                 new[] {
                     new PostgreSQLHelpers.ColumnInfo("unmute_time", unmuteTime),
                 },
-                PostgreSQLHelpers.WhereLike("character_name", characterName));
+                PostgreSQLHelpers.WhereLike("LOWER(character_name)", characterName.ToLower()));
         }
 
         public const string CACHE_KEY_VALIDATE_EMAIL_VERIFICATION = "VALIDATE_EMAIL_VERIFICATION";
@@ -321,7 +372,7 @@ namespace MultiplayerARPG.MMO
                 CACHE_KEY_FIND_EMAIL,
                 connection,
                 "users",
-                PostgreSQLHelpers.WhereLike("email", email));
+                PostgreSQLHelpers.WhereLike("LOWER(email)", email.ToLower()));
             return count;
         }
 

@@ -96,7 +96,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private bool ReadCharacter(NpgsqlDataReader reader, out PlayerCharacterData result)
+        private bool GetCharacter(NpgsqlDataReader reader, out PlayerCharacterData result)
         {
             if (reader.Read())
             {
@@ -170,7 +170,7 @@ namespace MultiplayerARPG.MMO
             bool withPublicCustomData = true)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
-            return await ReadCharacter(
+            return await GetCharacter(
                 connection,
                 id,
                 withEquipWeapons,
@@ -189,7 +189,7 @@ namespace MultiplayerARPG.MMO
                 withPublicCustomData);
         }
 
-        public async UniTask<PlayerCharacterData> ReadCharacter(
+        public async UniTask<PlayerCharacterData> GetCharacter(
             NpgsqlConnection connection,
             string id,
             bool withEquipWeapons,
@@ -224,7 +224,7 @@ namespace MultiplayerARPG.MMO
             await cmd.PrepareAsync();
             cmd.Parameters[0].Value = id;
             var reader = await cmd.ExecuteReaderAsync();
-            if (!ReadCharacter(reader, out result))
+            if (!GetCharacter(reader, out result))
             {
                 reader.Dispose();
                 return result;
@@ -312,7 +312,7 @@ namespace MultiplayerARPG.MMO
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             foreach (string characterId in characterIds)
             {
-                result.Add(await ReadCharacter(connection, characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await GetCharacter(connection, characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }

@@ -978,7 +978,7 @@ namespace MultiplayerARPG.MMO
 
         public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, IList<WhereQuery> wheres, [NotNull] string select = "*", [NotNull] string additional = "")
         {
-            return await ExecuteReader(connection, null, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
+            return await ExecuteReader(connection, CreateSelectCommandText(cacheKey, tableName, wheres, select, additional), wheres);
         }
 
         public static async UniTask<NpgsqlDataReader> ExecuteSelect(string cacheKey, NpgsqlConnection connection, [NotNull] string tableName, WhereQuery where, [NotNull] string select = "*", [NotNull] string additional = "")
@@ -1252,12 +1252,12 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<WhereQuery> wheres)
+        public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, string sql, IList<WhereQuery> wheres)
         {
 #if DEBUG
             Console.WriteLine($"ExecuteReader {sql}");
 #endif
-            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < wheres.Count; ++i)
             {
@@ -1273,12 +1273,12 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
+        public static async UniTask<NpgsqlDataReader> ExecuteReader(NpgsqlConnection connection, string sql, IList<ColumnInfo> updates, IList<WhereQuery> wheres)
         {
 #if DEBUG
             Console.WriteLine($"ExecuteReader {sql}");
 #endif
-            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection, transaction);
+            NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
             int i;
             for (i = 0; i < updates.Count; ++i)
             {
