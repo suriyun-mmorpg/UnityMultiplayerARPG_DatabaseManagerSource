@@ -152,7 +152,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override async UniTask<PlayerCharacterData> ReadCharacter(
+        public override async UniTask<PlayerCharacterData> GetCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -292,12 +292,12 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public const string CACHE_KEY_READ_CHARACTERS = "READ_CHARACTERS";
-        public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
+        public const string CACHE_KEY_GET_CHARACTERS = "GET_CHARACTERS";
+        public override async UniTask<List<PlayerCharacterData>> GetCharacters(string userId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             var reader = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_CHARACTERS,
+                CACHE_KEY_GET_CHARACTERS,
                 connection,
                 "characters", "id", "ORDER BY update_time DESC",
                 PostgreSQLHelpers.WhereEqualTo("user_id", userId));
@@ -543,16 +543,16 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.AndWhereEqualTo("character_id_2", id2));
         }
 
-        public const string CACHE_KEY_READ_FRIENDS_ID_1 = "READ_FRIENDS_ID_1";
-        public const string CACHE_KEY_READ_FRIENDS_ID_2 = "READ_FRIENDS_ID_2";
-        public override async UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
+        public const string CACHE_KEY_GET_FRIENDS_ID_1 = "GET_FRIENDS_ID_1";
+        public const string CACHE_KEY_GET_FRIENDS_ID_2 = "GET_FRIENDS_ID_2";
+        public override async UniTask<List<SocialCharacterData>> GetFriends(string id, bool readById2, byte state, int skip, int limit)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             List<string> characterIds = new List<string>();
             if (readById2)
             {
                 var readerIds = await PostgreSQLHelpers.ExecuteSelect(
-                    CACHE_KEY_READ_FRIENDS_ID_1,
+                    CACHE_KEY_GET_FRIENDS_ID_1,
                     connection,
                     "friends", "character_id_1", $"OFFSET {skip} LIMIT {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_2", id),
@@ -566,7 +566,7 @@ namespace MultiplayerARPG.MMO
             else
             {
                 var readerIds = await PostgreSQLHelpers.ExecuteSelect(
-                    CACHE_KEY_READ_FRIENDS_ID_2,
+                    CACHE_KEY_GET_FRIENDS_ID_2,
                     connection,
                     "friends", "character_id_2", $"OFFSET {skip} LIMIT {limit}",
                     PostgreSQLHelpers.WhereEqualTo("character_id_1", id),

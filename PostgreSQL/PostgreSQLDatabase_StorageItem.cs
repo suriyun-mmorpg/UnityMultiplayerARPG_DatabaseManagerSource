@@ -7,10 +7,10 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
-        public const string CACHE_KEY_READ_STORAGE_ITEMS_USERS = "READ_STORAGE_ITEMS_USERS";
-        public const string CACHE_KEY_READ_STORAGE_ITEMS_GUILDS = "READ_STORAGE_ITEMS_GUILDS";
-        public const string CACHE_KEY_READ_STORAGE_ITEMS_BUILDINGS = "READ_STORAGE_ITEMS_BUILDINGS";
-        public override async UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
+        public const string CACHE_KEY_GET_STORAGE_ITEMS_USERS = "GET_STORAGE_ITEMS_USERS";
+        public const string CACHE_KEY_GET_STORAGE_ITEMS_GUILDS = "GET_STORAGE_ITEMS_GUILDS";
+        public const string CACHE_KEY_GET_STORAGE_ITEMS_BUILDINGS = "GET_STORAGE_ITEMS_BUILDINGS";
+        public override async UniTask<List<CharacterItem>> GetStorageItems(StorageType storageType, string storageOwnerId)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             switch (storageType)

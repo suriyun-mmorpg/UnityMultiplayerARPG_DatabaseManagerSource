@@ -35,15 +35,15 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public const string CACHE_KEY_READ_GUILD = "READ_GUILD";
-        public const string CACHE_KEY_READ_GUILD_ROLES = "READ_GUILD_ROLES";
-        public const string CACHE_KEY_READ_GUILD_MEMBERS = "READ_GUILD_MEMBERS";
-        public const string CACHE_KEY_READ_GUILD_SKILLS = "READ_GUILD_SKILLS";
-        public override async UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
+        public const string CACHE_KEY_GET_GUILD = "GET_GUILD";
+        public const string CACHE_KEY_GET_GUILD_ROLES = "GET_GUILD_ROLES";
+        public const string CACHE_KEY_GET_GUILD_MEMBERS = "GET_GUILD_MEMBERS";
+        public const string CACHE_KEY_GET_GUILD_SKILLS = "GET_GUILD_SKILLS";
+        public override async UniTask<GuildData> GetGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             var readerGuild = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_GUILD,
+                CACHE_KEY_GET_GUILD,
                 connection,
                 "guilds", "guild_name, leader_id, level, exp, skill_point, guild_message, guild_message_2, gold, score, options, auto_accept_requests, rank",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
@@ -71,7 +71,7 @@ namespace MultiplayerARPG.MMO
                 return null;
             // Guild roles
             var readerRoles = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_GUILD_ROLES,
+                CACHE_KEY_GET_GUILD_ROLES,
                 connection,
                 "guild_roles", "role, name, can_invite, can_kick, can_use_storage, share_exp_percentage",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
@@ -91,7 +91,7 @@ namespace MultiplayerARPG.MMO
             readerRoles.Dispose();
             // Guild members
             var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_GUILD_MEMBERS,
+                CACHE_KEY_GET_GUILD_MEMBERS,
                 connection,
                 "characters", "id, data_id, character_name, level, guild_role",
                 PostgreSQLHelpers.WhereEqualTo("guild_id", id));
@@ -109,7 +109,7 @@ namespace MultiplayerARPG.MMO
             readerMembers.Dispose();
             // Guild skills
             var readerSkills = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_GUILD_SKILLS,
+                CACHE_KEY_GET_GUILD_SKILLS,
                 connection,
                 "guild_skills", "data_id, level",
                 PostgreSQLHelpers.WhereEqualTo("id", id));

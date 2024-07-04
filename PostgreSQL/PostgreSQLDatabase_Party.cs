@@ -33,13 +33,13 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public const string CACHE_KEY_READ_PARTY_PARTIES = "READ_PARTY_PARTIES";
-        public const string CACHE_KEY_READ_PARTY_MEMBERS = "READ_PARTY_MEMBERS";
-        public override async UniTask<PartyData> ReadParty(int id)
+        public const string CACHE_KEY_GET_PARTY_PARTIES = "GET_PARTY_PARTIES";
+        public const string CACHE_KEY_GET_PARTY_MEMBERS = "GET_PARTY_MEMBERS";
+        public override async UniTask<PartyData> GetParty(int id)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             var readerParty = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_PARTY_PARTIES,
+                CACHE_KEY_GET_PARTY_PARTIES,
                 connection,
                 "parties", "share_exp, share_item, leader_id", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", id));
@@ -56,7 +56,7 @@ namespace MultiplayerARPG.MMO
                 return null;
             // Party members
             var readerMembers = await PostgreSQLHelpers.ExecuteSelect(
-                CACHE_KEY_READ_PARTY_MEMBERS,
+                CACHE_KEY_GET_PARTY_MEMBERS,
                 connection,
                 "characters", "id, data_id, character_name, level",
                 PostgreSQLHelpers.WhereEqualTo("party_id", id));
