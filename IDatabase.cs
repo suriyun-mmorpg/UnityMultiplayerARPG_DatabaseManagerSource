@@ -24,7 +24,7 @@ namespace MultiplayerARPG.MMO
         UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime);
 
         UniTask CreateCharacter(string userId, IPlayerCharacterData characterData);
-        UniTask<PlayerCharacterData> ReadCharacter(
+        UniTask<PlayerCharacterData> GetCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -40,7 +40,7 @@ namespace MultiplayerARPG.MMO
             bool withServerCustomData = true,
             bool withPrivateCustomData = true,
             bool withPublicCustomData = true);
-        UniTask<List<PlayerCharacterData>> ReadCharacters(string userId);
+        UniTask<List<PlayerCharacterData>> GetCharacters(string userId);
         UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation);
         UniTask DeleteCharacter(string userId, string id);
         UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId);
@@ -48,25 +48,25 @@ namespace MultiplayerARPG.MMO
         UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit);
         UniTask CreateFriend(string id1, string id2, byte state);
         UniTask DeleteFriend(string id1, string id2);
-        UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit);
+        UniTask<List<SocialCharacterData>> GetFriends(string id, bool readById2, byte state, int skip, int limit);
         UniTask<int> GetFriendRequestNotification(string characterId);
         UniTask<string> GetIdByCharacterName(string characterName);
         UniTask<string> GetUserIdByCharacterName(string characterName);
 
         UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData saveData);
-        UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName);
+        UniTask<List<BuildingSaveData>> GetBuildings(string channel, string mapName);
         UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems);
         UniTask DeleteBuilding(string channel, string mapName, string id);
 
         UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId);
-        UniTask<PartyData> ReadParty(int id);
+        UniTask<PartyData> GetParty(int id);
         UniTask UpdatePartyLeader(int id, string leaderId);
         UniTask UpdateParty(int id, bool shareExp, bool shareItem);
         UniTask DeleteParty(int id);
         UniTask UpdateCharacterParty(string characterId, int partyId);
 
         UniTask<int> CreateGuild(string guildName, string leaderId);
-        UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles);
+        UniTask<GuildData> GetGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles);
         UniTask UpdateGuildLevel(int id, int level, int exp, int skillPoint);
         UniTask UpdateGuildLeader(int id, string leaderId);
         UniTask UpdateGuildMessage(int id, string guildMessage);
@@ -91,7 +91,7 @@ namespace MultiplayerARPG.MMO
         UniTask UpdateGuildMemberCount(int guildId, int maxGuildMembers);
 
         UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageCharacterItems);
-        UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId);
+        UniTask<List<CharacterItem>> GetStorageItems(StorageType storageType, string storageOwnerId);
 
         UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId);
         UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId);

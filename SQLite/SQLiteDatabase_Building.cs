@@ -81,7 +81,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask();
         }
 
-        public override UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName)
+        public override UniTask<List<BuildingSaveData>> GetBuildings(string channel, string mapName)
         {
             List<BuildingSaveData> result = new List<BuildingSaveData>();
             ExecuteReader((reader) =>

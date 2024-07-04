@@ -64,7 +64,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId)
+        public override UniTask<List<CharacterItem>> GetStorageItems(StorageType storageType, string storageOwnerId)
         {
             List<CharacterItem> result = new List<CharacterItem>();
             ExecuteReader((reader) =>

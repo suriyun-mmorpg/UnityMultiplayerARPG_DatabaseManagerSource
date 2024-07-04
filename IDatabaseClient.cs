@@ -26,9 +26,9 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<CharacterResp>> CreateCharacterAsync(CreateCharacterReq request);
 
-        UniTask<DatabaseApiResult<CharacterResp>> ReadCharacterAsync(ReadCharacterReq request);
+        UniTask<DatabaseApiResult<CharacterResp>> GetCharacterAsync(GetCharacterReq request);
 
-        UniTask<DatabaseApiResult<CharactersResp>> ReadCharactersAsync(ReadCharactersReq request);
+        UniTask<DatabaseApiResult<CharactersResp>> GetCharactersAsync(GetCharactersReq request);
 
         UniTask<DatabaseApiResult<CharacterResp>> UpdateCharacterAsync(UpdateCharacterReq request);
 
@@ -36,7 +36,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<FindCharacterNameResp>> FindCharacterNameAsync(FindCharacterNameReq request);
 
-        UniTask<DatabaseApiResult<SocialCharacterResp>> ReadSocialCharacterAsync(ReadSocialCharacterReq request);
+        UniTask<DatabaseApiResult<SocialCharacterResp>> GetSocialCharacterAsync(GetSocialCharacterReq request);
 
         UniTask<DatabaseApiResult<SocialCharactersResp>> FindCharactersAsync(FindCharacterNameReq request);
 
@@ -44,7 +44,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult> DeleteFriendAsync(DeleteFriendReq request);
 
-        UniTask<DatabaseApiResult<SocialCharactersResp>> ReadFriendsAsync(ReadFriendsReq request);
+        UniTask<DatabaseApiResult<SocialCharactersResp>> GetFriendsAsync(GetFriendsReq request);
 
         UniTask<DatabaseApiResult<BuildingResp>> CreateBuildingAsync(CreateBuildingReq request);
 
@@ -52,7 +52,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult> DeleteBuildingAsync(DeleteBuildingReq request);
 
-        UniTask<DatabaseApiResult<BuildingsResp>> ReadBuildingsAsync(ReadBuildingsReq request);
+        UniTask<DatabaseApiResult<BuildingsResp>> GetBuildingsAsync(GetBuildingsReq request);
 
         UniTask<DatabaseApiResult<PartyResp>> CreatePartyAsync(CreatePartyReq request);
 
@@ -66,7 +66,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult> ClearCharacterPartyAsync(ClearCharacterPartyReq request);
 
-        UniTask<DatabaseApiResult<PartyResp>> ReadPartyAsync(ReadPartyReq request);
+        UniTask<DatabaseApiResult<PartyResp>> GetPartyAsync(GetPartyReq request);
 
         UniTask<DatabaseApiResult<GuildResp>> CreateGuildAsync(CreateGuildReq request);
 
@@ -94,7 +94,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<GuildsResp>> FindGuildsAsync(FindGuildNameReq request);
 
-        UniTask<DatabaseApiResult<GuildResp>> ReadGuildAsync(ReadGuildReq request);
+        UniTask<DatabaseApiResult<GuildResp>> GetGuildAsync(GetGuildReq request);
 
         UniTask<DatabaseApiResult<GuildResp>> IncreaseGuildExpAsync(IncreaseGuildExpReq request);
 
@@ -112,7 +112,7 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<GetGuildRequestNotificationResp>> GetGuildRequestNotificationAsync(GetGuildRequestNotificationReq request);
 
-        UniTask<DatabaseApiResult<ReadStorageItemsResp>> ReadStorageItemsAsync(ReadStorageItemsReq request);
+        UniTask<DatabaseApiResult<GetStorageItemsResp>> GetStorageItemsAsync(GetStorageItemsReq request);
 
         UniTask<DatabaseApiResult> UpdateStorageItemsAsync(UpdateStorageItemsReq request);
 

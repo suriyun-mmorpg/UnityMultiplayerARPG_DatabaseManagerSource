@@ -443,7 +443,7 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        public override UniTask<PlayerCharacterData> ReadCharacter(
+        public override UniTask<PlayerCharacterData> GetCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -605,7 +605,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<PlayerCharacterData>(result);
         }
 
-        public override async UniTask<List<PlayerCharacterData>> ReadCharacters(string userId)
+        public override async UniTask<List<PlayerCharacterData>> GetCharacters(string userId)
         {
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             List<string> characterIds = new List<string>();
@@ -618,7 +618,7 @@ namespace MultiplayerARPG.MMO
             }, "SELECT id FROM characters WHERE userId=@userId ORDER BY updateAt DESC", new SqliteParameter("@userId", userId));
             foreach (string characterId in characterIds)
             {
-                result.Add(await ReadCharacter(characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await GetCharacter(characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
@@ -871,7 +871,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask();
         }
 
-        public override UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit)
+        public override UniTask<List<SocialCharacterData>> GetFriends(string id, bool readById2, byte state, int skip, int limit)
         {
             List<SocialCharacterData> result = new List<SocialCharacterData>();
             List<string> characterIds = new List<string>();

@@ -45,7 +45,7 @@ namespace MultiplayerARPG.MMO
         public abstract UniTask SetCharacterUnmuteTimeByName(string characterName, long unmuteTime);
 
         public abstract UniTask CreateCharacter(string userId, IPlayerCharacterData characterData);
-        public abstract UniTask<PlayerCharacterData> ReadCharacter(
+        public abstract UniTask<PlayerCharacterData> GetCharacter(
             string id,
             bool withEquipWeapons = true,
             bool withAttributes = true,
@@ -61,7 +61,7 @@ namespace MultiplayerARPG.MMO
             bool withServerCustomData = true,
             bool withPrivateCustomData = true,
             bool withPublicCustomData = true);
-        public abstract UniTask<List<PlayerCharacterData>> ReadCharacters(string userId);
+        public abstract UniTask<List<PlayerCharacterData>> GetCharacters(string userId);
         public abstract UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation);
         public abstract UniTask DeleteCharacter(string userId, string id);
         public abstract UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId);
@@ -69,25 +69,25 @@ namespace MultiplayerARPG.MMO
         public abstract UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit);
         public abstract UniTask CreateFriend(string id1, string id2, byte state);
         public abstract UniTask DeleteFriend(string id1, string id2);
-        public abstract UniTask<List<SocialCharacterData>> ReadFriends(string id, bool readById2, byte state, int skip, int limit);
+        public abstract UniTask<List<SocialCharacterData>> GetFriends(string id, bool readById2, byte state, int skip, int limit);
         public abstract UniTask<int> GetFriendRequestNotification(string characterId);
         public abstract UniTask<string> GetIdByCharacterName(string characterName);
         public abstract UniTask<string> GetUserIdByCharacterName(string characterName);
 
         public abstract UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData saveData);
-        public abstract UniTask<List<BuildingSaveData>> ReadBuildings(string channel, string mapName);
+        public abstract UniTask<List<BuildingSaveData>> GetBuildings(string channel, string mapName);
         public abstract UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems);
         public abstract UniTask DeleteBuilding(string channel, string mapName, string id);
 
         public abstract UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId);
-        public abstract UniTask<PartyData> ReadParty(int id);
+        public abstract UniTask<PartyData> GetParty(int id);
         public abstract UniTask UpdatePartyLeader(int id, string leaderId);
         public abstract UniTask UpdateParty(int id, bool shareExp, bool shareItem);
         public abstract UniTask DeleteParty(int id);
         public abstract UniTask UpdateCharacterParty(string characterId, int partyId);
 
         public abstract UniTask<int> CreateGuild(string guildName, string leaderId);
-        public abstract UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles);
+        public abstract UniTask<GuildData> GetGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles);
         public abstract UniTask UpdateGuildLevel(int id, int level, int exp, int skillPoint);
         public abstract UniTask UpdateGuildLeader(int id, string leaderId);
         public abstract UniTask UpdateGuildMessage(int id, string guildMessage);
@@ -112,7 +112,7 @@ namespace MultiplayerARPG.MMO
         public abstract UniTask UpdateGuildMemberCount(int guildId, int maxGuildMembers);
 
         public abstract UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageCharacterItems);
-        public abstract UniTask<List<CharacterItem>> ReadStorageItems(StorageType storageType, string storageOwnerId);
+        public abstract UniTask<List<CharacterItem>> GetStorageItems(StorageType storageType, string storageOwnerId);
 
         public abstract UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId);
         public abstract UniTask UpdateReservedStorage(StorageType storageType, string storageOwnerId, string reserverId);

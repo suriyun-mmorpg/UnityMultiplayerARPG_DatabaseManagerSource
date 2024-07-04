@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(id);
         }
 
-        public override UniTask<PartyData> ReadParty(int id)
+        public override UniTask<PartyData> GetParty(int id)
         {
             PartyData result = null;
             ExecuteReader((reader) =>

@@ -1,7 +1,7 @@
 ﻿namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct ReadCharacterReq
+    public partial struct GetCharacterReq
     {
         public string UserId { get; set; }
         public string CharacterId { get; set; }

@@ -28,7 +28,7 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public override async UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
+        public override async UniTask<GuildData> GetGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
             GuildData result = null;
             await ExecuteReader((reader) =>

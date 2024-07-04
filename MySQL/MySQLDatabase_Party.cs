@@ -27,7 +27,7 @@ namespace MultiplayerARPG.MMO
             return id;
         }
 
-        public override async UniTask<PartyData> ReadParty(int id)
+        public override async UniTask<PartyData> GetParty(int id)
         {
             PartyData result = null;
             await ExecuteReader((reader) =>

@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<int>(id);
         }
 
-        public override UniTask<GuildData> ReadGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
+        public override UniTask<GuildData> GetGuild(int id, IEnumerable<GuildRoleData> defaultGuildRoles)
         {
             GuildData result = null;
             ExecuteReader((reader) =>
