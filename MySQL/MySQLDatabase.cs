@@ -86,6 +86,27 @@ namespace MultiplayerARPG.MMO
             dbName = config.mySqlDbName;
             connectionString = config.mySqlConnectionString;
 
+            // Read configs from ENV
+            string envVal;
+            envVal = Environment.GetEnvironmentVariable("mySqlAddress");
+            if (!string.IsNullOrEmpty(envVal))
+                address = envVal;
+            envVal = Environment.GetEnvironmentVariable("mySqlPort");
+            if (!string.IsNullOrEmpty(envVal) && int.TryParse(envVal, out int envPort))
+                port = envPort;
+            envVal = Environment.GetEnvironmentVariable("mySqlUsername");
+            if (!string.IsNullOrEmpty(envVal))
+                username = envVal;
+            envVal = Environment.GetEnvironmentVariable("mySqlPassword");
+            if (!string.IsNullOrEmpty(envVal))
+                password = envVal;
+            envVal = Environment.GetEnvironmentVariable("mySqlDbName");
+            if (!string.IsNullOrEmpty(envVal))
+                dbName = envVal;
+            envVal = Environment.GetEnvironmentVariable("mySqlConnectionString");
+            if (!string.IsNullOrEmpty(envVal))
+                connectionString = envVal;
+
             if (!configFileFound)
             {
                 // Write config file

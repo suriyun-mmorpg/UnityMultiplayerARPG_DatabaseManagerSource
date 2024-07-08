@@ -61,6 +61,12 @@ namespace MultiplayerARPG.MMO
 
             dbPath = config.sqliteDbPath;
 
+            // Read configs from ENV
+            string envVal;
+            envVal = Environment.GetEnvironmentVariable("sqliteDbPath");
+            if (!string.IsNullOrEmpty(envVal))
+                dbPath = envVal;
+
             if (!configFileFound)
             {
                 // Write config file
