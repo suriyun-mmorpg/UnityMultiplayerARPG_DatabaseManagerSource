@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
-    public class DisabledDatabaseCache : IDatabaseCache
+    public partial class DisabledDatabaseCache : IDatabaseCache
     {
         public UniTask<bool> AddUsername(string username)
         {

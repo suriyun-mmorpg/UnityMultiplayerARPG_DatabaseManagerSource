@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
-    public class LocalDatabaseCache : IDatabaseCache
+    public partial class LocalDatabaseCache : IDatabaseCache
     {
         private ConcurrentHashSet<string> _cachedUsernames = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
         private ConcurrentHashSet<string> _cachedEmails = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
