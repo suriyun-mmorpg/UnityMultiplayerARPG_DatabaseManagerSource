@@ -1,19 +1,11 @@
-﻿#if UNITY_2017_1_OR_NEWER
-using UnityEngine;
-#endif
-
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 #endif
 
 namespace MultiplayerARPG.MMO
 {
-#if UNITY_2017_1_OR_NEWER
-    public abstract partial class BaseDatabase : MonoBehaviour, IDatabase, IDatabaseLogging
-#else
     public abstract partial class BaseDatabase : IDatabase, IDatabaseLogging
-#endif
     {
 #if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
