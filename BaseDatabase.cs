@@ -9,7 +9,7 @@ namespace MultiplayerARPG.MMO
     {
 #if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
-        protected IDatabaseUserLogin _userLoginManager;
+        public IDatabaseUserLogin UserLoginManager { get; set; }
         protected delegate UniTask MigrationAction();
         protected MigrationAction _doMigrationAction;
 

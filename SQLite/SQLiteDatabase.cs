@@ -633,7 +633,7 @@ namespace MultiplayerARPG.MMO
                 {
                     id = reader.GetString(0);
                     string hashedPassword = reader.GetString(1);
-                    if (!_userLoginManager.VerifyPassword(password, hashedPassword))
+                    if (!UserLoginManager.VerifyPassword(password, hashedPassword))
                         id = string.Empty;
                 }
             }, "SELECT id, password FROM userlogin WHERE username=@username AND authType=@authType LIMIT 1",
@@ -714,9 +714,9 @@ namespace MultiplayerARPG.MMO
         public override UniTask CreateUserLogin(string username, string password, string email)
         {
             ExecuteNonQuery("INSERT INTO userlogin (id, username, password, email, authType) VALUES (@id, @username, @password, @email, @authType)",
-                new SqliteParameter("@id", _userLoginManager.GenerateNewId()),
+                new SqliteParameter("@id", UserLoginManager.GenerateNewId()),
                 new SqliteParameter("@username", username),
-                new SqliteParameter("@password", _userLoginManager.GetHashedPassword(password)),
+                new SqliteParameter("@password", UserLoginManager.GetHashedPassword(password)),
                 new SqliteParameter("@email", email),
                 new SqliteParameter("@authType", AUTH_TYPE_NORMAL));
             return new UniTask();
