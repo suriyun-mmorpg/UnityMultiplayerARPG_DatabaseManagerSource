@@ -125,7 +125,7 @@ namespace MultiplayerARPG.MMO
             {
                 id = reader.GetString(0);
                 string hashedPassword = reader.GetString(1);
-                if (!_userLoginManager.VerifyPassword(password, hashedPassword))
+                if (!UserLoginManager.VerifyPassword(password, hashedPassword))
                     id = string.Empty;
             }
             return id;
@@ -264,7 +264,7 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_CREATE_USER_LOGIN_CURRENCIES = "CREATE_USER_LOGIN_CURRENCIES";
         public override async UniTask CreateUserLogin(string username, string password, string email)
         {
-            var id = _userLoginManager.GenerateNewId();
+            var id = UserLoginManager.GenerateNewId();
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
             try
@@ -275,7 +275,7 @@ namespace MultiplayerARPG.MMO
                     "users",
                     new PostgreSQLHelpers.ColumnInfo("id", id),
                     new PostgreSQLHelpers.ColumnInfo("username", username),
-                    new PostgreSQLHelpers.ColumnInfo("password", _userLoginManager.GetHashedPassword(password)),
+                    new PostgreSQLHelpers.ColumnInfo("password", UserLoginManager.GetHashedPassword(password)),
                     new PostgreSQLHelpers.ColumnInfo("email", string.IsNullOrWhiteSpace(email) ? null : email));
 
                 await PostgreSQLHelpers.ExecuteInsert(
