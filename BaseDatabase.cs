@@ -1,4 +1,4 @@
-﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 #endif
@@ -7,7 +7,7 @@ namespace MultiplayerARPG.MMO
 {
     public abstract partial class BaseDatabase : IDatabase, IDatabaseLogging
     {
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public const byte AUTH_TYPE_NORMAL = 1;
         public IDatabaseUserLogin UserLoginManager { get; set; }
         protected delegate UniTask MigrationAction();

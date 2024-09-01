@@ -4,11 +4,11 @@ using UnityEngine;
 
 #if NET || NETCOREAPP
 using Microsoft.Data.Sqlite;
-#elif (UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE
+#elif (UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE
 using Mono.Data.Sqlite;
 #endif
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using System.IO;
 using Newtonsoft.Json;
 using System;
@@ -33,7 +33,7 @@ namespace MultiplayerARPG.MMO
         private string editorDbPath = "./mmorpgtemplate.sqlite3";
 #endif
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 #nullable enable
         private SqliteConnection? _connection;
 #nullable restore

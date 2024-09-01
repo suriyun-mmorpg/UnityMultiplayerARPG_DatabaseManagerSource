@@ -2,7 +2,7 @@
 using UnityEngine;
 #endif
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using Cysharp.Threading.Tasks;
 using MySqlConnector;
 using Newtonsoft.Json;
@@ -42,7 +42,7 @@ namespace MultiplayerARPG.MMO
 #endif
         private string connectionString = "";
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public override void Initialize()
         {
             // Json file read
