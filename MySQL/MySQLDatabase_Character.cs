@@ -117,6 +117,7 @@ namespace MultiplayerARPG.MMO
 
         private async UniTask FillCharacterCurrencies(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
             try
             {
                 await DeleteCharacterCurrencies(connection, transaction, characterData.Id);
@@ -133,6 +134,9 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 throw;
             }
+#else
+            await UniTask.Yield();
+#endif
         }
 
         private async UniTask FillCharacterSkills(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
@@ -309,6 +313,7 @@ namespace MultiplayerARPG.MMO
             await FillCharacterSkillUsages(connection, transaction, characterData);
             await FillCharacterSummons(connection, transaction, characterData);
 
+#if !DISABLE_CUSTOM_CHARACTER_DATA
             await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
             await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
             await FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
@@ -320,6 +325,7 @@ namespace MultiplayerARPG.MMO
             await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
             await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
             await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+#endif
 
             if (summonBuffs != null)
                 await FillSummonBuffs(connection, transaction, characterData.Id, summonBuffs);
@@ -365,10 +371,12 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
                             new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
                             new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                             new MySqlParameter("@respawnMapName", character.RespawnMapName),
                             new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
                             new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
                             new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+#endif
                             new MySqlParameter("@mountDataId", character.MountDataId),
                             new MySqlParameter("@iconDataId", character.IconDataId),
                             new MySqlParameter("@frameDataId", character.FrameDataId),
@@ -634,6 +642,7 @@ namespace MultiplayerARPG.MMO
                 {
                     try
                     {
+#if !DISABLE_CLASSIC_PK
                         await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
                             (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
                             (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
@@ -651,6 +660,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
                             new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
                             new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
+#endif
                         await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
                             dataId=@dataId,
                             entityId=@entityId,
@@ -707,10 +717,12 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
                             new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
                             new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                             new MySqlParameter("@respawnMapName", character.RespawnMapName),
                             new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
                             new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
                             new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+#endif
                             new MySqlParameter("@mountDataId", character.MountDataId),
                             new MySqlParameter("@iconDataId", character.IconDataId),
                             new MySqlParameter("@frameDataId", character.FrameDataId),

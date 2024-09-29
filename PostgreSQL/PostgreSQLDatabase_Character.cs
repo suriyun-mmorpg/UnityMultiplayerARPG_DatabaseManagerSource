@@ -17,11 +17,13 @@ namespace MultiplayerARPG.MMO
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_quests", characterData.Id, characterData.Quests);
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_currencies", characterData.Id, characterData.Currencies);
+#endif
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skills", characterData.Id, characterData.Skills);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skill_usages", characterData.Id, characterData.SkillUsages);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summons", characterData.Id, characterData.Summons);
-
+#if !DISABLE_CUSTOM_CHARACTER_DATA
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_booleans", characterData.Id, characterData.ServerBools);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32s", characterData.Id, characterData.ServerInts);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32s", characterData.Id, characterData.ServerFloats);
@@ -33,7 +35,7 @@ namespace MultiplayerARPG.MMO
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_booleans", characterData.Id, characterData.PublicBools);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32s", characterData.Id, characterData.PublicInts);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32s", characterData.Id, characterData.PublicFloats);
-
+#endif
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
 
@@ -76,10 +78,12 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                     new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
+#endif
                     new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
@@ -125,8 +129,10 @@ namespace MultiplayerARPG.MMO
                 result.CurrentMapName = reader.GetString(22);
                 result.CurrentPosition = new Vec3(reader.GetFloat(23), reader.GetFloat(24), reader.GetFloat(25));
                 result.CurrentRotation = new Vec3(reader.GetFloat(26), reader.GetFloat(27), reader.GetFloat(28));
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                 result.RespawnMapName = reader.GetString(30);
                 result.RespawnPosition = new Vec3(reader.GetFloat(31), reader.GetFloat(32), reader.GetFloat(33));
+#endif
                 result.MountDataId = reader.GetInt32(34);
                 result.IconDataId = reader.GetInt32(36);
                 result.FrameDataId = reader.GetInt32(37);
@@ -134,6 +140,7 @@ namespace MultiplayerARPG.MMO
                 result.LastDeadTime = reader.GetInt64(40);
                 result.UnmuteTime = reader.GetInt64(41);
                 result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(42)).ToUnixTimeSeconds();
+#if !DISABLE_CLASSIC_PK
                 if (!reader.IsDBNull(43))
                     result.IsPkOn = reader.GetBoolean(43);
                 if (!reader.IsDBNull(44))
@@ -146,6 +153,7 @@ namespace MultiplayerARPG.MMO
                     result.HighestPkPoint = reader.GetInt32(47);
                 if (!reader.IsDBNull(48))
                     result.HighestConsecutivePkKills = reader.GetInt32(48);
+#endif
                 return true;
             }
             result = null;
@@ -252,8 +260,11 @@ namespace MultiplayerARPG.MMO
                 result.Hotkeys = await PostgreSQLHelpers.ExecuteSelectJson<CharacterHotkey[]>(connection, "character_hotkeys", id);
             if (withQuests)
                 result.Quests = await PostgreSQLHelpers.ExecuteSelectJson<CharacterQuest[]>(connection, "character_quests", id);
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
             if (withCurrencies)
                 result.Currencies = await PostgreSQLHelpers.ExecuteSelectJson<CharacterCurrency[]>(connection, "character_currencies", id);
+#endif
+#if !DISABLE_CUSTOM_CHARACTER_DATA
             if (withServerCustomData)
             {
                 result.ServerBools = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataBoolean[]>(connection, "character_server_booleans", id);
@@ -272,6 +283,7 @@ namespace MultiplayerARPG.MMO
                 result.PublicInts = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataInt32[]>(connection, "character_public_int32s", id);
                 result.PublicFloats = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataFloat32[]>(connection, "character_public_float32s", id);
             }
+#endif
             // Invoke dev extension methods
             this.InvokeInstanceDevExtMethods("ReadCharacter",
                 result,
@@ -320,6 +332,7 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_UPDATE_CHARACTER_PK = "UPDATE_CHARACTER_PK";
         public async UniTask UpdateCharacterPk(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData character)
         {
+#if !DISABLE_CLASSIC_PK
             await PostgreSQLHelpers.ExecuteUpsert(
                 CACHE_KEY_UPDATE_CHARACTER_PK,
                 connection, transaction,
@@ -332,6 +345,9 @@ namespace MultiplayerARPG.MMO
                 new PostgreSQLHelpers.ColumnInfo("consecutive_pk_kills", character.ConsecutivePkKills),
                 new PostgreSQLHelpers.ColumnInfo("highest_pk_point", character.HighestPkPoint),
                 new PostgreSQLHelpers.ColumnInfo("highest_consecutive_pk_kills", character.HighestConsecutivePkKills));
+#else
+            await UniTask.Yield();
+#endif
         }
 
         public const string CACHE_KEY_UPDATE_CHARACTER = "UPDATE_CHARACTER";
@@ -370,10 +386,12 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                         new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
+#endif
                         new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
                         new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                         new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),

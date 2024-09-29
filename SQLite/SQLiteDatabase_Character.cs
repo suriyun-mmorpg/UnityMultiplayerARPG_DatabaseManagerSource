@@ -122,6 +122,7 @@ namespace MultiplayerARPG.MMO
 
         private void FillCharacterCurrencies(SqliteTransaction transaction, IPlayerCharacterData characterData)
         {
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
             try
             {
                 DeleteCharacterCurrencies(transaction, characterData.Id);
@@ -138,6 +139,7 @@ namespace MultiplayerARPG.MMO
                 LogException(LogTag, ex);
                 throw;
             }
+#endif
         }
 
         private void FillCharacterSkills(SqliteTransaction transaction, IPlayerCharacterData characterData)
@@ -314,6 +316,7 @@ namespace MultiplayerARPG.MMO
             FillCharacterSkillUsages(transaction, characterData);
             FillCharacterSummons(transaction, characterData);
 
+#if !DISABLE_CUSTOM_CHARACTER_DATA
             FillCharacterDataBooleans(transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
             FillCharacterDataInt32s(transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
             FillCharacterDataFloat32s(transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
@@ -325,6 +328,7 @@ namespace MultiplayerARPG.MMO
             FillCharacterDataBooleans(transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
             FillCharacterDataInt32s(transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
             FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+#endif
 
             if (summonBuffs != null)
                 FillSummonBuffs(transaction, characterData.Id, summonBuffs);
@@ -365,10 +369,12 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
                     new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
                     new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                     new SqliteParameter("@respawnMapName", character.RespawnMapName),
                     new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
                     new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
                     new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
+#endif
                     new SqliteParameter("@mountDataId", character.MountDataId),
                     new SqliteParameter("@iconDataId", character.IconDataId),
                     new SqliteParameter("@frameDataId", character.FrameDataId),
@@ -628,6 +634,7 @@ namespace MultiplayerARPG.MMO
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
+#if !DISABLE_CLASSIC_PK
                 ExecuteNonQuery(transaction, @"INSERT INTO character_pk
                     (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
                     (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
@@ -645,6 +652,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@consecutivePkKills", character.ConsecutivePkKills),
                     new SqliteParameter("@highestPkPoint", character.HighestPkPoint),
                     new SqliteParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
+#endif
                 ExecuteNonQuery(transaction, @"UPDATE characters SET
                     dataId=@dataId,
                     entityId=@entityId,
@@ -701,10 +709,12 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
                     new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
                     new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                     new SqliteParameter("@respawnMapName", character.RespawnMapName),
                     new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
                     new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
                     new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
+#endif
                     new SqliteParameter("@mountDataId", character.MountDataId),
                     new SqliteParameter("@iconDataId", character.IconDataId),
                     new SqliteParameter("@frameDataId", character.FrameDataId),
