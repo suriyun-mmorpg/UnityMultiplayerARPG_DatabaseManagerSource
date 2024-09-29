@@ -228,7 +228,6 @@ namespace MultiplayerARPG.MMO
               respawnPositionX REAL NOT NULL DEFAULT 0,
               respawnPositionY REAL NOT NULL DEFAULT 0,
               respawnPositionZ REAL NOT NULL DEFAULT 0,
-              mountDataId INTEGER NOT NULL DEFAULT 0,
               iconDataId INTEGER NOT NULL DEFAULT 0,
               frameDataId INTEGER NOT NULL DEFAULT 0,
               titleDataId INTEGER NOT NULL DEFAULT 0,

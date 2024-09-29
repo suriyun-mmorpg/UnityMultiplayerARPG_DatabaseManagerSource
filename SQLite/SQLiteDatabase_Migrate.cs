@@ -137,9 +137,6 @@ namespace MultiplayerARPG.MMO
             if (!IsColumnExist("characters", "equipWeaponSet"))
                 ExecuteNonQuery("ALTER TABLE characters ADD equipWeaponSet INTEGER NOT NULL DEFAULT 0;");
 
-            if (!IsColumnExist("characters", "mountDataId"))
-                ExecuteNonQuery("ALTER TABLE characters ADD mountDataId INTEGER NOT NULL DEFAULT 0;");
-
             if (!IsColumnExist("characters", "iconDataId"))
                 ExecuteNonQuery("ALTER TABLE characters ADD iconDataId INTEGER NOT NULL DEFAULT 0;");
 
@@ -262,7 +259,6 @@ namespace MultiplayerARPG.MMO
                   respawnPositionX REAL NOT NULL DEFAULT 0,
                   respawnPositionY REAL NOT NULL DEFAULT 0,
                   respawnPositionZ REAL NOT NULL DEFAULT 0,
-                  mountDataId INTEGER NOT NULL DEFAULT 0,
                   lastDeadTime INTEGER NOT NULL DEFAULT 0,
                   unmuteTime INTEGER NOT NULL DEFAULT 0,
                   createAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

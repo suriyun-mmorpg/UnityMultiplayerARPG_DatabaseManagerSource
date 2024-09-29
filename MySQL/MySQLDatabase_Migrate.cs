@@ -305,6 +305,10 @@ namespace MultiplayerARPG.MMO
                     "`createAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
                     "PRIMARY KEY (`id`), INDEX (`requesterId`), INDEX (`guildId`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
             });
+            await DoMigration("1.90", async () =>
+            {
+                await ExecuteNonQuery("ALTER TABLE `characters` DROP `mountDataId`;");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)

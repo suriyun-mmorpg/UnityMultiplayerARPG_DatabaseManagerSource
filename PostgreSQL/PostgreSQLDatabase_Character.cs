@@ -84,7 +84,6 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
 #endif
-                    new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId));
@@ -126,33 +125,35 @@ namespace MultiplayerARPG.MMO
                 result.GuildId = reader.GetInt32(18);
                 result.GuildRole = reader.GetByte(19);
                 result.SharedGuildExp = reader.GetInt32(20);
+                // TODO: Channel
                 result.CurrentMapName = reader.GetString(22);
                 result.CurrentPosition = new Vec3(reader.GetFloat(23), reader.GetFloat(24), reader.GetFloat(25));
                 result.CurrentRotation = new Vec3(reader.GetFloat(26), reader.GetFloat(27), reader.GetFloat(28));
+                // TODO: Safe Area
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                 result.RespawnMapName = reader.GetString(30);
                 result.RespawnPosition = new Vec3(reader.GetFloat(31), reader.GetFloat(32), reader.GetFloat(33));
 #endif
-                result.MountDataId = reader.GetInt32(34);
-                result.IconDataId = reader.GetInt32(36);
-                result.FrameDataId = reader.GetInt32(37);
-                result.TitleDataId = reader.GetInt32(38);
-                result.LastDeadTime = reader.GetInt64(40);
-                result.UnmuteTime = reader.GetInt64(41);
-                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(42)).ToUnixTimeSeconds();
+                result.IconDataId = reader.GetInt32(34);
+                result.FrameDataId = reader.GetInt32(35);
+                result.TitleDataId = reader.GetInt32(36);
+                // TODO: Reputation
+                result.LastDeadTime = reader.GetInt64(38);
+                result.UnmuteTime = reader.GetInt64(39);
+                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(40)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
+                if (!reader.IsDBNull(41))
+                    result.IsPkOn = reader.GetBoolean(41);
+                if (!reader.IsDBNull(42))
+                    result.LastPkOnTime = reader.GetInt64(42);
                 if (!reader.IsDBNull(43))
-                    result.IsPkOn = reader.GetBoolean(43);
+                    result.PkPoint = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.LastPkOnTime = reader.GetInt64(44);
+                    result.ConsecutivePkKills = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    result.PkPoint = reader.GetInt32(45);
+                    result.HighestPkPoint = reader.GetInt32(45);
                 if (!reader.IsDBNull(46))
-                    result.ConsecutivePkKills = reader.GetInt32(46);
-                if (!reader.IsDBNull(47))
-                    result.HighestPkPoint = reader.GetInt32(47);
-                if (!reader.IsDBNull(48))
-                    result.HighestConsecutivePkKills = reader.GetInt32(48);
+                    result.HighestConsecutivePkKills = reader.GetInt32(46);
 #endif
                 return true;
             }
@@ -224,7 +225,7 @@ namespace MultiplayerARPG.MMO
                 c.current_map_name, c.current_position_x, c.current_position_y, c.current_position_z, c.current_rotation_x, current_rotation_y, current_rotation_z,
                 c.current_safe_area,
                 c.respawn_map_name, c.respawn_position_x, c.respawn_position_y, c.respawn_position_z,
-                c.mount_data_id, c.pet_data_id, c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
+                c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
                 cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills
                 FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
                 WHERE c.id=$1 LIMIT 1", connection);
@@ -392,7 +393,6 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
 #endif
-                        new PostgreSQLHelpers.ColumnInfo("mount_data_id", character.MountDataId),
                         new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                         new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                         new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),

@@ -81,8 +81,6 @@ model characters {
   respawn_position_x Float    @default(0) @db.Real()
   respawn_position_y Float    @default(0) @db.Real()
   respawn_position_z Float    @default(0) @db.Real()
-  mount_data_id      Int      @default(0) @db.Integer()
-  pet_data_id        Int      @default(0) @db.Integer()
   icon_data_id       Int      @default(0) @db.Integer()
   frame_data_id      Int      @default(0) @db.Integer()
   title_data_id      Int      @default(0) @db.Integer()
