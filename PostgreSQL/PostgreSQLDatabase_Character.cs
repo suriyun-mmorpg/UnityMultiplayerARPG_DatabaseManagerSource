@@ -71,6 +71,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
                     new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
                     new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
+                    new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
                     new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
                     new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
                     new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
@@ -78,6 +79,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+                    new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                     new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
@@ -86,7 +88,8 @@ namespace MultiplayerARPG.MMO
 #endif
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
-                    new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId));
+                    new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
+                    new PostgreSQLHelpers.ColumnInfo("reputation", 0));
                 await FillCharacterRelatesData(connection, transaction, character, null, null);
                 this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
                 await transaction.CommitAsync();
@@ -380,6 +383,7 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
                         new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
                         new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
+                        new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
                         new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
                         new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
                         new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
@@ -387,6 +391,7 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                         new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+                        new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                         new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                         new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
@@ -396,6 +401,7 @@ namespace MultiplayerARPG.MMO
                         new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                         new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                         new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
+                        new PostgreSQLHelpers.ColumnInfo("reputation", 0),
                         new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
                         new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
                     },

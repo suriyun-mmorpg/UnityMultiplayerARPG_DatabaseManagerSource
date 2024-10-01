@@ -146,6 +146,12 @@ namespace MultiplayerARPG.MMO
             if (!IsColumnExist("characters", "titleDataId"))
                 ExecuteNonQuery("ALTER TABLE characters ADD titleDataId INTEGER NOT NULL DEFAULT 0;");
 
+            if (!IsColumnExist("characters", "currentChannel"))
+                ExecuteNonQuery("ALTER TABLE characters ADD currentChannel TEXT NOT NULL DEFAULT '';");
+
+            if (!IsColumnExist("characters", "currentMapName"))
+                ExecuteNonQuery("ALTER TABLE characters ADD currentMapName TEXT NOT NULL DEFAULT '';");
+
             if (!IsColumnExist("characters", "currentRotationX"))
                 ExecuteNonQuery("ALTER TABLE characters ADD currentRotationX REAL NOT NULL DEFAULT 0;");
 
@@ -154,6 +160,12 @@ namespace MultiplayerARPG.MMO
 
             if (!IsColumnExist("characters", "currentRotationZ"))
                 ExecuteNonQuery("ALTER TABLE characters ADD currentRotationZ REAL NOT NULL DEFAULT 0;");
+
+            if (!IsColumnExist("characters", "currentSafeArea"))
+                ExecuteNonQuery("ALTER TABLE characters ADD currentSafeArea TEXT NOT NULL DEFAULT '';");
+
+            if (!IsColumnExist("characters", "reputation"))
+                ExecuteNonQuery("ALTER TABLE characters ADD reputation INTEGER NOT NULL DEFAULT 0;");
 
             if (!IsColumnExist("characters", "lastDeadTime"))
                 ExecuteNonQuery("ALTER TABLE characters ADD lastDeadTime INTEGER NOT NULL DEFAULT 0;");

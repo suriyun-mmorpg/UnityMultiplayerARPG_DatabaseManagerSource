@@ -307,6 +307,9 @@ namespace MultiplayerARPG.MMO
             });
             await DoMigration("1.90", async () =>
             {
+                await ExecuteNonQuery("ALTER TABLE `characters` ADD `currentChannel` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' AFTER `sharedGuildExp`;");
+                await ExecuteNonQuery("ALTER TABLE `characters` ADD `currentSafeArea` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' AFTER `currentRotationZ`;");
+                await ExecuteNonQuery("ALTER TABLE `characters` ADD `reputation` INT NOT NULL DEFAULT '0' AFTER `titleDataId`;");
                 await ExecuteNonQuery("ALTER TABLE `characters` DROP `mountDataId`;");
             });
         }
