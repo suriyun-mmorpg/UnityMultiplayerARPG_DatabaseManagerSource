@@ -539,8 +539,11 @@ namespace MultiplayerARPG.MMO
                     ReadCharacterHotkeys(id, hotkeys);
                 if (withQuests)
                     ReadCharacterQuests(id, quests);
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
                 if (withCurrencies)
                     ReadCharacterCurrencies(id, currencies);
+#endif
+#if !DISABLE_CUSTOM_CHARACTER_DATA
                 if (withServerCustomData)
                 {
                     ReadCharacterDataBooleans("character_server_boolean", id, serverBools);
@@ -559,6 +562,7 @@ namespace MultiplayerARPG.MMO
                     ReadCharacterDataInt32s("character_public_int32", id, publicInts);
                     ReadCharacterDataFloat32s("character_public_float32", id, publicFloats);
                 }
+#endif
                 // Assign read data
                 if (withEquipWeapons)
                     result.SelectableWeaponSets = selectableWeaponSets;
@@ -667,42 +671,44 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@highestPkPoint", character.HighestPkPoint),
                     new SqliteParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
 #endif
-                ExecuteNonQuery(transaction, @"UPDATE characters SET
-                    dataId=@dataId,
-                    entityId=@entityId,
-                    factionId=@factionId,
-                    characterName=@characterName,
-                    level=@level,
-                    exp=@exp,
-                    currentHp=@currentHp,
-                    currentMp=@currentMp,
-                    currentStamina=@currentStamina,
-                    currentFood=@currentFood,
-                    currentWater=@currentWater,
-                    equipWeaponSet=@equipWeaponSet,
-                    statPoint=@statPoint,
-                    skillPoint=@skillPoint,
-                    gold=@gold,
-                    currentChannel=@currentChannel,
-                    currentMapName=@currentMapName,
-                    currentPositionX=@currentPositionX,
-                    currentPositionY=@currentPositionY,
-                    currentPositionZ=@currentPositionZ,
-                    currentRotationX=@currentRotationX,
-                    currentRotationY=@currentRotationY,
-                    currentRotationZ=@currentRotationZ,
-                    currentSafeArea=@currentSafeArea,
-                    respawnMapName=@respawnMapName,
-                    respawnPositionX=@respawnPositionX,
-                    respawnPositionY=@respawnPositionY,
-                    respawnPositionZ=@respawnPositionZ,
-                    iconDataId=@iconDataId,
-                    frameDataId=@frameDataId,
-                    titleDataId=@titleDataId,
-                    reputation=@reputation,
-                    lastDeadTime=@lastDeadTime,
-                    unmuteTime=@unmuteTime
-                    WHERE id=@id",
+                ExecuteNonQuery(transaction, "UPDATE characters SET " +
+                    " dataId=@dataId," +
+                    " entityId=@entityId," +
+                    " factionId=@factionId," +
+                    " characterName=@characterName," +
+                    " level=@level," +
+                    " exp=@exp," +
+                    " currentHp=@currentHp," +
+                    " currentMp=@currentMp," +
+                    " currentStamina=@currentStamina," +
+                    " currentFood=@currentFood," +
+                    " currentWater=@currentWater," +
+                    " equipWeaponSet=@equipWeaponSet," +
+                    " statPoint=@statPoint," +
+                    " skillPoint=@skillPoint," +
+                    " gold=@gold," +
+                    " currentChannel=@currentChannel," +
+                    " currentMapName=@currentMapName," +
+                    " currentPositionX=@currentPositionX," +
+                    " currentPositionY=@currentPositionY," +
+                    " currentPositionZ=@currentPositionZ," +
+                    " currentRotationX=@currentRotationX," +
+                    " currentRotationY=@currentRotationY," +
+                    " currentRotationZ=@currentRotationZ," +
+                    " currentSafeArea=@currentSafeArea," +
+#if !DISABLE_DIFFER_MAP_RESPAWNING
+                    " respawnMapName=@respawnMapName," +
+                    " respawnPositionX=@respawnPositionX," +
+                    " respawnPositionY=@respawnPositionY," +
+                    " respawnPositionZ=@respawnPositionZ," +
+#endif
+                    " iconDataId=@iconDataId," +
+                    " frameDataId=@frameDataId," +
+                    " titleDataId=@titleDataId," +
+                    " reputation=@reputation," +
+                    " lastDeadTime=@lastDeadTime," +
+                    " unmuteTime=@unmuteTime" +
+                    " WHERE id=@id",
                     new SqliteParameter("@dataId", character.DataId),
                     new SqliteParameter("@entityId", character.EntityId),
                     new SqliteParameter("@factionId", character.FactionId),
@@ -718,7 +724,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@statPoint", character.StatPoint),
                     new SqliteParameter("@skillPoint", character.SkillPoint),
                     new SqliteParameter("@gold", character.Gold),
-                    new SqliteParameter("@currentChannel", string.Empty),
+                    new SqliteParameter("@currentChannel", character.CurrentChannel),
                     new SqliteParameter("@currentMapName", character.CurrentMapName),
                     new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
                     new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
@@ -726,7 +732,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
                     new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
                     new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
-                    new SqliteParameter("@currentSafeArea", string.Empty),
+                    new SqliteParameter("@currentSafeArea", character.CurrentSafeArea),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                     new SqliteParameter("@respawnMapName", character.RespawnMapName),
                     new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
@@ -736,7 +742,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@iconDataId", character.IconDataId),
                     new SqliteParameter("@frameDataId", character.FrameDataId),
                     new SqliteParameter("@titleDataId", character.TitleDataId),
-                    new SqliteParameter("@reputation", 0),
+                    new SqliteParameter("@reputation", character.Reputation),
                     new SqliteParameter("@lastDeadTime", character.LastDeadTime),
                     new SqliteParameter("@unmuteTime", character.UnmuteTime),
                     new SqliteParameter("@id", character.Id));

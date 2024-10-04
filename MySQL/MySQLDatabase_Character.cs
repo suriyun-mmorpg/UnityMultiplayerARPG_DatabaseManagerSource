@@ -542,8 +542,11 @@ namespace MultiplayerARPG.MMO
                     tasks.Add(ReadCharacterHotkeys(id, hotkeys));
                 if (withQuests)
                     tasks.Add(ReadCharacterQuests(id, quests));
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
                 if (withCurrencies)
                     tasks.Add(ReadCharacterCurrencies(id, currencies));
+#endif
+#if !DISABLE_CUSTOM_CHARACTER_DATA
                 if (withServerCustomData)
                 {
                     tasks.Add(ReadCharacterDataBooleans("character_server_boolean", id, serverBools));
@@ -562,6 +565,7 @@ namespace MultiplayerARPG.MMO
                     tasks.Add(ReadCharacterDataInt32s("character_public_int32", id, publicInts));
                     tasks.Add(ReadCharacterDataFloat32s("character_public_float32", id, publicFloats));
                 }
+#endif
                 await UniTask.WhenAll(tasks);
                 // Assign read data
                 if (withEquipWeapons)
@@ -675,42 +679,44 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
                             new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
 #endif
-                        await ExecuteNonQuery(connection, transaction, @"UPDATE characters SET
-                            dataId=@dataId,
-                            entityId=@entityId,
-                            factionId=@factionId,
-                            characterName=@characterName,
-                            level=@level,
-                            exp=@exp,
-                            currentHp=@currentHp,
-                            currentMp=@currentMp,
-                            currentStamina=@currentStamina,
-                            currentFood=@currentFood,
-                            currentWater=@currentWater,
-                            equipWeaponSet=@equipWeaponSet,
-                            statPoint=@statPoint,
-                            skillPoint=@skillPoint,
-                            gold=@gold,
-                            currentChannel=@currentChannel,
-                            currentMapName=@currentMapName,
-                            currentPositionX=@currentPositionX,
-                            currentPositionY=@currentPositionY,
-                            currentPositionZ=@currentPositionZ,
-                            currentRotationX=@currentRotationX,
-                            currentRotationY=@currentRotationY,
-                            currentRotationZ=@currentRotationZ,
-                            currentSafeArea=@currentSafeArea,
-                            respawnMapName=@respawnMapName,
-                            respawnPositionX=@respawnPositionX,
-                            respawnPositionY=@respawnPositionY,
-                            respawnPositionZ=@respawnPositionZ,
-                            iconDataId=@iconDataId,
-                            frameDataId=@frameDataId,
-                            titleDataId=@titleDataId,
-                            reputation=@reputation,
-                            lastDeadTime=@lastDeadTime,
-                            unmuteTime=@unmuteTime
-                            WHERE id=@id",
+                        await ExecuteNonQuery(connection, transaction, "UPDATE characters SET " +
+                            " dataId=@dataId," +
+                            " entityId=@entityId," +
+                            " factionId=@factionId," +
+                            " characterName=@characterName," +
+                            " level=@level," +
+                            " exp=@exp," +
+                            " currentHp=@currentHp," +
+                            " currentMp=@currentMp," +
+                            " currentStamina=@currentStamina," +
+                            " currentFood=@currentFood," +
+                            " currentWater=@currentWater," +
+                            " equipWeaponSet=@equipWeaponSet," +
+                            " statPoint=@statPoint," +
+                            " skillPoint=@skillPoint," +
+                            " gold=@gold," +
+                            " currentChannel=@currentChannel," +
+                            " currentMapName=@currentMapName," +
+                            " currentPositionX=@currentPositionX," +
+                            " currentPositionY=@currentPositionY," +
+                            " currentPositionZ=@currentPositionZ," +
+                            " currentRotationX=@currentRotationX," +
+                            " currentRotationY=@currentRotationY," +
+                            " currentRotationZ=@currentRotationZ," +
+                            " currentSafeArea=@currentSafeArea," +
+#if !DISABLE_DIFFER_MAP_RESPAWNING
+                            " respawnMapName=@respawnMapName," +
+                            " respawnPositionX=@respawnPositionX," +
+                            " respawnPositionY=@respawnPositionY," +
+                            " respawnPositionZ=@respawnPositionZ," +
+#endif
+                            " iconDataId=@iconDataId," +
+                            " frameDataId=@frameDataId," +
+                            " titleDataId=@titleDataId," +
+                            " reputation=@reputation," +
+                            " lastDeadTime=@lastDeadTime," +
+                            " unmuteTime=@unmuteTime" +
+                            " WHERE id=@id",
                             new MySqlParameter("@dataId", character.DataId),
                             new MySqlParameter("@entityId", character.EntityId),
                             new MySqlParameter("@factionId", character.FactionId),
@@ -726,7 +732,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@statPoint", character.StatPoint),
                             new MySqlParameter("@skillPoint", character.SkillPoint),
                             new MySqlParameter("@gold", character.Gold),
-                            new MySqlParameter("@currentChannel", string.Empty),
+                            new MySqlParameter("@currentChannel", character.CurrentChannel),
                             new MySqlParameter("@currentMapName", character.CurrentMapName),
                             new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
                             new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
@@ -734,7 +740,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
                             new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
                             new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                            new MySqlParameter("@currentSafeArea", string.Empty),
+                            new MySqlParameter("@currentSafeArea", character.CurrentSafeArea),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                             new MySqlParameter("@respawnMapName", character.RespawnMapName),
                             new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
@@ -744,7 +750,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@iconDataId", character.IconDataId),
                             new MySqlParameter("@frameDataId", character.FrameDataId),
                             new MySqlParameter("@titleDataId", character.TitleDataId),
-                            new MySqlParameter("@reputation", 0),
+                            new MySqlParameter("@reputation", character.Reputation),
                             new MySqlParameter("@lastDeadTime", character.LastDeadTime),
                             new MySqlParameter("@unmuteTime", character.UnmuteTime),
                             new MySqlParameter("@id", character.Id));
