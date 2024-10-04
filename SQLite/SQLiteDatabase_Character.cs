@@ -421,20 +421,23 @@ namespace MultiplayerARPG.MMO
                 result.GuildId = reader.GetInt32(18);
                 result.GuildRole = reader.GetByte(19);
                 result.SharedGuildExp = reader.GetInt32(20);
-                // TODO: Channel
+                result.CurrentChannel = reader.GetString(21);
                 result.CurrentMapName = reader.GetString(22);
                 result.CurrentPosition = new Vec3(reader.GetFloat(23), reader.GetFloat(24), reader.GetFloat(25));
                 result.CurrentRotation = new Vec3(reader.GetFloat(26), reader.GetFloat(27), reader.GetFloat(28));
-                // TODO: Safe Area
+                result.CurrentSafeArea = reader.GetString(29);
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                 result.RespawnMapName = reader.GetString(30);
                 result.RespawnPosition = new Vec3(reader.GetFloat(31), reader.GetFloat(32), reader.GetFloat(33));
+#endif
                 result.IconDataId = reader.GetInt32(34);
                 result.FrameDataId = reader.GetInt32(35);
                 result.TitleDataId = reader.GetInt32(36);
-                // TODO: Reputation
+                result.Reputation = reader.GetInt32(37);
                 result.LastDeadTime = reader.GetInt64(38);
                 result.UnmuteTime = reader.GetInt64(39);
                 result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(40)).ToUnixTimeSeconds();
+#if !DISABLE_CLASSIC_PK
                 if (!reader.IsDBNull(41))
                     result.IsPkOn = reader.GetBoolean(41);
                 if (!reader.IsDBNull(42))
@@ -447,6 +450,7 @@ namespace MultiplayerARPG.MMO
                     result.HighestPkPoint = reader.GetInt32(45);
                 if (!reader.IsDBNull(46))
                     result.HighestConsecutivePkKills = reader.GetInt32(46);
+#endif
                 return true;
             }
             result = null;
@@ -576,8 +580,11 @@ namespace MultiplayerARPG.MMO
                     result.Hotkeys = hotkeys;
                 if (withQuests)
                     result.Quests = quests;
+#if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
                 if (withCurrencies)
                     result.Currencies = currencies;
+#endif
+#if !DISABLE_CUSTOM_CHARACTER_DATA
                 if (withServerCustomData)
                 {
                     result.ServerBools = serverBools;
@@ -596,6 +603,7 @@ namespace MultiplayerARPG.MMO
                     result.PublicInts = publicInts;
                     result.PublicFloats = publicFloats;
                 }
+#endif
                 // Invoke dev extension methods
                 this.InvokeInstanceDevExtMethods("ReadCharacter",
                     result,
