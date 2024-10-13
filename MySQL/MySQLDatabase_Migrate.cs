@@ -317,9 +317,7 @@ namespace MultiplayerARPG.MMO
                     "`dataId` INT NOT NULL DEFAULT 0," +
                     "`mountRemainsDuration` FLOAT NOT NULL DEFAULT 0," +
                     "`level` INT NOT NULL DEFAULT 0," +
-                    "`exp` INT NOT NULL DEFAULT 0," +
                     "`currentHp` INT NOT NULL DEFAULT 0," +
-                    "`currentMp` INT NOT NULL DEFAULT 0," +
                     "`updateAt` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
                     "PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
             });

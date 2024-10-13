@@ -281,9 +281,7 @@ namespace MultiplayerARPG.MMO
               dataId INTEGER NOT NULL DEFAULT 0,
               mountRemainsDuration REAL NOT NULL DEFAULT 0,
               level INTEGER NOT NULL DEFAULT 0,
-              exp INTEGER NOT NULL DEFAULT 0,
               currentHp INTEGER NOT NULL DEFAULT 0,
-              currentMp INTEGER NOT NULL DEFAULT 0,
               updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )");
 

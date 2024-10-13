@@ -464,11 +464,7 @@ namespace MultiplayerARPG.MMO
                 if (!reader.IsDBNull(50))
                     mount.level = reader.GetInt32(50);
                 if (!reader.IsDBNull(51))
-                    mount.exp = reader.GetInt32(51);
-                if (!reader.IsDBNull(52))
-                    mount.currentHp = reader.GetInt32(52);
-                if (!reader.IsDBNull(53))
-                    mount.currentMp = reader.GetInt32(53);
+                    mount.currentHp = reader.GetInt32(51);
                 result.Mount = mount;
                 return true;
             }
@@ -507,7 +503,7 @@ namespace MultiplayerARPG.MMO
                 c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
                 c.iconDataId, c.frameDataId, c.titleDataId, c.reputation, c.lastDeadTime, c.unmuteTime, c.updateAt,
                 cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills,
-                cmnt.type, cmnt.dataId, cmnt.mountRemainsDuration, cmnt.level, cmnt.exp, cmnt.currentHp, cmnt.currentMp
+                cmnt.type, cmnt.dataId, cmnt.mountRemainsDuration, cmnt.level, cmnt.currentHp
                 FROM characters AS c 
                 LEFT JOIN character_pk AS cpk ON c.id = cpk.id
                 LEFT JOIN characterMount AS cmnt ON c.id = cmnt.id

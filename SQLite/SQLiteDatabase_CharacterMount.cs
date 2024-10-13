@@ -12,24 +12,20 @@ namespace MultiplayerARPG.MMO
         public void CreateOrUpdateCharacterMount(SqliteTransaction transaction, string characterId, CharacterMount characterMount)
         {
             ExecuteNonQuery(transaction, @"INSERT INTO charactermount 
-                (id, type, dataId, mountRemainsDuration, level, exp, currentHp, currentMp) VALUES 
-                (@id, @type, @dataId, @mountRemainsDuration, @level, @exp, @currentHp, @currentMp)
+                (id, type, dataId, mountRemainsDuration, level, currentHp) VALUES 
+                (@id, @type, @dataId, @mountRemainsDuration, @level, @currentHp)
                 ON CONFLICT(id) DO UPDATE SET
                 type = @type,
                 dataId = @dataId,
                 mountRemainsDuration = @mountRemainsDuration,
                 level = @level,
-                exp = @exp,
-                currentHp = @currentHp,
-                currentMp = @currentMp",
+                currentHp = @currentHp",
                 new SqliteParameter("@id", characterId),
                 new SqliteParameter("@type", (byte)characterMount.type),
                 new SqliteParameter("@dataId", characterMount.dataId),
                 new SqliteParameter("@mountRemainsDuration", characterMount.mountRemainsDuration),
                 new SqliteParameter("@level", characterMount.level),
-                new SqliteParameter("@exp", characterMount.exp),
-                new SqliteParameter("@currentHp", characterMount.currentHp),
-                new SqliteParameter("@currentMp", characterMount.currentMp));
+                new SqliteParameter("@currentHp", characterMount.currentHp));
         }
 
         public void DeleteCharacterMount(SqliteTransaction transaction, string characterId)
