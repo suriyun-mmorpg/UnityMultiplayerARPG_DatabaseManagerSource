@@ -8,6 +8,7 @@ namespace MultiplayerARPG.MMO
 {
     public partial class PostgreSQLDatabase
     {
+        public const string CACHE_KEY_UPSERT_CHARACTER_MOUNT = "UPSERT_CHARACTER_MOUNT";
         private async UniTask FillCharacterRelatesData(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
@@ -36,6 +37,15 @@ namespace MultiplayerARPG.MMO
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32s", characterData.Id, characterData.PublicInts);
             await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32s", characterData.Id, characterData.PublicFloats);
 #endif
+            await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
+                new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
+                new PostgreSQLHelpers.ColumnInfo("dataId", characterData.Mount.dataId),
+                new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
+                new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level),
+                new PostgreSQLHelpers.ColumnInfo("exp", characterData.Mount.exp),
+                new PostgreSQLHelpers.ColumnInfo("current_hp", characterData.Mount.currentHp),
+                new PostgreSQLHelpers.ColumnInfo("current_mp", characterData.Mount.currentMp));
+
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
 
@@ -158,6 +168,22 @@ namespace MultiplayerARPG.MMO
                 if (!reader.IsDBNull(46))
                     result.HighestConsecutivePkKills = reader.GetInt32(46);
 #endif
+                CharacterMount mount = new CharacterMount();
+                if (!reader.IsDBNull(47))
+                    mount.type = (MountType)reader.GetInt16(47);
+                if (!reader.IsDBNull(48))
+                    mount.dataId = reader.GetInt32(48);
+                if (!reader.IsDBNull(49))
+                    mount.mountRemainsDuration = reader.GetFloat(49);
+                if (!reader.IsDBNull(50))
+                    mount.level = reader.GetInt32(50);
+                if (!reader.IsDBNull(51))
+                    mount.exp = reader.GetInt32(51);
+                if (!reader.IsDBNull(52))
+                    mount.currentHp = reader.GetInt32(52);
+                if (!reader.IsDBNull(53))
+                    mount.currentMp = reader.GetInt32(53);
+                result.Mount = mount;
                 return true;
             }
             result = null;
@@ -229,8 +255,11 @@ namespace MultiplayerARPG.MMO
                 c.current_safe_area,
                 c.respawn_map_name, c.respawn_position_x, c.respawn_position_y, c.respawn_position_z,
                 c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
-                cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills
-                FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
+                cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills,
+                cmnt.type, cmnt.data_id, cmnt.mount_remains_duration, cmnt.level, cmnt.exp, cmnt.current_hp, cmnt.current_mp
+                FROM characters AS c 
+                LEFT JOIN character_pk AS cpk ON c.id = cpk.id
+                LEFT JOIN character_mount AS cmnt ON c.id = cmnt.id
                 WHERE c.id=$1 LIMIT 1", connection);
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
             await cmd.PrepareAsync();
@@ -440,6 +469,7 @@ namespace MultiplayerARPG.MMO
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skills", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skill_usages", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_summons", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_mount", id);
 
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_booleans", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_int32s", id);

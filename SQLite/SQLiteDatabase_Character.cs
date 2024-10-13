@@ -315,6 +315,7 @@ namespace MultiplayerARPG.MMO
             FillCharacterSkills(transaction, characterData);
             FillCharacterSkillUsages(transaction, characterData);
             FillCharacterSummons(transaction, characterData);
+            CreateOrUpdateCharacterMount(transaction, characterData.Id, characterData.Mount);
 
 #if !DISABLE_CUSTOM_CHARACTER_DATA
             FillCharacterDataBooleans(transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
@@ -451,6 +452,22 @@ namespace MultiplayerARPG.MMO
                 if (!reader.IsDBNull(46))
                     result.HighestConsecutivePkKills = reader.GetInt32(46);
 #endif
+                CharacterMount mount = new CharacterMount();
+                if (!reader.IsDBNull(47))
+                    mount.type = (MountType)reader.GetInt16(47);
+                if (!reader.IsDBNull(48))
+                    mount.dataId = reader.GetInt32(48);
+                if (!reader.IsDBNull(49))
+                    mount.mountRemainsDuration = reader.GetFloat(49);
+                if (!reader.IsDBNull(50))
+                    mount.level = reader.GetInt32(50);
+                if (!reader.IsDBNull(51))
+                    mount.exp = reader.GetInt32(51);
+                if (!reader.IsDBNull(52))
+                    mount.currentHp = reader.GetInt32(52);
+                if (!reader.IsDBNull(53))
+                    mount.currentMp = reader.GetInt32(53);
+                result.Mount = mount;
                 return true;
             }
             result = null;
@@ -487,8 +504,11 @@ namespace MultiplayerARPG.MMO
                 c.currentSafeArea,
                 c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
                 c.iconDataId, c.frameDataId, c.titleDataId, c.reputation, c.lastDeadTime, c.unmuteTime, c.updateAt,
-                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills
-                FROM characters AS c LEFT JOIN character_pk AS cpk ON c.id = cpk.id
+                cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills,
+                cmnt.type, cmnt.dataId, cmnt.mountRemainsDuration, cmnt.level, cmnt.exp, cmnt.currentHp, cmnt.currentMp
+                FROM characters AS c 
+                LEFT JOIN character_pk AS cpk ON c.id = cpk.id
+                LEFT JOIN characterMount AS cmnt ON c.id = cmnt.id
                 WHERE c.id=@id LIMIT 1",
                 new SqliteParameter("@id", id));
             // Found character, then read its relates data
@@ -788,6 +808,7 @@ namespace MultiplayerARPG.MMO
                     DeleteCharacterSkills(transaction, id);
                     DeleteCharacterSkillUsages(transaction, id);
                     DeleteCharacterSummons(transaction, id);
+                    DeleteCharacterMount(transaction, id);
 
                     DeleteCharacterDataBooleans(transaction, "character_server_boolean", id);
                     DeleteCharacterDataInt32s(transaction, "character_server_int32", id);
