@@ -311,6 +311,17 @@ namespace MultiplayerARPG.MMO
                 await ExecuteNonQuery("ALTER TABLE `characters` ADD `currentSafeArea` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' AFTER `currentRotationZ`;");
                 await ExecuteNonQuery("ALTER TABLE `characters` ADD `reputation` INT NOT NULL DEFAULT '0' AFTER `titleDataId`;");
                 await ExecuteNonQuery("ALTER TABLE `characters` DROP `mountDataId`;");
+                await ExecuteNonQuery("CREATE TABLE `charactermount` (" +
+                    "`id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL," +
+                    "`type` TINYINT UNSIGNED NOT NULL DEFAULT 0," +
+                    "`dataId` INT NOT NULL DEFAULT 0," +
+                    "`mountRemainsDuration` FLOAT NOT NULL DEFAULT 0," +
+                    "`level` INT NOT NULL DEFAULT 0," +
+                    "`exp` INT NOT NULL DEFAULT 0," +
+                    "`currentHp` INT NOT NULL DEFAULT 0," +
+                    "`currentMp` INT NOT NULL DEFAULT 0," +
+                    "`updateAt` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
+                    "PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
             });
         }
 
