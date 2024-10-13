@@ -151,9 +151,7 @@ model character_mount {
   data_id                Int      @default(0) @db.Integer()
   mount_remains_duration Float    @default(0) @db.Real()
   level                  Int      @default(1) @db.Integer()
-  exp                    Int      @default(0) @db.Integer()
   current_hp             Int      @default(0) @db.Integer()
-  current_mp             Int      @default(0) @db.Integer()
   update_time            DateTime @default(now()) @updatedAt @db.Timestamptz()
 }
 
