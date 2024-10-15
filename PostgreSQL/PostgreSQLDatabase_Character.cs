@@ -41,10 +41,7 @@ namespace MultiplayerARPG.MMO
                 new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
                 new PostgreSQLHelpers.ColumnInfo("dataId", characterData.Mount.dataId),
                 new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
-                new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level),
-                new PostgreSQLHelpers.ColumnInfo("exp", characterData.Mount.exp),
-                new PostgreSQLHelpers.ColumnInfo("current_hp", characterData.Mount.currentHp),
-                new PostgreSQLHelpers.ColumnInfo("current_mp", characterData.Mount.currentMp));
+                new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level));
 
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
