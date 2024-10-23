@@ -9,17 +9,17 @@ namespace MultiplayerARPG.MMO
         public async UniTask CreateOrUpdateCharacterMount(MySqlConnection connection, MySqlTransaction transaction, string characterId, CharacterMount characterMount)
         {
             await ExecuteNonQuery(connection, transaction, @"INSERT INTO charactermount 
-                (id, type, dataId, mountRemainsDuration, level, currentHp) VALUES 
-                (@id, @type, @dataId, @mountRemainsDuration, @level, @currentHp)
+                (id, type, sourceId, mountRemainsDuration, level, currentHp) VALUES 
+                (@id, @type, @sourceId, @mountRemainsDuration, @level, @currentHp)
                 ON DUPLICATE KEY UPDATE
                 type = @type,
-                dataId = @dataId,
+                sourceId = @sourceId,
                 mountRemainsDuration = @mountRemainsDuration,
                 level = @level,
                 currentHp = @currentHp",
                 new MySqlParameter("@id", characterId),
                 new MySqlParameter("@type", (byte)characterMount.type),
-                new MySqlParameter("@dataId", characterMount.dataId),
+                new MySqlParameter("@sourceId", characterMount.sourceId),
                 new MySqlParameter("@mountRemainsDuration", characterMount.mountRemainsDuration),
                 new MySqlParameter("@level", characterMount.level),
                 new MySqlParameter("@currentHp", characterMount.currentHp));
