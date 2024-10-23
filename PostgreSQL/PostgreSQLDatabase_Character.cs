@@ -39,7 +39,7 @@ namespace MultiplayerARPG.MMO
 #endif
             await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
                 new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
-                new PostgreSQLHelpers.ColumnInfo("dataId", characterData.Mount.dataId),
+                new PostgreSQLHelpers.ColumnInfo("source_id", characterData.Mount.sourceId),
                 new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
                 new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level));
 
@@ -169,7 +169,7 @@ namespace MultiplayerARPG.MMO
                 if (!reader.IsDBNull(47))
                     mount.type = (MountType)reader.GetInt16(47);
                 if (!reader.IsDBNull(48))
-                    mount.dataId = reader.GetInt32(48);
+                    mount.sourceId = reader.GetString(48);
                 if (!reader.IsDBNull(49))
                     mount.mountRemainsDuration = reader.GetFloat(49);
                 if (!reader.IsDBNull(50))
@@ -249,7 +249,7 @@ namespace MultiplayerARPG.MMO
                 c.respawn_map_name, c.respawn_position_x, c.respawn_position_y, c.respawn_position_z,
                 c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
                 cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills,
-                cmnt.type, cmnt.data_id, cmnt.mount_remains_duration, cmnt.level, cmnt.current_hp
+                cmnt.type, cmnt.source_id, cmnt.mount_remains_duration, cmnt.level, cmnt.current_hp
                 FROM characters AS c 
                 LEFT JOIN character_pk AS cpk ON c.id = cpk.id
                 LEFT JOIN character_mount AS cmnt ON c.id = cmnt.id

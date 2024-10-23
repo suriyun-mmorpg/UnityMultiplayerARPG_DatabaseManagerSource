@@ -148,7 +148,7 @@ model character_protected_non_equip_items {
 model character_mount {
   id                     String   @id @db.VarChar(40)
   type                   Int      @default(0) @db.SmallInt()
-  data_id                Int      @default(0) @db.Integer()
+  source_id              String   @default("") @db.VarChar(40)
   mount_remains_duration Float    @default(0) @db.Real()
   level                  Int      @default(1) @db.Integer()
   current_hp             Int      @default(0) @db.Integer()
