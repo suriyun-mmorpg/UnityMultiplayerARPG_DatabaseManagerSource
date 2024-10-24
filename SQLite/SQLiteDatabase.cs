@@ -278,7 +278,7 @@ namespace MultiplayerARPG.MMO
             ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS charactermount (
               id TEXT NOT NULL PRIMARY KEY,
               type INTEGER NOT NULL DEFAULT 0,
-              dataId INTEGER NOT NULL DEFAULT 0,
+              sourceId TEXT NOT NULL,
               mountRemainsDuration REAL NOT NULL DEFAULT 0,
               level INTEGER NOT NULL DEFAULT 0,
               currentHp INTEGER NOT NULL DEFAULT 0,
