@@ -314,7 +314,7 @@ namespace MultiplayerARPG.MMO
                 await ExecuteNonQuery("CREATE TABLE `charactermount` (" +
                     "`id` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL," +
                     "`type` TINYINT UNSIGNED NOT NULL DEFAULT 0," +
-                    "`sourceId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL," +
+                    "`sourceId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL," +
                     "`mountRemainsDuration` FLOAT NOT NULL DEFAULT 0," +
                     "`level` INT NOT NULL DEFAULT 0," +
                     "`currentHp` INT NOT NULL DEFAULT 0," +
