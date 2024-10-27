@@ -5,34 +5,6 @@ namespace MultiplayerARPG.MMO
 {
     public partial interface IDatabaseCache
     {
-        UniTask<bool> AddUsername(string username);
-        UniTask<bool> ContainsUsername(string username);
-        UniTask<bool> RemoveUsername(string username);
-
-        UniTask<bool> AddEmail(string email);
-        UniTask<bool> ContainsEmail(string email);
-        UniTask<bool> RemoveEmail(string email);
-
-        UniTask<bool> AddCharacterName(string characterName);
-        UniTask<bool> ContainsCharacterName(string characterName);
-        UniTask<bool> RemoveCharacterName(string characterName);
-
-        UniTask<bool> AddGuildName(string guildName);
-        UniTask<bool> ContainsGuildName(string guildName);
-        UniTask<bool> RemoveGuildName(string guildName);
-
-        UniTask<bool> SetUserAccessToken(string userId, string accessToken);
-        UniTask<DatabaseCacheResult<string>> GetUserAccessToken(string userId);
-        UniTask<bool> RemoveUserAccessToken(string userId);
-
-        UniTask<bool> SetUserGold(string userId, int gold);
-        UniTask<DatabaseCacheResult<int>> GetUserGold(string userId);
-        UniTask<bool> RemoveUserGold(string userId);
-
-        UniTask<bool> SetUserCash(string userId, int cash);
-        UniTask<DatabaseCacheResult<int>> GetUserCash(string userId);
-        UniTask<bool> RemoveUserCash(string userId);
-
         UniTask<bool> SetPlayerCharacter(PlayerCharacterData playerCharacter);
         UniTask<DatabaseCacheResult<PlayerCharacterData>> GetPlayerCharacter(string characterId);
         UniTask<bool> RemovePlayerCharacter(string characterId);

@@ -8,13 +8,6 @@ namespace MultiplayerARPG.MMO
 {
     public partial class LocalDatabaseCache : IDatabaseCache
     {
-        private ConcurrentHashSet<string> _cachedUsernames = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private ConcurrentHashSet<string> _cachedEmails = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private ConcurrentHashSet<string> _cachedCharacterNames = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private ConcurrentHashSet<string> _cachedGuildNames = new ConcurrentHashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private ConcurrentDictionary<string, string> _cachedUserAccessTokens = new ConcurrentDictionary<string, string>();
-        private ConcurrentDictionary<string, int> _cachedUserGolds = new ConcurrentDictionary<string, int>();
-        private ConcurrentDictionary<string, int> _cachedUserCashes = new ConcurrentDictionary<string, int>();
         private ConcurrentDictionary<string, PlayerCharacterData> _cachedPlayerCharacters = new ConcurrentDictionary<string, PlayerCharacterData>();
         private ConcurrentDictionary<string, SocialCharacterData> _cachedSocialCharacters = new ConcurrentDictionary<string, SocialCharacterData>();
         private ConcurrentDictionary<string, ConcurrentDictionary<string, BuildingSaveData>> _cachedBuilding = new ConcurrentDictionary<string, ConcurrentDictionary<string, BuildingSaveData>>();
@@ -22,106 +15,6 @@ namespace MultiplayerARPG.MMO
         private ConcurrentDictionary<int, GuildData> _cachedGuilds = new ConcurrentDictionary<int, GuildData>();
         private ConcurrentDictionary<StorageId, List<CharacterItem>> _cachedStorageItems = new ConcurrentDictionary<StorageId, List<CharacterItem>>();
         private ConcurrentDictionary<string, List<CharacterBuff>> _cachedSummonBuffs = new ConcurrentDictionary<string, List<CharacterBuff>>();
-
-        public UniTask<bool> AddUsername(string username)
-        {
-            return UniTask.FromResult(_cachedUsernames.Add(username));
-        }
-        public UniTask<bool> ContainsUsername(string username)
-        {
-            return UniTask.FromResult(_cachedUsernames.Contains(username));
-        }
-        public UniTask<bool> RemoveUsername(string username)
-        {
-            return UniTask.FromResult(_cachedUsernames.TryRemove(username));
-        }
-
-        public UniTask<bool> AddEmail(string email)
-        {
-            return UniTask.FromResult(_cachedEmails.Add(email));
-        }
-        public UniTask<bool> ContainsEmail(string email)
-        {
-            return UniTask.FromResult(_cachedEmails.Contains(email));
-        }
-        public UniTask<bool> RemoveEmail(string email)
-        {
-            return UniTask.FromResult(_cachedEmails.TryRemove(email));
-        }
-
-        public UniTask<bool> AddCharacterName(string characterName)
-        {
-            return UniTask.FromResult(_cachedCharacterNames.Add(characterName));
-        }
-        public UniTask<bool> ContainsCharacterName(string characterName)
-        {
-            return UniTask.FromResult(_cachedCharacterNames.Contains(characterName));
-        }
-        public UniTask<bool> RemoveCharacterName(string characterName)
-        {
-            return UniTask.FromResult(_cachedCharacterNames.TryRemove(characterName));
-        }
-
-        public UniTask<bool> AddGuildName(string guildName)
-        {
-            return UniTask.FromResult(_cachedGuildNames.Add(guildName));
-        }
-        public UniTask<bool> ContainsGuildName(string guildName)
-        {
-            return UniTask.FromResult(_cachedGuildNames.Contains(guildName));
-        }
-        public UniTask<bool> RemoveGuildName(string guildName)
-        {
-            return UniTask.FromResult(_cachedGuildNames.TryRemove(guildName));
-        }
-
-        public UniTask<bool> SetUserAccessToken(string userId, string accessToken)
-        {
-            _cachedUserAccessTokens[userId] = accessToken;
-            return UniTask.FromResult(true);
-        }
-        public UniTask<DatabaseCacheResult<string>> GetUserAccessToken(string userId)
-        {
-            if (_cachedUserAccessTokens.TryGetValue(userId, out var token))
-                return UniTask.FromResult(new DatabaseCacheResult<string>(token));
-            return UniTask.FromResult(new DatabaseCacheResult<string>());
-        }
-        public UniTask<bool> RemoveUserAccessToken(string userId)
-        {
-            return UniTask.FromResult(_cachedUserAccessTokens.TryRemove(userId, out _));
-        }
-
-        public UniTask<bool> SetUserGold(string userId, int gold)
-        {
-            _cachedUserGolds[userId] = gold;
-            return UniTask.FromResult(true);
-        }
-        public UniTask<DatabaseCacheResult<int>> GetUserGold(string userId)
-        {
-            if (_cachedUserGolds.TryGetValue(userId, out var gold))
-                return UniTask.FromResult(new DatabaseCacheResult<int>(gold));
-            return UniTask.FromResult(new DatabaseCacheResult<int>());
-        }
-        public UniTask<bool> RemoveUserGold(string userId)
-        {
-            return UniTask.FromResult(_cachedUserGolds.TryRemove(userId, out _));
-        }
-
-        public UniTask<bool> SetUserCash(string userId, int cash)
-        {
-            _cachedUserCashes[userId] = cash;
-            return UniTask.FromResult(true);
-        }
-        public UniTask<DatabaseCacheResult<int>> GetUserCash(string userId)
-        {
-            if (_cachedUserCashes.TryGetValue(userId, out var cash))
-                return UniTask.FromResult(new DatabaseCacheResult<int>(cash));
-            return UniTask.FromResult(new DatabaseCacheResult<int>());
-        }
-        public UniTask<bool> RemoveUserCash(string userId)
-        {
-            return UniTask.FromResult(_cachedUserCashes.TryRemove(userId, out _));
-        }
 
         public UniTask<bool> SetPlayerCharacter(PlayerCharacterData playerCharacter)
         {
