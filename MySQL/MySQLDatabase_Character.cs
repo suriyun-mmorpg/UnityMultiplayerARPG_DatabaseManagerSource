@@ -667,7 +667,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
+        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
             using (MySqlConnection connection = NewConnection())
             {

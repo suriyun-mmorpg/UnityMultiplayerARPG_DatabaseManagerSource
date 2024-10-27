@@ -663,7 +663,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override UniTask UpdateCharacter(IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
+        public override UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
