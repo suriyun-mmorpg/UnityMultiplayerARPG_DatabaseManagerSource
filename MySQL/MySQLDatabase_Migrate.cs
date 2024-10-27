@@ -320,6 +320,7 @@ namespace MultiplayerARPG.MMO
                     "`currentHp` INT NOT NULL DEFAULT 0," +
                     "`updateAt` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
                     "PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
+                await ExecuteNonQuery("ALTER TABLE `userlogin` CHANGE `accessToken` `accessToken` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;");
             });
         }
 
