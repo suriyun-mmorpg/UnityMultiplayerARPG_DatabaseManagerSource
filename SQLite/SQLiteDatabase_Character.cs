@@ -304,31 +304,72 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillCharacterRelatesData(SqliteTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
+        private void FillCharacterRelatesData(TransactionUpdateCharacterState state, SqliteTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
-            FillCharacterAttributes(transaction, characterData);
-            FillCharacterBuffs(transaction, characterData);
-            FillCharacterHotkeys(transaction, characterData);
-            FillCharacterItems(transaction, characterData);
-            FillCharacterQuests(transaction, characterData);
-            FillCharacterCurrencies(transaction, characterData);
-            FillCharacterSkills(transaction, characterData);
-            FillCharacterSkillUsages(transaction, characterData);
-            FillCharacterSummons(transaction, characterData);
-            CreateOrUpdateCharacterMount(transaction, characterData.Id, characterData.Mount);
+            if (state.Has(TransactionUpdateCharacterState.Attributes))
+                FillCharacterAttributes(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Buffs))
+                FillCharacterBuffs(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Hotkeys))
+                FillCharacterHotkeys(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Items))
+                FillCharacterItems(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Quests))
+                FillCharacterQuests(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Currencies))
+                FillCharacterCurrencies(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Skills))
+                FillCharacterSkills(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.SkillUsages))
+                FillCharacterSkillUsages(transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Summons))
+                FillCharacterSummons(transaction, characterData);
 
 #if !DISABLE_CUSTOM_CHARACTER_DATA
-            FillCharacterDataBooleans(transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
-            FillCharacterDataInt32s(transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
-            FillCharacterDataFloat32s(transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            if (state.Has(TransactionUpdateCharacterState.ServerCustomData))
+            {
+                FillCharacterDataBooleans(transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+                FillCharacterDataInt32s(transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+                FillCharacterDataFloat32s(transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PrivateCustomData))
+            {
+                FillCharacterDataBooleans(transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+                FillCharacterDataInt32s(transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+                FillCharacterDataFloat32s(transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PublicCustomData))
+            {
+                FillCharacterDataBooleans(transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+                FillCharacterDataInt32s(transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+                FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+            }
+#endif
 
-            FillCharacterDataBooleans(transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
-            FillCharacterDataInt32s(transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
-            FillCharacterDataFloat32s(transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            if (state.Has(TransactionUpdateCharacterState.Mount))
+                CreateOrUpdateCharacterMount(transaction, characterData.Id, characterData.Mount);
 
-            FillCharacterDataBooleans(transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
-            FillCharacterDataInt32s(transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
-            FillCharacterDataFloat32s(transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+#if !DISABLE_CLASSIC_PK
+            if (state.Has(TransactionUpdateCharacterState.Pk))
+            {
+                ExecuteNonQuery(transaction, @"INSERT INTO character_pk
+                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
+                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
+                    ON CONFLICT(id) DO UPDATE SET
+                    isPkOn = @isPkOn,
+                    lastPkOnTime = @lastPkOnTime,
+                    pkPoint = @pkPoint,
+                    consecutivePkKills = @consecutivePkKills,
+                    highestPkPoint = @highestPkPoint,
+                    highestConsecutivePkKills = @highestConsecutivePkKills",
+                    new SqliteParameter("@id", characterData.Id),
+                    new SqliteParameter("@isPkOn", characterData.IsPkOn),
+                    new SqliteParameter("@lastPkOnTime", characterData.LastPkOnTime),
+                    new SqliteParameter("@pkPoint", characterData.PkPoint),
+                    new SqliteParameter("@consecutivePkKills", characterData.ConsecutivePkKills),
+                    new SqliteParameter("@highestPkPoint", characterData.HighestPkPoint),
+                    new SqliteParameter("@highestConsecutivePkKills", characterData.HighestConsecutivePkKills));
+            }
 #endif
 
             if (summonBuffs != null)
@@ -382,7 +423,8 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@frameDataId", character.FrameDataId),
                     new SqliteParameter("@titleDataId", character.TitleDataId),
                     new SqliteParameter("@reputation", 0));
-                FillCharacterRelatesData(transaction, character, null, null);
+                TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
+                FillCharacterRelatesData(state, transaction, character, null, null);
                 this.InvokeInstanceDevExtMethods("CreateCharacter", transaction, userId, character);
                 transaction.Commit();
             }
@@ -668,101 +710,85 @@ namespace MultiplayerARPG.MMO
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
             {
-#if !DISABLE_CLASSIC_PK
-                ExecuteNonQuery(transaction, @"INSERT INTO character_pk
-                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
-                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
-                    ON CONFLICT(id) DO UPDATE SET
-                    isPkOn = @isPkOn,
-                    lastPkOnTime = @lastPkOnTime,
-                    pkPoint = @pkPoint,
-                    consecutivePkKills = @consecutivePkKills,
-                    highestPkPoint = @highestPkPoint,
-                    highestConsecutivePkKills = @highestConsecutivePkKills",
-                    new SqliteParameter("@id", character.Id),
-                    new SqliteParameter("@isPkOn", character.IsPkOn),
-                    new SqliteParameter("@lastPkOnTime", character.LastPkOnTime),
-                    new SqliteParameter("@pkPoint", character.PkPoint),
-                    new SqliteParameter("@consecutivePkKills", character.ConsecutivePkKills),
-                    new SqliteParameter("@highestPkPoint", character.HighestPkPoint),
-                    new SqliteParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-#endif
-                ExecuteNonQuery(transaction, "UPDATE characters SET " +
-                    " dataId=@dataId," +
-                    " entityId=@entityId," +
-                    " factionId=@factionId," +
-                    " characterName=@characterName," +
-                    " level=@level," +
-                    " exp=@exp," +
-                    " currentHp=@currentHp," +
-                    " currentMp=@currentMp," +
-                    " currentStamina=@currentStamina," +
-                    " currentFood=@currentFood," +
-                    " currentWater=@currentWater," +
-                    " equipWeaponSet=@equipWeaponSet," +
-                    " statPoint=@statPoint," +
-                    " skillPoint=@skillPoint," +
-                    " gold=@gold," +
-                    " currentChannel=@currentChannel," +
-                    " currentMapName=@currentMapName," +
-                    " currentPositionX=@currentPositionX," +
-                    " currentPositionY=@currentPositionY," +
-                    " currentPositionZ=@currentPositionZ," +
-                    " currentRotationX=@currentRotationX," +
-                    " currentRotationY=@currentRotationY," +
-                    " currentRotationZ=@currentRotationZ," +
-                    " currentSafeArea=@currentSafeArea," +
-#if !DISABLE_DIFFER_MAP_RESPAWNING
-                    " respawnMapName=@respawnMapName," +
-                    " respawnPositionX=@respawnPositionX," +
-                    " respawnPositionY=@respawnPositionY," +
-                    " respawnPositionZ=@respawnPositionZ," +
-#endif
-                    " iconDataId=@iconDataId," +
-                    " frameDataId=@frameDataId," +
-                    " titleDataId=@titleDataId," +
-                    " reputation=@reputation," +
-                    " lastDeadTime=@lastDeadTime," +
-                    " unmuteTime=@unmuteTime" +
-                    " WHERE id=@id",
-                    new SqliteParameter("@dataId", character.DataId),
-                    new SqliteParameter("@entityId", character.EntityId),
-                    new SqliteParameter("@factionId", character.FactionId),
-                    new SqliteParameter("@characterName", character.CharacterName),
-                    new SqliteParameter("@level", character.Level),
-                    new SqliteParameter("@exp", character.Exp),
-                    new SqliteParameter("@currentHp", character.CurrentHp),
-                    new SqliteParameter("@currentMp", character.CurrentMp),
-                    new SqliteParameter("@currentStamina", character.CurrentStamina),
-                    new SqliteParameter("@currentFood", character.CurrentFood),
-                    new SqliteParameter("@currentWater", character.CurrentWater),
-                    new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
-                    new SqliteParameter("@statPoint", character.StatPoint),
-                    new SqliteParameter("@skillPoint", character.SkillPoint),
-                    new SqliteParameter("@gold", character.Gold),
-                    new SqliteParameter("@currentChannel", character.CurrentChannel),
-                    new SqliteParameter("@currentMapName", character.CurrentMapName),
-                    new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
-                    new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
-                    new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
-                    new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
-                    new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
-                    new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
-                    new SqliteParameter("@currentSafeArea", character.CurrentSafeArea),
-#if !DISABLE_DIFFER_MAP_RESPAWNING
-                    new SqliteParameter("@respawnMapName", character.RespawnMapName),
-                    new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
-                    new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
-                    new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
-#endif
-                    new SqliteParameter("@iconDataId", character.IconDataId),
-                    new SqliteParameter("@frameDataId", character.FrameDataId),
-                    new SqliteParameter("@titleDataId", character.TitleDataId),
-                    new SqliteParameter("@reputation", character.Reputation),
-                    new SqliteParameter("@lastDeadTime", character.LastDeadTime),
-                    new SqliteParameter("@unmuteTime", character.UnmuteTime),
-                    new SqliteParameter("@id", character.Id));
-                FillCharacterRelatesData(transaction, character, summonBuffs, storageItems);
+                if (state.Has(TransactionUpdateCharacterState.Character))
+                {
+                    ExecuteNonQuery(transaction, "UPDATE characters SET " +
+                        " dataId=@dataId," +
+                        " entityId=@entityId," +
+                        " factionId=@factionId," +
+                        " characterName=@characterName," +
+                        " level=@level," +
+                        " exp=@exp," +
+                        " currentHp=@currentHp," +
+                        " currentMp=@currentMp," +
+                        " currentStamina=@currentStamina," +
+                        " currentFood=@currentFood," +
+                        " currentWater=@currentWater," +
+                        " equipWeaponSet=@equipWeaponSet," +
+                        " statPoint=@statPoint," +
+                        " skillPoint=@skillPoint," +
+                        " gold=@gold," +
+                        " currentChannel=@currentChannel," +
+                        " currentMapName=@currentMapName," +
+                        " currentPositionX=@currentPositionX," +
+                        " currentPositionY=@currentPositionY," +
+                        " currentPositionZ=@currentPositionZ," +
+                        " currentRotationX=@currentRotationX," +
+                        " currentRotationY=@currentRotationY," +
+                        " currentRotationZ=@currentRotationZ," +
+                        " currentSafeArea=@currentSafeArea," +
+    #if !DISABLE_DIFFER_MAP_RESPAWNING
+                        " respawnMapName=@respawnMapName," +
+                        " respawnPositionX=@respawnPositionX," +
+                        " respawnPositionY=@respawnPositionY," +
+                        " respawnPositionZ=@respawnPositionZ," +
+    #endif
+                        " iconDataId=@iconDataId," +
+                        " frameDataId=@frameDataId," +
+                        " titleDataId=@titleDataId," +
+                        " reputation=@reputation," +
+                        " lastDeadTime=@lastDeadTime," +
+                        " unmuteTime=@unmuteTime" +
+                        " WHERE id=@id",
+                        new SqliteParameter("@dataId", character.DataId),
+                        new SqliteParameter("@entityId", character.EntityId),
+                        new SqliteParameter("@factionId", character.FactionId),
+                        new SqliteParameter("@characterName", character.CharacterName),
+                        new SqliteParameter("@level", character.Level),
+                        new SqliteParameter("@exp", character.Exp),
+                        new SqliteParameter("@currentHp", character.CurrentHp),
+                        new SqliteParameter("@currentMp", character.CurrentMp),
+                        new SqliteParameter("@currentStamina", character.CurrentStamina),
+                        new SqliteParameter("@currentFood", character.CurrentFood),
+                        new SqliteParameter("@currentWater", character.CurrentWater),
+                        new SqliteParameter("@equipWeaponSet", character.EquipWeaponSet),
+                        new SqliteParameter("@statPoint", character.StatPoint),
+                        new SqliteParameter("@skillPoint", character.SkillPoint),
+                        new SqliteParameter("@gold", character.Gold),
+                        new SqliteParameter("@currentChannel", character.CurrentChannel),
+                        new SqliteParameter("@currentMapName", character.CurrentMapName),
+                        new SqliteParameter("@currentPositionX", character.CurrentPosition.x),
+                        new SqliteParameter("@currentPositionY", character.CurrentPosition.y),
+                        new SqliteParameter("@currentPositionZ", character.CurrentPosition.z),
+                        new SqliteParameter("@currentRotationX", character.CurrentRotation.x),
+                        new SqliteParameter("@currentRotationY", character.CurrentRotation.y),
+                        new SqliteParameter("@currentRotationZ", character.CurrentRotation.z),
+                        new SqliteParameter("@currentSafeArea", character.CurrentSafeArea),
+    #if !DISABLE_DIFFER_MAP_RESPAWNING
+                        new SqliteParameter("@respawnMapName", character.RespawnMapName),
+                        new SqliteParameter("@respawnPositionX", character.RespawnPosition.x),
+                        new SqliteParameter("@respawnPositionY", character.RespawnPosition.y),
+                        new SqliteParameter("@respawnPositionZ", character.RespawnPosition.z),
+    #endif
+                        new SqliteParameter("@iconDataId", character.IconDataId),
+                        new SqliteParameter("@frameDataId", character.FrameDataId),
+                        new SqliteParameter("@titleDataId", character.TitleDataId),
+                        new SqliteParameter("@reputation", character.Reputation),
+                        new SqliteParameter("@lastDeadTime", character.LastDeadTime),
+                        new SqliteParameter("@unmuteTime", character.UnmuteTime),
+                        new SqliteParameter("@id", character.Id));
+                }
+                FillCharacterRelatesData(state, transaction, character, summonBuffs, storageItems);
                 if (deleteStorageReservation)
                 {
                     ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",

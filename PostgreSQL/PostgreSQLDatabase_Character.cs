@@ -9,39 +9,66 @@ namespace MultiplayerARPG.MMO
     public partial class PostgreSQLDatabase
     {
         public const string CACHE_KEY_UPSERT_CHARACTER_MOUNT = "UPSERT_CHARACTER_MOUNT";
-        private async UniTask FillCharacterRelatesData(NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
+        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_buffs", characterData.Id, characterData.Buffs);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_hotkeys", characterData.Id, characterData.Hotkeys);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_selectable_weapon_sets", characterData.Id, characterData.SelectableWeaponSets);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_quests", characterData.Id, characterData.Quests);
+            if (state.Has(TransactionUpdateCharacterState.Attributes))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
+            if (state.Has(TransactionUpdateCharacterState.Buffs))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_buffs", characterData.Id, characterData.Buffs);
+            if (state.Has(TransactionUpdateCharacterState.Hotkeys))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_hotkeys", characterData.Id, characterData.Hotkeys);
+            if (state.Has(TransactionUpdateCharacterState.Items))
+            {
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_selectable_weapon_sets", characterData.Id, characterData.SelectableWeaponSets);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterData.Id, characterData.EquipItems);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterData.Id, characterData.NonEquipItems);
+            }
+            if (state.Has(TransactionUpdateCharacterState.Quests))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_quests", characterData.Id, characterData.Quests);
 #if !DISABLE_CUSTOM_CHARACTER_CURRENCIES
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_currencies", characterData.Id, characterData.Currencies);
+            if (state.Has(TransactionUpdateCharacterState.Currencies))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_currencies", characterData.Id, characterData.Currencies);
 #endif
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skills", characterData.Id, characterData.Skills);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skill_usages", characterData.Id, characterData.SkillUsages);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summons", characterData.Id, characterData.Summons);
+            if (state.Has(TransactionUpdateCharacterState.Skills))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skills", characterData.Id, characterData.Skills);
+            if (state.Has(TransactionUpdateCharacterState.SkillUsages))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_skill_usages", characterData.Id, characterData.SkillUsages);
+            if (state.Has(TransactionUpdateCharacterState.Summons))
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summons", characterData.Id, characterData.Summons);
 #if !DISABLE_CUSTOM_CHARACTER_DATA
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_booleans", characterData.Id, characterData.ServerBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32s", characterData.Id, characterData.ServerInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32s", characterData.Id, characterData.ServerFloats);
-
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_booleans", characterData.Id, characterData.PrivateBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_int32s", characterData.Id, characterData.PrivateInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_float32s", characterData.Id, characterData.PrivateFloats);
-
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_booleans", characterData.Id, characterData.PublicBools);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32s", characterData.Id, characterData.PublicInts);
-            await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32s", characterData.Id, characterData.PublicFloats);
+            if (state.Has(TransactionUpdateCharacterState.ServerCustomData))
+            {
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_booleans", characterData.Id, characterData.ServerBools);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_int32s", characterData.Id, characterData.ServerInts);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_server_float32s", characterData.Id, characterData.ServerFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PrivateCustomData))
+            {
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_booleans", characterData.Id, characterData.PrivateBools);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_int32s", characterData.Id, characterData.PrivateInts);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_private_float32s", characterData.Id, characterData.PrivateFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PublicCustomData))
+            {
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_booleans", characterData.Id, characterData.PublicBools);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_int32s", characterData.Id, characterData.PublicInts);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_public_float32s", characterData.Id, characterData.PublicFloats);
+            }
 #endif
-            await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
-                new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
-                new PostgreSQLHelpers.ColumnInfo("source_id", characterData.Mount.sourceId),
-                new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
-                new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level));
+
+            if (state.Has(TransactionUpdateCharacterState.Mount))
+            {
+                await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
+                    new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
+                    new PostgreSQLHelpers.ColumnInfo("source_id", characterData.Mount.sourceId),
+                    new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
+                    new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level));
+            }
+            
+#if !DISABLE_CLASSIC_PK
+            if (state.Has(TransactionUpdateCharacterState.Pk))
+                await UpdateCharacterPk(connection, transaction, character);
+#endif
 
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
@@ -97,7 +124,8 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
                     new PostgreSQLHelpers.ColumnInfo("reputation", 0));
-                await FillCharacterRelatesData(connection, transaction, character, null, null);
+                TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
+                await FillCharacterRelatesData(state, connection, transaction, character, null, null);
                 this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
                 await transaction.CommitAsync();
             }
@@ -377,58 +405,60 @@ namespace MultiplayerARPG.MMO
         }
 
         public const string CACHE_KEY_UPDATE_CHARACTER = "UPDATE_CHARACTER";
-        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
+        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
             try
             {
-                await UpdateCharacterPk(connection, transaction, character);
-                await PostgreSQLHelpers.ExecuteUpdate(
-                    CACHE_KEY_UPDATE_CHARACTER,
-                    connection, transaction,
-                    "characters",
-                    new[]
-                    {
-                        new PostgreSQLHelpers.ColumnInfo("entity_id", character.EntityId),
-                        new PostgreSQLHelpers.ColumnInfo("data_id", character.DataId),
-                        new PostgreSQLHelpers.ColumnInfo("faction_id", character.FactionId),
-                        new PostgreSQLHelpers.ColumnInfo("character_name", character.CharacterName),
-                        new PostgreSQLHelpers.ColumnInfo("level", character.Level),
-                        new PostgreSQLHelpers.ColumnInfo("exp", character.Exp),
-                        new PostgreSQLHelpers.ColumnInfo("current_hp", character.CurrentHp),
-                        new PostgreSQLHelpers.ColumnInfo("current_mp", character.CurrentMp),
-                        new PostgreSQLHelpers.ColumnInfo("current_stamina", character.CurrentStamina),
-                        new PostgreSQLHelpers.ColumnInfo("current_food", character.CurrentFood),
-                        new PostgreSQLHelpers.ColumnInfo("current_water", character.CurrentWater),
-                        new PostgreSQLHelpers.ColumnInfo("equip_weapon_set", character.EquipWeaponSet),
-                        new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
-                        new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
-                        new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
-                        new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
-                        new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
-                        new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
-                        new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
-                        new PostgreSQLHelpers.ColumnInfo("current_position_z", character.CurrentPosition.z),
-                        new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
-                        new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
-                        new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
-                        new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
-#if !DISABLE_DIFFER_MAP_RESPAWNING
-                        new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
-                        new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
-                        new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
-                        new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
-#endif
-                        new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
-                        new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
-                        new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
-                        new PostgreSQLHelpers.ColumnInfo("reputation", 0),
-                        new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
-                        new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
-                    },
-                    PostgreSQLHelpers.WhereEqualTo("id", character.Id));
-                await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
+                if (state.Has(TransactionUpdateCharacterState.Character))
+                {
+                    await PostgreSQLHelpers.ExecuteUpdate(
+                        CACHE_KEY_UPDATE_CHARACTER,
+                        connection, transaction,
+                        "characters",
+                        new[]
+                        {
+                            new PostgreSQLHelpers.ColumnInfo("entity_id", character.EntityId),
+                            new PostgreSQLHelpers.ColumnInfo("data_id", character.DataId),
+                            new PostgreSQLHelpers.ColumnInfo("faction_id", character.FactionId),
+                            new PostgreSQLHelpers.ColumnInfo("character_name", character.CharacterName),
+                            new PostgreSQLHelpers.ColumnInfo("level", character.Level),
+                            new PostgreSQLHelpers.ColumnInfo("exp", character.Exp),
+                            new PostgreSQLHelpers.ColumnInfo("current_hp", character.CurrentHp),
+                            new PostgreSQLHelpers.ColumnInfo("current_mp", character.CurrentMp),
+                            new PostgreSQLHelpers.ColumnInfo("current_stamina", character.CurrentStamina),
+                            new PostgreSQLHelpers.ColumnInfo("current_food", character.CurrentFood),
+                            new PostgreSQLHelpers.ColumnInfo("current_water", character.CurrentWater),
+                            new PostgreSQLHelpers.ColumnInfo("equip_weapon_set", character.EquipWeaponSet),
+                            new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
+                            new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
+                            new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
+                            new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
+                            new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
+                            new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
+                            new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
+                            new PostgreSQLHelpers.ColumnInfo("current_position_z", character.CurrentPosition.z),
+                            new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
+                            new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
+                            new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
+                            new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
+    #if !DISABLE_DIFFER_MAP_RESPAWNING
+                            new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
+                            new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
+                            new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
+                            new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
+    #endif
+                            new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
+                            new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
+                            new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
+                            new PostgreSQLHelpers.ColumnInfo("reputation", 0),
+                            new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
+                            new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
+                        },
+                        PostgreSQLHelpers.WhereEqualTo("id", character.Id));
+                }
+                await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, storageItems);
                 if (deleteStorageReservation)
                 {
                     await DeleteReservedStorageByReserver(character.Id);

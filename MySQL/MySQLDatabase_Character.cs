@@ -301,31 +301,72 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private async UniTask FillCharacterRelatesData(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
+        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
         {
-            await FillCharacterAttributes(connection, transaction, characterData);
-            await FillCharacterBuffs(connection, transaction, characterData);
-            await FillCharacterHotkeys(connection, transaction, characterData);
-            await FillCharacterItems(connection, transaction, characterData);
-            await FillCharacterQuests(connection, transaction, characterData);
-            await FillCharacterCurrencies(connection, transaction, characterData);
-            await FillCharacterSkills(connection, transaction, characterData);
-            await FillCharacterSkillUsages(connection, transaction, characterData);
-            await FillCharacterSummons(connection, transaction, characterData);
-            await CreateOrUpdateCharacterMount(connection, transaction, characterData.Id, characterData.Mount);
+            if (state.Has(TransactionUpdateCharacterState.Attributes))
+                await FillCharacterAttributes(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Buffs))
+                await FillCharacterBuffs(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Hotkeys))
+                await FillCharacterHotkeys(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Items))
+                await FillCharacterItems(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Quests))
+                await FillCharacterQuests(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Currencies))
+                await FillCharacterCurrencies(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Skills))
+                await FillCharacterSkills(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.SkillUsages))
+                await FillCharacterSkillUsages(connection, transaction, characterData);
+            if (state.Has(TransactionUpdateCharacterState.Summons))
+                await FillCharacterSummons(connection, transaction, characterData);
 
 #if !DISABLE_CUSTOM_CHARACTER_DATA
-            await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            if (state.Has(TransactionUpdateCharacterState.ServerCustomData))
+            {
+                await FillCharacterDataBooleans(connection, transaction, "character_server_boolean", characterData.Id, characterData.ServerBools);
+                await FillCharacterDataInt32s(connection, transaction, "character_server_int32", characterData.Id, characterData.ServerInts);
+                await FillCharacterDataFloat32s(connection, transaction, "character_server_float32", characterData.Id, characterData.ServerFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PrivateCustomData))
+            {
+                await FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
+                await FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
+                await FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            }
+            if (state.Has(TransactionUpdateCharacterState.PublicCustomData))
+            {
+                await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
+                await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
+                await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+            }
+#endif
 
-            await FillCharacterDataBooleans(connection, transaction, "character_private_boolean", characterData.Id, characterData.PrivateBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_private_int32", characterData.Id, characterData.PrivateInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_private_float32", characterData.Id, characterData.PrivateFloats);
+            if (state.Has(TransactionUpdateCharacterState.Mount))
+                await CreateOrUpdateCharacterMount(connection, transaction, characterData.Id, characterData.Mount);
 
-            await FillCharacterDataBooleans(connection, transaction, "character_public_boolean", characterData.Id, characterData.PublicBools);
-            await FillCharacterDataInt32s(connection, transaction, "character_public_int32", characterData.Id, characterData.PublicInts);
-            await FillCharacterDataFloat32s(connection, transaction, "character_public_float32", characterData.Id, characterData.PublicFloats);
+#if !DISABLE_CLASSIC_PK
+            if (state.Has(TransactionUpdateCharacterState.Pk))
+            {
+                await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
+                    (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
+                    (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
+                    ON DUPLICATE KEY UPDATE
+                    isPkOn = @isPkOn,
+                    lastPkOnTime = @lastPkOnTime,
+                    pkPoint = @pkPoint,
+                    consecutivePkKills = @consecutivePkKills,
+                    highestPkPoint = @highestPkPoint,
+                    highestConsecutivePkKills = @highestConsecutivePkKills",
+                    new MySqlParameter("@id", characterData.Id),
+                    new MySqlParameter("@isPkOn", characterData.IsPkOn),
+                    new MySqlParameter("@lastPkOnTime", characterData.LastPkOnTime),
+                    new MySqlParameter("@pkPoint", characterData.PkPoint),
+                    new MySqlParameter("@consecutivePkKills", characterData.ConsecutivePkKills),
+                    new MySqlParameter("@highestPkPoint", characterData.HighestPkPoint),
+                    new MySqlParameter("@highestConsecutivePkKills", characterData.HighestConsecutivePkKills));
+            }
 #endif
 
             if (summonBuffs != null)
@@ -333,7 +374,6 @@ namespace MultiplayerARPG.MMO
 
             if (storageItems != null)
                 await FillPlayerStorageItems(connection, transaction, characterData.UserId, storageItems);
-
         }
 
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
@@ -384,7 +424,8 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@frameDataId", character.FrameDataId),
                             new MySqlParameter("@titleDataId", character.TitleDataId),
                             new MySqlParameter("@reputation", 0));
-                        await FillCharacterRelatesData(connection, transaction, character, null, null);
+                        TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
+                        await FillCharacterRelatesData(state, connection, transaction, character, null, null);
                         this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
                         await transaction.CommitAsync();
                     }
@@ -676,101 +717,85 @@ namespace MultiplayerARPG.MMO
                 {
                     try
                     {
-#if !DISABLE_CLASSIC_PK
-                        await ExecuteNonQuery(connection, transaction, @"INSERT INTO character_pk
-                            (id, isPkOn, lastPkOnTime, pkPoint, consecutivePkKills, highestPkPoint, highestConsecutivePkKills) VALUES
-                            (@id, @isPkOn, @lastPkOnTime, @pkPoint, @consecutivePkKills, @highestPkPoint, @highestConsecutivePkKills)
-                            ON DUPLICATE KEY UPDATE
-                            isPkOn = @isPkOn,
-                            lastPkOnTime = @lastPkOnTime,
-                            pkPoint = @pkPoint,
-                            consecutivePkKills = @consecutivePkKills,
-                            highestPkPoint = @highestPkPoint,
-                            highestConsecutivePkKills = @highestConsecutivePkKills",
-                            new MySqlParameter("@id", character.Id),
-                            new MySqlParameter("@isPkOn", character.IsPkOn),
-                            new MySqlParameter("@lastPkOnTime", character.LastPkOnTime),
-                            new MySqlParameter("@pkPoint", character.PkPoint),
-                            new MySqlParameter("@consecutivePkKills", character.ConsecutivePkKills),
-                            new MySqlParameter("@highestPkPoint", character.HighestPkPoint),
-                            new MySqlParameter("@highestConsecutivePkKills", character.HighestConsecutivePkKills));
-#endif
-                        await ExecuteNonQuery(connection, transaction, "UPDATE characters SET " +
-                            " dataId=@dataId," +
-                            " entityId=@entityId," +
-                            " factionId=@factionId," +
-                            " characterName=@characterName," +
-                            " level=@level," +
-                            " exp=@exp," +
-                            " currentHp=@currentHp," +
-                            " currentMp=@currentMp," +
-                            " currentStamina=@currentStamina," +
-                            " currentFood=@currentFood," +
-                            " currentWater=@currentWater," +
-                            " equipWeaponSet=@equipWeaponSet," +
-                            " statPoint=@statPoint," +
-                            " skillPoint=@skillPoint," +
-                            " gold=@gold," +
-                            " currentChannel=@currentChannel," +
-                            " currentMapName=@currentMapName," +
-                            " currentPositionX=@currentPositionX," +
-                            " currentPositionY=@currentPositionY," +
-                            " currentPositionZ=@currentPositionZ," +
-                            " currentRotationX=@currentRotationX," +
-                            " currentRotationY=@currentRotationY," +
-                            " currentRotationZ=@currentRotationZ," +
-                            " currentSafeArea=@currentSafeArea," +
-#if !DISABLE_DIFFER_MAP_RESPAWNING
-                            " respawnMapName=@respawnMapName," +
-                            " respawnPositionX=@respawnPositionX," +
-                            " respawnPositionY=@respawnPositionY," +
-                            " respawnPositionZ=@respawnPositionZ," +
-#endif
-                            " iconDataId=@iconDataId," +
-                            " frameDataId=@frameDataId," +
-                            " titleDataId=@titleDataId," +
-                            " reputation=@reputation," +
-                            " lastDeadTime=@lastDeadTime," +
-                            " unmuteTime=@unmuteTime" +
-                            " WHERE id=@id",
-                            new MySqlParameter("@dataId", character.DataId),
-                            new MySqlParameter("@entityId", character.EntityId),
-                            new MySqlParameter("@factionId", character.FactionId),
-                            new MySqlParameter("@characterName", character.CharacterName),
-                            new MySqlParameter("@level", character.Level),
-                            new MySqlParameter("@exp", character.Exp),
-                            new MySqlParameter("@currentHp", character.CurrentHp),
-                            new MySqlParameter("@currentMp", character.CurrentMp),
-                            new MySqlParameter("@currentStamina", character.CurrentStamina),
-                            new MySqlParameter("@currentFood", character.CurrentFood),
-                            new MySqlParameter("@currentWater", character.CurrentWater),
-                            new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
-                            new MySqlParameter("@statPoint", character.StatPoint),
-                            new MySqlParameter("@skillPoint", character.SkillPoint),
-                            new MySqlParameter("@gold", character.Gold),
-                            new MySqlParameter("@currentChannel", character.CurrentChannel),
-                            new MySqlParameter("@currentMapName", character.CurrentMapName),
-                            new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
-                            new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
-                            new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
-                            new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
-                            new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
-                            new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
-                            new MySqlParameter("@currentSafeArea", character.CurrentSafeArea),
-#if !DISABLE_DIFFER_MAP_RESPAWNING
-                            new MySqlParameter("@respawnMapName", character.RespawnMapName),
-                            new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
-                            new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
-                            new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-#endif
-                            new MySqlParameter("@iconDataId", character.IconDataId),
-                            new MySqlParameter("@frameDataId", character.FrameDataId),
-                            new MySqlParameter("@titleDataId", character.TitleDataId),
-                            new MySqlParameter("@reputation", character.Reputation),
-                            new MySqlParameter("@lastDeadTime", character.LastDeadTime),
-                            new MySqlParameter("@unmuteTime", character.UnmuteTime),
-                            new MySqlParameter("@id", character.Id));
-                        await FillCharacterRelatesData(connection, transaction, character, summonBuffs, storageItems);
+                        if (state.Has(TransactionUpdateCharacterState.Character))
+                        {
+                            await ExecuteNonQuery(connection, transaction, "UPDATE characters SET " +
+                                " dataId=@dataId," +
+                                " entityId=@entityId," +
+                                " factionId=@factionId," +
+                                " characterName=@characterName," +
+                                " level=@level," +
+                                " exp=@exp," +
+                                " currentHp=@currentHp," +
+                                " currentMp=@currentMp," +
+                                " currentStamina=@currentStamina," +
+                                " currentFood=@currentFood," +
+                                " currentWater=@currentWater," +
+                                " equipWeaponSet=@equipWeaponSet," +
+                                " statPoint=@statPoint," +
+                                " skillPoint=@skillPoint," +
+                                " gold=@gold," +
+                                " currentChannel=@currentChannel," +
+                                " currentMapName=@currentMapName," +
+                                " currentPositionX=@currentPositionX," +
+                                " currentPositionY=@currentPositionY," +
+                                " currentPositionZ=@currentPositionZ," +
+                                " currentRotationX=@currentRotationX," +
+                                " currentRotationY=@currentRotationY," +
+                                " currentRotationZ=@currentRotationZ," +
+                                " currentSafeArea=@currentSafeArea," +
+    #if !DISABLE_DIFFER_MAP_RESPAWNING
+                                " respawnMapName=@respawnMapName," +
+                                " respawnPositionX=@respawnPositionX," +
+                                " respawnPositionY=@respawnPositionY," +
+                                " respawnPositionZ=@respawnPositionZ," +
+    #endif
+                                " iconDataId=@iconDataId," +
+                                " frameDataId=@frameDataId," +
+                                " titleDataId=@titleDataId," +
+                                " reputation=@reputation," +
+                                " lastDeadTime=@lastDeadTime," +
+                                " unmuteTime=@unmuteTime" +
+                                " WHERE id=@id",
+                                new MySqlParameter("@dataId", character.DataId),
+                                new MySqlParameter("@entityId", character.EntityId),
+                                new MySqlParameter("@factionId", character.FactionId),
+                                new MySqlParameter("@characterName", character.CharacterName),
+                                new MySqlParameter("@level", character.Level),
+                                new MySqlParameter("@exp", character.Exp),
+                                new MySqlParameter("@currentHp", character.CurrentHp),
+                                new MySqlParameter("@currentMp", character.CurrentMp),
+                                new MySqlParameter("@currentStamina", character.CurrentStamina),
+                                new MySqlParameter("@currentFood", character.CurrentFood),
+                                new MySqlParameter("@currentWater", character.CurrentWater),
+                                new MySqlParameter("@equipWeaponSet", character.EquipWeaponSet),
+                                new MySqlParameter("@statPoint", character.StatPoint),
+                                new MySqlParameter("@skillPoint", character.SkillPoint),
+                                new MySqlParameter("@gold", character.Gold),
+                                new MySqlParameter("@currentChannel", character.CurrentChannel),
+                                new MySqlParameter("@currentMapName", character.CurrentMapName),
+                                new MySqlParameter("@currentPositionX", character.CurrentPosition.x),
+                                new MySqlParameter("@currentPositionY", character.CurrentPosition.y),
+                                new MySqlParameter("@currentPositionZ", character.CurrentPosition.z),
+                                new MySqlParameter("@currentRotationX", character.CurrentRotation.x),
+                                new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
+                                new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
+                                new MySqlParameter("@currentSafeArea", character.CurrentSafeArea),
+    #if !DISABLE_DIFFER_MAP_RESPAWNING
+                                new MySqlParameter("@respawnMapName", character.RespawnMapName),
+                                new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
+                                new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
+                                new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
+    #endif
+                                new MySqlParameter("@iconDataId", character.IconDataId),
+                                new MySqlParameter("@frameDataId", character.FrameDataId),
+                                new MySqlParameter("@titleDataId", character.TitleDataId),
+                                new MySqlParameter("@reputation", character.Reputation),
+                                new MySqlParameter("@lastDeadTime", character.LastDeadTime),
+                                new MySqlParameter("@unmuteTime", character.UnmuteTime),
+                                new MySqlParameter("@id", character.Id));
+                        }
+                        await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, storageItems);
                         if (deleteStorageReservation)
                         {
                             await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
