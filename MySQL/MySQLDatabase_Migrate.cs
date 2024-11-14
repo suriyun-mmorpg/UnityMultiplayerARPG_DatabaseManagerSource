@@ -322,6 +322,10 @@ namespace MultiplayerARPG.MMO
                     "PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;");
                 await ExecuteNonQuery("ALTER TABLE `userlogin` CHANGE `accessToken` `accessToken` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;");
             });
+            await DoMigration("1.90b", async () =>
+            {
+                await ExecuteNonQuery("ALTER TABLE `userlogin` CHANGE `accessToken` `accessToken` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)
