@@ -386,8 +386,8 @@ namespace MultiplayerARPG.MMO
                     try
                     {
                         await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
-                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, titleDataId, reputation) VALUES " +
-                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @titleDataId, @reputation)",
+                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, titleDataId) VALUES " +
+                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @titleDataId)",
                             new MySqlParameter("@id", character.Id),
                             new MySqlParameter("@userId", userId),
                             new MySqlParameter("@dataId", character.DataId),
@@ -422,8 +422,7 @@ namespace MultiplayerARPG.MMO
 #endif
                             new MySqlParameter("@iconDataId", character.IconDataId),
                             new MySqlParameter("@frameDataId", character.FrameDataId),
-                            new MySqlParameter("@titleDataId", character.TitleDataId),
-                            new MySqlParameter("@reputation", 0));
+                            new MySqlParameter("@titleDataId", character.TitleDataId));
                         TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
                         await FillCharacterRelatesData(state, connection, transaction, character, null, null);
                         this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);

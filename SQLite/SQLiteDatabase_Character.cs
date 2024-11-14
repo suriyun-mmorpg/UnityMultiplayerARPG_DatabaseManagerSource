@@ -385,8 +385,8 @@ namespace MultiplayerARPG.MMO
             try
             {
                 ExecuteNonQuery(transaction, "INSERT INTO characters " +
-                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, titleDataId, reputation) VALUES " +
-                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @titleDataId, @reputation)",
+                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, titleDataId) VALUES " +
+                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @titleDataId)",
                     new SqliteParameter("@id", character.Id),
                     new SqliteParameter("@userId", userId),
                     new SqliteParameter("@dataId", character.DataId),
@@ -421,8 +421,7 @@ namespace MultiplayerARPG.MMO
 #endif
                     new SqliteParameter("@iconDataId", character.IconDataId),
                     new SqliteParameter("@frameDataId", character.FrameDataId),
-                    new SqliteParameter("@titleDataId", character.TitleDataId),
-                    new SqliteParameter("@reputation", 0));
+                    new SqliteParameter("@titleDataId", character.TitleDataId));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
                 FillCharacterRelatesData(state, transaction, character, null, null);
                 this.InvokeInstanceDevExtMethods("CreateCharacter", transaction, userId, character);
