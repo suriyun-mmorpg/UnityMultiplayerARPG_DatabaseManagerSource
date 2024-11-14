@@ -162,48 +162,47 @@ namespace MultiplayerARPG.MMO
                 result.PartyId = reader.GetInt32(17);
                 result.GuildId = reader.GetInt32(18);
                 result.GuildRole = reader.GetByte(19);
-                result.SharedGuildExp = reader.GetInt32(20);
-                result.CurrentChannel = reader.GetString(21);
-                result.CurrentMapName = reader.GetString(22);
-                result.CurrentPosition = new Vec3(reader.GetFloat(23), reader.GetFloat(24), reader.GetFloat(25));
-                result.CurrentRotation = new Vec3(reader.GetFloat(26), reader.GetFloat(27), reader.GetFloat(28));
-                result.CurrentSafeArea = reader.GetString(29);
+                result.CurrentChannel = reader.GetString(20);
+                result.CurrentMapName = reader.GetString(21);
+                result.CurrentPosition = new Vec3(reader.GetFloat(22), reader.GetFloat(23), reader.GetFloat(24));
+                result.CurrentRotation = new Vec3(reader.GetFloat(25), reader.GetFloat(26), reader.GetFloat(27));
+                result.CurrentSafeArea = reader.GetString(28);
 #if !DISABLE_DIFFER_MAP_RESPAWNING
-                result.RespawnMapName = reader.GetString(30);
-                result.RespawnPosition = new Vec3(reader.GetFloat(31), reader.GetFloat(32), reader.GetFloat(33));
+                result.RespawnMapName = reader.GetString(29);
+                result.RespawnPosition = new Vec3(reader.GetFloat(30), reader.GetFloat(31), reader.GetFloat(32));
 #endif
-                result.IconDataId = reader.GetInt32(34);
-                result.FrameDataId = reader.GetInt32(35);
-                result.TitleDataId = reader.GetInt32(36);
-                result.Reputation = reader.GetInt32(37);
-                result.LastDeadTime = reader.GetInt64(38);
-                result.UnmuteTime = reader.GetInt64(39);
-                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(40)).ToUnixTimeSeconds();
+                result.IconDataId = reader.GetInt32(33);
+                result.FrameDataId = reader.GetInt32(34);
+                result.TitleDataId = reader.GetInt32(35);
+                result.Reputation = reader.GetInt32(36);
+                result.LastDeadTime = reader.GetInt64(37);
+                result.UnmuteTime = reader.GetInt64(38);
+                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(39)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
+                if (!reader.IsDBNull(40))
+                    result.IsPkOn = reader.GetBoolean(40);
                 if (!reader.IsDBNull(41))
-                    result.IsPkOn = reader.GetBoolean(41);
+                    result.LastPkOnTime = reader.GetInt64(41);
                 if (!reader.IsDBNull(42))
-                    result.LastPkOnTime = reader.GetInt64(42);
+                    result.PkPoint = reader.GetInt32(42);
                 if (!reader.IsDBNull(43))
-                    result.PkPoint = reader.GetInt32(43);
+                    result.ConsecutivePkKills = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.ConsecutivePkKills = reader.GetInt32(44);
+                    result.HighestPkPoint = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    result.HighestPkPoint = reader.GetInt32(45);
-                if (!reader.IsDBNull(46))
-                    result.HighestConsecutivePkKills = reader.GetInt32(46);
+                    result.HighestConsecutivePkKills = reader.GetInt32(45);
 #endif
                 CharacterMount mount = new CharacterMount();
+                if (!reader.IsDBNull(46))
+                    mount.type = (MountType)reader.GetInt16(46);
                 if (!reader.IsDBNull(47))
-                    mount.type = (MountType)reader.GetInt16(47);
+                    mount.sourceId = reader.GetString(47);
                 if (!reader.IsDBNull(48))
-                    mount.sourceId = reader.GetString(48);
+                    mount.mountRemainsDuration = reader.GetFloat(48);
                 if (!reader.IsDBNull(49))
-                    mount.mountRemainsDuration = reader.GetFloat(49);
+                    mount.level = reader.GetInt32(49);
                 if (!reader.IsDBNull(50))
-                    mount.level = reader.GetInt32(50);
-                if (!reader.IsDBNull(51))
-                    mount.currentHp = reader.GetInt32(51);
+                    mount.currentHp = reader.GetInt32(50);
                 result.Mount = mount;
                 return true;
             }
@@ -270,7 +269,7 @@ namespace MultiplayerARPG.MMO
             NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT
                 c.id, c.user_id, c.data_id, c.entity_id, c.faction_id, c.character_name, c.level, c.exp,
                 c.current_hp, c.current_mp, c.current_stamina, c.current_food, c.current_water,
-                c.equip_weapon_set, c.stat_point, c.skill_point, c.gold, c.party_id, c.guild_id, c.guild_role, c.shared_guild_exp,
+                c.equip_weapon_set, c.stat_point, c.skill_point, c.gold, c.party_id, c.guild_id, c.guild_role,
                 c.current_channel,
                 c.current_map_name, c.current_position_x, c.current_position_y, c.current_position_z, c.current_rotation_x, current_rotation_y, current_rotation_z,
                 c.current_safe_area,
