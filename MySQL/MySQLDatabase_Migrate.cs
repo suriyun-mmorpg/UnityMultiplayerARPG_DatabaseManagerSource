@@ -325,6 +325,7 @@ namespace MultiplayerARPG.MMO
             await DoMigration("1.90b", async () =>
             {
                 await ExecuteNonQuery("ALTER TABLE `userlogin` CHANGE `accessToken` `accessToken` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';");
+                await ExecuteNonQuery("ALTER TABLE `characters` DROP `sharedGuildExp`;");
             });
         }
 
