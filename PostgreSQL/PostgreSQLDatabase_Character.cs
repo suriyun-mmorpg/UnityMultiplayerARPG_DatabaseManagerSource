@@ -126,7 +126,8 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("reputation", 0));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
                 await FillCharacterRelatesData(state, connection, transaction, character, null, null);
-                this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
+                if (onCreateCharacter != null)
+                    onCreateCharacter.Invoke(connection, transaction, userId, character);
                 await transaction.CommitAsync();
             }
             catch (System.Exception ex)
@@ -337,23 +338,25 @@ namespace MultiplayerARPG.MMO
                 result.PublicFloats = await PostgreSQLHelpers.ExecuteSelectJson<CharacterDataFloat32[]>(connection, "character_public_float32s", id);
             }
 #endif
-            // Invoke dev extension methods
-            this.InvokeInstanceDevExtMethods("ReadCharacter",
-                result,
-                withEquipWeapons,
-                withAttributes,
-                withSkills,
-                withSkillUsages,
-                withBuffs,
-                withEquipItems,
-                withNonEquipItems,
-                withSummons,
-                withHotkeys,
-                withQuests,
-                withCurrencies,
-                withServerCustomData,
-                withPrivateCustomData,
-                withPublicCustomData);
+            if (onGetCharacter != null)
+            {
+                result = onGetCharacter.Invoke(
+                    result,
+                    withEquipWeapons,
+                    withAttributes,
+                    withSkills,
+                    withSkillUsages,
+                    withBuffs,
+                    withEquipItems,
+                    withNonEquipItems,
+                    withSummons,
+                    withHotkeys,
+                    withQuests,
+                    withCurrencies,
+                    withServerCustomData,
+                    withPrivateCustomData,
+                    withPublicCustomData);
+            }
             return result;
         }
 
@@ -442,12 +445,12 @@ namespace MultiplayerARPG.MMO
                             new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                             new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
                             new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
-    #if !DISABLE_DIFFER_MAP_RESPAWNING
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                             new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                             new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
                             new PostgreSQLHelpers.ColumnInfo("respawn_position_y", character.RespawnPosition.y),
                             new PostgreSQLHelpers.ColumnInfo("respawn_position_z", character.RespawnPosition.z),
-    #endif
+#endif
                             new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                             new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                             new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
@@ -462,7 +465,8 @@ namespace MultiplayerARPG.MMO
                 {
                     await DeleteReservedStorageByReserver(character.Id);
                 }
-                this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
+                if (onUpdateCharacter != null)
+                    onUpdateCharacter.Invoke(connection, transaction, state, character);
                 await transaction.CommitAsync();
             }
             catch (System.Exception ex)
@@ -510,7 +514,8 @@ namespace MultiplayerARPG.MMO
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "friends", "character_id_1", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "friends", "character_id_2", id);
 
-                this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
+                if (onDeleteCharacter != null)
+                    onDeleteCharacter.Invoke(connection, transaction, userId, id);
                 await transaction.CommitAsync();
             }
             catch (System.Exception ex)

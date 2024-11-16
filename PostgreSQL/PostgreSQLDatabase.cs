@@ -20,6 +20,11 @@ namespace MultiplayerARPG.MMO
         private string _connectionString = "";
         private NpgsqlDataSource _dataSource;
 
+        private event DbGetCharacterDelegate onGetCharacter = null;
+        private event DbCreateCharacterDelegate<NpgsqlConnection, NpgsqlTransaction> onCreateCharacter = null;
+        private event DbUpdateCharacterDelegate<NpgsqlConnection, NpgsqlTransaction> onUpdateCharacter = null;
+        private event DbDeleteCharacterDelegate<NpgsqlConnection, NpgsqlTransaction> onDeleteCharacter = null;
+
         public override void Initialize()
         {
             // Json file read

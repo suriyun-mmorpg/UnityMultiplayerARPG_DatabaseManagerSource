@@ -38,6 +38,11 @@ namespace MultiplayerARPG.MMO
         private SqliteConnection? _connection;
 #nullable restore
 
+        private event DbGetCharacterDelegate onGetCharacter = null;
+        private event DbCreateCharacterDelegate<SqliteConnection, SqliteTransaction> onCreateCharacter = null;
+        private event DbUpdateCharacterDelegate<SqliteConnection, SqliteTransaction> onUpdateCharacter = null;
+        private event DbDeleteCharacterDelegate<SqliteConnection, SqliteTransaction> onDeleteCharacter = null;
+
         public override void Initialize()
         {
             // Json file read

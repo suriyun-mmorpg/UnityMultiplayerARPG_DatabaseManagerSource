@@ -425,7 +425,8 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@titleDataId", character.TitleDataId));
                         TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
                         await FillCharacterRelatesData(state, connection, transaction, character, null, null);
-                        this.InvokeInstanceDevExtMethods("CreateCharacter", connection, transaction, userId, character);
+                        if (onCreateCharacter != null)
+                            onCreateCharacter.Invoke(connection, transaction, userId, character);
                         await transaction.CommitAsync();
                     }
                     catch (System.Exception ex)
@@ -667,23 +668,25 @@ namespace MultiplayerARPG.MMO
                     result.PublicFloats = publicFloats;
                 }
 #endif
-                // Invoke dev extension methods
-                this.InvokeInstanceDevExtMethods("ReadCharacter",
-                    result,
-                    withEquipWeapons,
-                    withAttributes,
-                    withSkills,
-                    withSkillUsages,
-                    withBuffs,
-                    withEquipItems,
-                    withNonEquipItems,
-                    withSummons,
-                    withHotkeys,
-                    withQuests,
-                    withCurrencies,
-                    withServerCustomData,
-                    withPrivateCustomData,
-                    withPublicCustomData);
+                if (onGetCharacter != null)
+                {
+                    result = onGetCharacter.Invoke(
+                        result,
+                        withEquipWeapons,
+                        withAttributes,
+                        withSkills,
+                        withSkillUsages,
+                        withBuffs,
+                        withEquipItems,
+                        withNonEquipItems,
+                        withSummons,
+                        withHotkeys,
+                        withQuests,
+                        withCurrencies,
+                        withServerCustomData,
+                        withPrivateCustomData,
+                        withPublicCustomData);
+                }
             }
             return result;
         }
@@ -799,7 +802,8 @@ namespace MultiplayerARPG.MMO
                             await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",
                                 new MySqlParameter("@reserverId", character.Id));
                         }
-                        this.InvokeInstanceDevExtMethods("UpdateCharacter", connection, transaction, character);
+                        if (onUpdateCharacter != null)
+                            onUpdateCharacter.Invoke(connection, transaction, state, character);
                         await transaction.CommitAsync();
                     }
                     catch (System.Exception ex)
@@ -853,7 +857,8 @@ namespace MultiplayerARPG.MMO
                             await DeleteCharacterDataInt32s(connection, transaction, "character_public_int32", id);
                             await DeleteCharacterDataFloat32s(connection, transaction, "character_public_float32", id);
 
-                            this.InvokeInstanceDevExtMethods("DeleteCharacter", connection, transaction, userId, id);
+                            if (onDeleteCharacter != null)
+                                onDeleteCharacter.Invoke(connection, transaction, userId, id);
                             await transaction.CommitAsync();
                         }
                         catch (System.Exception ex)
