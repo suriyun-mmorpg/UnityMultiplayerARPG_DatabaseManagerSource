@@ -38,10 +38,12 @@ namespace MultiplayerARPG.MMO
         private SqliteConnection? _connection;
 #nullable restore
 
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         private event DbGetCharacterDelegate onGetCharacter = null;
         private event DbCreateCharacterDelegate<SqliteConnection, SqliteTransaction> onCreateCharacter = null;
         private event DbUpdateCharacterDelegate<SqliteConnection, SqliteTransaction> onUpdateCharacter = null;
         private event DbDeleteCharacterDelegate<SqliteConnection, SqliteTransaction> onDeleteCharacter = null;
+#endif
 
         public override void Initialize()
         {

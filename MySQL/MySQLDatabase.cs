@@ -42,10 +42,12 @@ namespace MultiplayerARPG.MMO
 #endif
         private string connectionString = "";
 
+#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         private event DbGetCharacterDelegate onGetCharacter = null;
         private event DbCreateCharacterDelegate<MySqlConnection, MySqlTransaction> onCreateCharacter = null;
         private event DbUpdateCharacterDelegate<MySqlConnection, MySqlTransaction> onUpdateCharacter = null;
         private event DbDeleteCharacterDelegate<MySqlConnection, MySqlTransaction> onDeleteCharacter = null;
+#endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
         public override void Initialize()
