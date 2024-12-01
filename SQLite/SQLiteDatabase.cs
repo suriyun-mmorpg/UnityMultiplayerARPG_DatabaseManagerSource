@@ -272,6 +272,7 @@ namespace MultiplayerARPG.MMO
               id TEXT NOT NULL PRIMARY KEY,
               characterId TEXT NOT NULL,
               type INTEGER NOT NULL DEFAULT 0,
+              sourceId TEXT NOT NULL DEFAULT '',
               dataId INTEGER NOT NULL DEFAULT 0,
               summonRemainsDuration REAL NOT NULL DEFAULT 0,
               level INTEGER NOT NULL DEFAULT 0,

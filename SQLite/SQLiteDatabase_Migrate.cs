@@ -173,6 +173,9 @@ namespace MultiplayerARPG.MMO
             if (!IsColumnExist("characters", "unmuteTime"))
                 ExecuteNonQuery("ALTER TABLE characters ADD unmuteTime INTEGER NOT NULL DEFAULT 0;");
 
+            if (!IsColumnExist("charactersummon", "sourceId"))
+                ExecuteNonQuery("ALTER TABLE charactersummon ADD sourceId TEXT NOT NULL DEFAULT '';");
+
             if (!IsColumnExist("guild", "guildMessage2"))
                 ExecuteNonQuery("ALTER TABLE guild ADD guildMessage2 TEXT NOT NULL DEFAULT '';");
 

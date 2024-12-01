@@ -14,12 +14,13 @@ namespace MultiplayerARPG.MMO
             {
                 result = new CharacterSummon();
                 result.type = (SummonType)reader.GetByte(0);
-                result.dataId = reader.GetInt32(1);
-                result.summonRemainsDuration = reader.GetFloat(2);
-                result.level = reader.GetInt32(3);
-                result.exp = reader.GetInt32(4);
-                result.currentHp = reader.GetInt32(5);
-                result.currentMp = reader.GetInt32(6);
+                result.sourceId = reader.GetString(1);
+                result.dataId = reader.GetInt32(2);
+                result.summonRemainsDuration = reader.GetFloat(3);
+                result.level = reader.GetInt32(4);
+                result.exp = reader.GetInt32(5);
+                result.currentHp = reader.GetInt32(6);
+                result.currentMp = reader.GetInt32(7);
                 return true;
             }
             result = CharacterSummon.Empty;
@@ -35,10 +36,11 @@ namespace MultiplayerARPG.MMO
                 return;
             }
             insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO charactersummon (id, characterId, type, dataId, summonRemainsDuration, level, exp, currentHp, currentMp) VALUES (@id, @characterId, @type, @dataId, @summonRemainsDuration, @level, @exp, @currentHp, @currentMp)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO charactersummon (id, characterId, type, sourceId, dataId, summonRemainsDuration, level, exp, currentHp, currentMp) VALUES (@id, @characterId, @type, @dataId, @summonRemainsDuration, @level, @exp, @currentHp, @currentMp)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@characterId", characterId),
                 new MySqlParameter("@type", (byte)characterSummon.type),
+                new MySqlParameter("@sourceId", characterSummon.sourceId),
                 new MySqlParameter("@dataId", characterSummon.dataId),
                 new MySqlParameter("@summonRemainsDuration", characterSummon.summonRemainsDuration),
                 new MySqlParameter("@level", characterSummon.level),
@@ -58,7 +60,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempSummon);
                 }
-            }, "SELECT type, dataId, summonRemainsDuration, level, exp, currentHp, currentMp FROM charactersummon WHERE characterId=@characterId ORDER BY type DESC",
+            }, "SELECT type, sourceId, dataId, summonRemainsDuration, level, exp, currentHp, currentMp FROM charactersummon WHERE characterId=@characterId ORDER BY type DESC",
                 new MySqlParameter("@characterId", characterId));
             return result;
         }

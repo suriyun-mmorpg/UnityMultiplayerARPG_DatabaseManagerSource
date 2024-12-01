@@ -327,6 +327,10 @@ namespace MultiplayerARPG.MMO
                 await ExecuteNonQuery("ALTER TABLE `userlogin` CHANGE `accessToken` `accessToken` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';");
                 await ExecuteNonQuery("ALTER TABLE `characters` DROP `sharedGuildExp`;");
             });
+            await DoMigration("1.91", async () =>
+            {
+                await ExecuteNonQuery("ALTER TABLE `charactersummon` ADD `sourceId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' AFTER `type`;");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)
