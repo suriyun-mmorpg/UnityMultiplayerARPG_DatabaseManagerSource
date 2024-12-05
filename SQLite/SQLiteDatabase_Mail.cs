@@ -32,7 +32,7 @@ namespace MultiplayerARPG.MMO
                         Title = reader.GetString(2),
                         IsRead = reader.GetBoolean(7),
                         IsClaim = reader.GetBoolean(8),
-                        SentTimestamp = ((DateTimeOffset)reader.GetDateTime(9)).ToUnixTimeSeconds(),
+                        SentTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(9), DateTimeKind.Utc)).ToUnixTimeSeconds(),
                     };
                     if (onlyNewMails)
                     {
@@ -71,11 +71,11 @@ namespace MultiplayerARPG.MMO
                     result.ReadItems(reader.GetString(10));
                     result.IsRead = reader.GetBoolean(11);
                     if (reader[12] != DBNull.Value)
-                        result.ReadTimestamp = ((DateTimeOffset)reader.GetDateTime(12)).ToUnixTimeSeconds();
+                        result.ReadTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(12), DateTimeKind.Utc)).ToUnixTimeSeconds();
                     result.IsClaim = reader.GetBoolean(13);
                     if (reader[14] != DBNull.Value)
-                        result.ClaimTimestamp = ((DateTimeOffset)reader.GetDateTime(14)).ToUnixTimeSeconds();
-                    result.SentTimestamp = ((DateTimeOffset)reader.GetDateTime(15)).ToUnixTimeSeconds();
+                        result.ClaimTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(14), DateTimeKind.Utc)).ToUnixTimeSeconds();
+                    result.SentTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(15), DateTimeKind.Utc)).ToUnixTimeSeconds();
                 }
             }, "SELECT id, eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, isRead, readTimestamp, isClaim, claimTimestamp, sentTimestamp FROM mail WHERE id=@id AND receiverId LIKE @receiverId AND isDelete=0",
                 new SqliteParameter("@id", mailId),
@@ -91,7 +91,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=datetime('now', 'localtime') WHERE id=@id AND receiverId LIKE @receiverId AND isRead=0",
+                ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=datetime('now', 'utc') WHERE id=@id AND receiverId LIKE @receiverId AND isRead=0",
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
@@ -106,7 +106,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=datetime('now', 'localtime') WHERE id=@id AND receiverId LIKE @receiverId AND isClaim=0",
+                ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=datetime('now', 'utc') WHERE id=@id AND receiverId LIKE @receiverId AND isClaim=0",
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
@@ -121,7 +121,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=datetime('now', 'localtime') WHERE id=@id AND receiverId LIKE @receiverId AND isDelete=0",
+                ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=datetime('now', 'utc') WHERE id=@id AND receiverId LIKE @receiverId AND isDelete=0",
                     new SqliteParameter("@id", mailId),
                     new SqliteParameter("@receiverId", userId));
             }
@@ -131,7 +131,7 @@ namespace MultiplayerARPG.MMO
         public override UniTask<int> CreateMail(Mail mail)
         {
             return new UniTask<int>(ExecuteNonQuery("INSERT INTO mail (eventId, senderId, senderName, receiverId, title, content, gold, cash, currencies, items, sentTimestamp) " +
-                "VALUES (@eventId, @senderId, @senderName, @receiverId, @title, @content, @gold, @cash, @currencies, @items, datetime('now', 'localtime'))",
+                "VALUES (@eventId, @senderId, @senderName, @receiverId, @title, @content, @gold, @cash, @currencies, @items, datetime('now', 'utc'))",
                     new SqliteParameter("@eventId", mail.EventId),
                     new SqliteParameter("@senderId", mail.SenderId),
                     new SqliteParameter("@senderName", mail.SenderName),

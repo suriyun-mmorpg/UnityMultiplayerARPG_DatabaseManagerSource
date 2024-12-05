@@ -479,7 +479,7 @@ namespace MultiplayerARPG.MMO
                 result.Reputation = reader.GetInt32(36);
                 result.LastDeadTime = reader.GetInt64(37);
                 result.UnmuteTime = reader.GetInt64(38);
-                result.LastUpdate = ((System.DateTimeOffset)reader.GetDateTime(39)).ToUnixTimeSeconds();
+                result.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(39), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
                 if (!reader.IsDBNull(40))
                     result.IsPkOn = reader.GetBoolean(40);
@@ -756,7 +756,8 @@ namespace MultiplayerARPG.MMO
                                 " titleDataId=@titleDataId," +
                                 " reputation=@reputation," +
                                 " lastDeadTime=@lastDeadTime," +
-                                " unmuteTime=@unmuteTime" +
+                                " unmuteTime=@unmuteTime," +
+                                " updateAt=NOW_UTC()" +
                                 " WHERE id=@id",
                                 new MySqlParameter("@dataId", character.DataId),
                                 new MySqlParameter("@entityId", character.EntityId),

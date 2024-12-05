@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 using System;
-using System.Collections.Generic;
+using Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
@@ -34,7 +34,7 @@ namespace MultiplayerARPG.MMO
                     Title = reader.GetString(2),
                     IsRead = reader.GetBoolean(7),
                     IsClaim = reader.GetBoolean(8),
-                    SentTimestamp = ((DateTimeOffset)reader.GetDateTime(9)).ToUnixTimeSeconds(),
+                    SentTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(9), DateTimeKind.Utc)).ToUnixTimeSeconds(),
                 };
                 if (onlyNewMails)
                 {
@@ -78,11 +78,11 @@ namespace MultiplayerARPG.MMO
                 result.ReadItems(reader.GetString(10));
                 result.IsRead = reader.GetBoolean(11);
                 if (reader[12] != DBNull.Value)
-                    result.ReadTimestamp = ((DateTimeOffset)reader.GetDateTime(12)).ToUnixTimeSeconds();
+                    result.ReadTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(12), DateTimeKind.Utc)).ToUnixTimeSeconds();
                 result.IsClaim = reader.GetBoolean(13);
                 if (reader[14] != DBNull.Value)
-                    result.ClaimTimestamp = ((DateTimeOffset)reader.GetDateTime(14)).ToUnixTimeSeconds();
-                result.SentTimestamp = ((DateTimeOffset)reader.GetDateTime(15)).ToUnixTimeSeconds();
+                    result.ClaimTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(14), DateTimeKind.Utc)).ToUnixTimeSeconds();
+                result.SentTimestamp = ((DateTimeOffset)DateTime.SpecifyKind(reader.GetDateTime(15), DateTimeKind.Utc)).ToUnixTimeSeconds();
             }
             return result;
         }
@@ -98,7 +98,7 @@ namespace MultiplayerARPG.MMO
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_read", true),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "read_time", "NOW()"),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "read_time", "timezone('utc', now())"),
                 },
                 new[]
                 {
@@ -120,7 +120,7 @@ namespace MultiplayerARPG.MMO
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_claim", true),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "claim_time", "NOW()"),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "claim_time", "timezone('utc', now())"),
                 },
                 new[]
                 {
@@ -142,7 +142,7 @@ namespace MultiplayerARPG.MMO
                 new[]
                 {
                     new PostgreSQLHelpers.ColumnInfo("is_delete", true),
-                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "delete_time", "NOW()"),
+                    new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "delete_time", "timezone('utc', now())"),
                 },
                 new[]
                 {
