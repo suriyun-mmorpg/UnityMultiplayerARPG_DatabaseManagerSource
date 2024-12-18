@@ -55,6 +55,9 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
+            string extraData = building.ExtraData;
+            if (string.IsNullOrEmpty(extraData))
+                extraData = "";
             using (MySqlConnection connection = NewConnection())
             {
                 await OpenConnection(connection);
@@ -74,7 +77,7 @@ namespace MultiplayerARPG.MMO
                     new MySqlParameter("@rotationZ", building.Rotation.z),
                     new MySqlParameter("@creatorId", building.CreatorId),
                     new MySqlParameter("@creatorName", building.CreatorName),
-                    new MySqlParameter("@extraData", building.ExtraData),
+                    new MySqlParameter("@extraData", extraData),
                     new MySqlParameter("@isSceneObject", building.IsSceneObject));
             }
         }

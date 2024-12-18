@@ -60,6 +60,9 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
+            string extraData = building.ExtraData;
+            if (string.IsNullOrEmpty(extraData))
+                extraData = "";
             ExecuteNonQuery("INSERT INTO buildings (id, channel, parentId, entityId, currentHp, remainsLifeTime, mapName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, creatorId, creatorName, extraData, isSceneObject) VALUES (@id, @channel, @parentId, @entityId, @currentHp, @remainsLifeTime, @mapName, @positionX, @positionY, @positionZ, @rotationX, @rotationY, @rotationZ, @creatorId, @creatorName, @extraData, @isSceneObject)",
                 new SqliteParameter("@id", building.Id),
                 new SqliteParameter("@channel", channel),
@@ -76,7 +79,7 @@ namespace MultiplayerARPG.MMO
                 new SqliteParameter("@rotationZ", building.Rotation.z),
                 new SqliteParameter("@creatorId", building.CreatorId),
                 new SqliteParameter("@creatorName", building.CreatorName),
-                new SqliteParameter("@extraData", building.ExtraData),
+                new SqliteParameter("@extraData", extraData),
                 new SqliteParameter("@isSceneObject", building.IsSceneObject));
             return new UniTask();
         }
