@@ -545,7 +545,7 @@ namespace MultiplayerARPG.MMO
                 cmnt.type, cmnt.sourceId, cmnt.mountRemainsDuration, cmnt.level, cmnt.currentHp
                 FROM characters AS c 
                 LEFT JOIN character_pk AS cpk ON c.id = cpk.id
-                LEFT JOIN characterMount AS cmnt ON c.id = cmnt.id
+                LEFT JOIN charactermount AS cmnt ON c.id = cmnt.id
                 WHERE c.id=@id LIMIT 1",
                 new SqliteParameter("@id", id));
             // Found character, then read its relates data
