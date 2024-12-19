@@ -1,10 +1,12 @@
 namespace MultiplayerARPG.MMO
 {
     [System.Flags]
-    public enum TransactionUpdateBuildingState : int
+    public enum TransactionUpdateBuildingState : uint
     {
         None = 0,
         Building = 1 << 0,
+        StorageItems = 1 << 1,
+        All = Building | StorageItems,
     }
 
     public static class TransactionUpdateBuildingStateExtentions
