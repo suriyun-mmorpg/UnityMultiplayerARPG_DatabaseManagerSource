@@ -41,7 +41,7 @@ namespace MultiplayerARPG.MMO
             bool withPrivateCustomData = true,
             bool withPublicCustomData = true);
         UniTask<List<PlayerCharacterData>> GetCharacters(string userId);
-        UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation);
+        UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation);
         UniTask DeleteCharacter(string userId, string id);
         UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId);
         UniTask<long> FindCharacterName(string characterName);

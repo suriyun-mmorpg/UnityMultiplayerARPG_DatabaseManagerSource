@@ -9,7 +9,7 @@ namespace MultiplayerARPG.MMO
     public partial class PostgreSQLDatabase
     {
         public const string CACHE_KEY_UPSERT_CHARACTER_MOUNT = "UPSERT_CHARACTER_MOUNT";
-        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems)
+        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems)
         {
             if (state.Has(TransactionUpdateCharacterState.Attributes))
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
@@ -73,8 +73,11 @@ namespace MultiplayerARPG.MMO
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
 
-            if (storageItems != null)
-                await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, storageItems);
+            if (playerStorageItems != null)
+                await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, playerStorageItems);
+
+            if (protectedStorageItems != null)
+                await UpdateStorageItems(connection, transaction, StorageType.Protected, characterData.UserId, protectedStorageItems);
         }
 
         public const string CACHE_KEY_CREATE_CHARACTER = "CREATE_CHARACTER";
@@ -105,7 +108,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
                     new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
                     new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
-                    new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
+                    new PostgreSQLHelpers.ColumnInfo("current_channel", character.CurrentChannel),
                     new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
                     new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
                     new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
@@ -113,7 +116,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                     new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
-                    new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
+                    new PostgreSQLHelpers.ColumnInfo("current_safe_area", character.CurrentSafeArea),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                     new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                     new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
@@ -123,75 +126,76 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
-                    new PostgreSQLHelpers.ColumnInfo("reputation", 0));
+                    new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
-                await FillCharacterRelatesData(state, connection, transaction, character, null, null);
+                await FillCharacterRelatesData(state, connection, transaction, character, null, null, null);
                 if (onCreateCharacter != null)
                     onCreateCharacter.Invoke(connection, transaction, userId, character);
                 await transaction.CommitAsync();
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while create character: " + character.Id);
+                LogError(LogTag, $"Transaction, Error occurs while create character: {character.Id}");
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
+                throw;
             }
         }
 
-        private bool GetCharacter(NpgsqlDataReader reader, out PlayerCharacterData result)
+        private bool GetCharacter(NpgsqlDataReader reader, out PlayerCharacterData character)
         {
             if (reader.Read())
             {
-                result = new PlayerCharacterData();
-                result.Id = reader.GetString(0);
-                result.UserId = reader.GetString(1);
-                result.DataId = reader.GetInt32(2);
-                result.EntityId = reader.GetInt32(3);
-                result.FactionId = reader.GetInt32(4);
-                result.CharacterName = reader.GetString(5);
-                result.Level = reader.GetInt32(6);
-                result.Exp = reader.GetInt32(7);
-                result.CurrentHp = reader.GetInt32(8);
-                result.CurrentMp = reader.GetInt32(9);
-                result.CurrentStamina = reader.GetInt32(10);
-                result.CurrentFood = reader.GetInt32(11);
-                result.CurrentWater = reader.GetInt32(12);
-                result.EquipWeaponSet = reader.GetByte(13);
-                result.StatPoint = reader.GetFloat(14);
-                result.SkillPoint = reader.GetFloat(15);
-                result.Gold = reader.GetInt32(16);
-                result.PartyId = reader.GetInt32(17);
-                result.GuildId = reader.GetInt32(18);
-                result.GuildRole = reader.GetByte(19);
-                result.CurrentChannel = reader.GetString(20);
-                result.CurrentMapName = reader.GetString(21);
-                result.CurrentPosition = new Vec3(reader.GetFloat(22), reader.GetFloat(23), reader.GetFloat(24));
-                result.CurrentRotation = new Vec3(reader.GetFloat(25), reader.GetFloat(26), reader.GetFloat(27));
-                result.CurrentSafeArea = reader.GetString(28);
+                character = new PlayerCharacterData();
+                character.Id = reader.GetString(0);
+                character.UserId = reader.GetString(1);
+                character.DataId = reader.GetInt32(2);
+                character.EntityId = reader.GetInt32(3);
+                character.FactionId = reader.GetInt32(4);
+                character.CharacterName = reader.GetString(5);
+                character.Level = reader.GetInt32(6);
+                character.Exp = reader.GetInt32(7);
+                character.CurrentHp = reader.GetInt32(8);
+                character.CurrentMp = reader.GetInt32(9);
+                character.CurrentStamina = reader.GetInt32(10);
+                character.CurrentFood = reader.GetInt32(11);
+                character.CurrentWater = reader.GetInt32(12);
+                character.EquipWeaponSet = reader.GetByte(13);
+                character.StatPoint = reader.GetFloat(14);
+                character.SkillPoint = reader.GetFloat(15);
+                character.Gold = reader.GetInt32(16);
+                character.PartyId = reader.GetInt32(17);
+                character.GuildId = reader.GetInt32(18);
+                character.GuildRole = reader.GetByte(19);
+                character.CurrentChannel = reader.GetString(20);
+                character.CurrentMapName = reader.GetString(21);
+                character.CurrentPosition = new Vec3(reader.GetFloat(22), reader.GetFloat(23), reader.GetFloat(24));
+                character.CurrentRotation = new Vec3(reader.GetFloat(25), reader.GetFloat(26), reader.GetFloat(27));
+                character.CurrentSafeArea = reader.GetString(28);
 #if !DISABLE_DIFFER_MAP_RESPAWNING
-                result.RespawnMapName = reader.GetString(29);
-                result.RespawnPosition = new Vec3(reader.GetFloat(30), reader.GetFloat(31), reader.GetFloat(32));
+                character.RespawnMapName = reader.GetString(29);
+                character.RespawnPosition = new Vec3(reader.GetFloat(30), reader.GetFloat(31), reader.GetFloat(32));
 #endif
-                result.IconDataId = reader.GetInt32(33);
-                result.FrameDataId = reader.GetInt32(34);
-                result.TitleDataId = reader.GetInt32(35);
-                result.Reputation = reader.GetInt32(36);
-                result.LastDeadTime = reader.GetInt64(37);
-                result.UnmuteTime = reader.GetInt64(38);
-                result.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(39), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
+                character.IconDataId = reader.GetInt32(33);
+                character.FrameDataId = reader.GetInt32(34);
+                character.TitleDataId = reader.GetInt32(35);
+                character.Reputation = reader.GetInt32(36);
+                character.LastDeadTime = reader.GetInt64(37);
+                character.UnmuteTime = reader.GetInt64(38);
+                character.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(39), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
                 if (!reader.IsDBNull(40))
-                    result.IsPkOn = reader.GetBoolean(40);
+                    character.IsPkOn = reader.GetBoolean(40);
                 if (!reader.IsDBNull(41))
-                    result.LastPkOnTime = reader.GetInt64(41);
+                    character.LastPkOnTime = reader.GetInt64(41);
                 if (!reader.IsDBNull(42))
-                    result.PkPoint = reader.GetInt32(42);
+                    character.PkPoint = reader.GetInt32(42);
                 if (!reader.IsDBNull(43))
-                    result.ConsecutivePkKills = reader.GetInt32(43);
+                    character.ConsecutivePkKills = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.HighestPkPoint = reader.GetInt32(44);
+                    character.HighestPkPoint = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    result.HighestConsecutivePkKills = reader.GetInt32(45);
+                    character.HighestConsecutivePkKills = reader.GetInt32(45);
 #endif
                 CharacterMount mount = new CharacterMount();
                 if (!reader.IsDBNull(46))
@@ -204,10 +208,10 @@ namespace MultiplayerARPG.MMO
                     mount.level = reader.GetInt32(49);
                 if (!reader.IsDBNull(50))
                     mount.currentHp = reader.GetInt32(50);
-                result.Mount = mount;
+                character.Mount = mount;
                 return true;
             }
-            result = null;
+            character = null;
             return false;
         }
 
@@ -289,9 +293,11 @@ namespace MultiplayerARPG.MMO
             if (!GetCharacter(reader, out result))
             {
                 reader.Dispose();
+                cmd.Dispose();
                 return result;
             }
             reader.Dispose();
+            cmd.Dispose();
 
             // Found character, then read its relates data
             if (withEquipWeapons)
@@ -380,7 +386,7 @@ namespace MultiplayerARPG.MMO
             List<PlayerCharacterData> result = new List<PlayerCharacterData>();
             foreach (string characterId in characterIds)
             {
-                result.Add(await GetCharacter(connection, characterId, true, false, false, false, false, true, false, false, false, false, false, false, false, true));
+                result.Add(await GetCharacter(connection, characterId, true, true, true, false, false, true, false, false, false, false, false, false, false, true));
             }
             return result;
         }
@@ -407,7 +413,7 @@ namespace MultiplayerARPG.MMO
         }
 
         public const string CACHE_KEY_UPDATE_CHARACTER = "UPDATE_CHARACTER";
-        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> storageItems, bool deleteStorageReservation)
+        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
@@ -436,7 +442,7 @@ namespace MultiplayerARPG.MMO
                             new PostgreSQLHelpers.ColumnInfo("stat_point", character.StatPoint),
                             new PostgreSQLHelpers.ColumnInfo("skill_point", character.SkillPoint),
                             new PostgreSQLHelpers.ColumnInfo("gold", character.Gold),
-                            new PostgreSQLHelpers.ColumnInfo("current_channel", string.Empty),
+                            new PostgreSQLHelpers.ColumnInfo("current_channel", character.CurrentChannel),
                             new PostgreSQLHelpers.ColumnInfo("current_map_name", character.CurrentMapName),
                             new PostgreSQLHelpers.ColumnInfo("current_position_x", character.CurrentPosition.x),
                             new PostgreSQLHelpers.ColumnInfo("current_position_y", character.CurrentPosition.y),
@@ -444,7 +450,7 @@ namespace MultiplayerARPG.MMO
                             new PostgreSQLHelpers.ColumnInfo("current_rotation_x", character.CurrentRotation.x),
                             new PostgreSQLHelpers.ColumnInfo("current_rotation_y", character.CurrentRotation.y),
                             new PostgreSQLHelpers.ColumnInfo("current_rotation_z", character.CurrentRotation.z),
-                            new PostgreSQLHelpers.ColumnInfo("current_safe_area", string.Empty),
+                            new PostgreSQLHelpers.ColumnInfo("current_safe_area", character.CurrentSafeArea),
 #if !DISABLE_DIFFER_MAP_RESPAWNING
                             new PostgreSQLHelpers.ColumnInfo("respawn_map_name", character.RespawnMapName),
                             new PostgreSQLHelpers.ColumnInfo("respawn_position_x", character.RespawnPosition.x),
@@ -454,14 +460,14 @@ namespace MultiplayerARPG.MMO
                             new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                             new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
                             new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
-                            new PostgreSQLHelpers.ColumnInfo("reputation", 0),
+                            new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation),
                             new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
                             new PostgreSQLHelpers.ColumnInfo("unmute_time", character.UnmuteTime),
                             new PostgreSQLHelpers.ColumnInfo(NpgsqlDbType.TimestampTz, "update_time", "timezone('utc', now())"),
                         },
                         PostgreSQLHelpers.WhereEqualTo("id", character.Id));
                 }
-                await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, storageItems);
+                await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, playerStorageItems, protectedStorageItems);
                 if (deleteStorageReservation)
                 {
                     await DeleteReservedStorageByReserver(character.Id);
@@ -472,9 +478,10 @@ namespace MultiplayerARPG.MMO
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while update character: " + character.Id);
+                LogError(LogTag, $"Transaction, Error occurs while update character: {character.Id}");
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
+                throw;
             }
         }
 
@@ -521,9 +528,10 @@ namespace MultiplayerARPG.MMO
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while deleting character: " + id);
+                LogError(LogTag, $"Transaction, Error occurs while deleting character: {id}");
                 LogException(LogTag, ex);
                 await transaction.RollbackAsync();
+                throw;
             }
         }
 
@@ -535,7 +543,7 @@ namespace MultiplayerARPG.MMO
                 CACHE_KEY_FIND_CHARACTER_NAME,
                 connection,
                 "characters",
-                PostgreSQLHelpers.WhereLike("character_name", characterName));
+                PostgreSQLHelpers.WhereLike("LOWER(character_name)", characterName.ToLower()));
         }
 
         public const string CACHE_KEY_GET_ID_BY_CHARACTER_NAME = "GET_ID_BY_CHARACTER_NAME";
@@ -565,6 +573,8 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_FIND_CHARACTERS_SELECT_FRIENDS = "FIND_CHARACTERS_SELECT_FRIENDS";
         public override async UniTask<List<SocialCharacterData>> FindCharacters(string finderId, string characterName, int skip, int limit)
         {
+            if (limit <= 0)
+                limit = 25;
             using var connection = await _dataSource.OpenConnectionAsync();
             // Exclude friend, requested characters
             var readerIds = await PostgreSQLHelpers.ExecuteSelect(
@@ -583,8 +593,8 @@ namespace MultiplayerARPG.MMO
             using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
                 null,
                 connection,
-                "characters", "id, data_id, character_name, level", $"AND {excludeIdsQuery} ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}",
-                PostgreSQLHelpers.WhereLike("character_name", $"%{characterName}%"));
+                "characters", "id, data_id, character_name, level, icon_data_id, frame_data_id, title_data_id", $"AND {excludeIdsQuery} ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}",
+                PostgreSQLHelpers.WhereLike("LOWER(character_name)", $"%{characterName.ToLower()}%"));
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
             SocialCharacterData tempCharacter;
             while (readerCharacters.Read())
@@ -594,6 +604,9 @@ namespace MultiplayerARPG.MMO
                 tempCharacter.dataId = readerCharacters.GetInt32(1);
                 tempCharacter.characterName = readerCharacters.GetString(2);
                 tempCharacter.level = readerCharacters.GetInt32(3);
+                tempCharacter.iconDataId = readerCharacters.GetInt32(4);
+                tempCharacter.frameDataId = readerCharacters.GetInt32(5);
+                tempCharacter.titleDataId = readerCharacters.GetInt32(6);
                 characters.Add(tempCharacter);
             }
             return characters;
@@ -629,6 +642,8 @@ namespace MultiplayerARPG.MMO
         public const string CACHE_KEY_GET_FRIENDS_ID_2 = "GET_FRIENDS_ID_2";
         public override async UniTask<List<SocialCharacterData>> GetFriends(string id, bool readById2, byte state, int skip, int limit)
         {
+            if (limit <= 0)
+                limit = 25;
             using var connection = await _dataSource.OpenConnectionAsync();
             List<string> characterIds = new List<string>();
             if (readById2)
@@ -674,7 +689,7 @@ namespace MultiplayerARPG.MMO
                 PostgreSQLHelpers.AndWhereSmallEqualTo("state", 1));
         }
 
-        public async UniTask<List<SocialCharacterData>> GetSocialCharacterByIds(NpgsqlConnection connection, IList<string> characterIds, string select = "id, data_id, character_name, level")
+        public async UniTask<List<SocialCharacterData>> GetSocialCharacterByIds(NpgsqlConnection connection, IList<string> characterIds)
         {
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
             if (characterIds.Count > 0)
@@ -692,7 +707,7 @@ namespace MultiplayerARPG.MMO
                     connection,
                     "characters",
                     characterQueries,
-                    select);
+                    "id, data_id, character_name, level, icon_data_id, frame_data_id, title_data_id");
                 SocialCharacterData tempCharacter;
                 while (readerCharacters.Read())
                 {
@@ -701,6 +716,9 @@ namespace MultiplayerARPG.MMO
                     tempCharacter.dataId = readerCharacters.GetInt32(1);
                     tempCharacter.characterName = readerCharacters.GetString(2);
                     tempCharacter.level = readerCharacters.GetInt32(3);
+                    tempCharacter.iconDataId = readerCharacters.GetInt32(4);
+                    tempCharacter.frameDataId = readerCharacters.GetInt32(5);
+                    tempCharacter.titleDataId = readerCharacters.GetInt32(6);
                     characters.Add(tempCharacter);
                 }
             }
