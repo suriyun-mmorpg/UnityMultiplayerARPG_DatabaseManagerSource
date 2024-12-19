@@ -86,7 +86,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isRead=0",
+                await ExecuteNonQuery("UPDATE mail SET isRead=1, readTimestamp=UTC_TIME() WHERE id=@id AND receiverId=@receiverId AND isRead=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }
@@ -101,7 +101,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
+                await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=UTC_TIME() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }
@@ -116,7 +116,7 @@ namespace MultiplayerARPG.MMO
             long count = result != null ? (long)result : 0;
             if (count > 0)
             {
-                await ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=NOW() WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
+                await ExecuteNonQuery("UPDATE mail SET isDelete=1, deleteTimestamp=UTC_TIME() WHERE id=@id AND receiverId=@receiverId AND isDelete=0",
                     new MySqlParameter("@id", mailId),
                     new MySqlParameter("@receiverId", userId));
             }

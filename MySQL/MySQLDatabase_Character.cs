@@ -760,7 +760,7 @@ namespace MultiplayerARPG.MMO
                                 " reputation=@reputation," +
                                 " lastDeadTime=@lastDeadTime," +
                                 " unmuteTime=@unmuteTime," +
-                                " updateAt=NOW_UTC()" +
+                                " updateAt=UTC_TIME()" +
                                 " WHERE id=@id",
                                 new MySqlParameter("@dataId", character.DataId),
                                 new MySqlParameter("@entityId", character.EntityId),

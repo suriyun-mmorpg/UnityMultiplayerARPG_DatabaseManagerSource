@@ -127,14 +127,22 @@ namespace MultiplayerARPG.MMO
 
         public string GetConnectionString()
         {
+            string connectionString;
             if (!string.IsNullOrWhiteSpace(this.connectionString))
-                return this.connectionString;
-            string connectionString = "Server=" + address + ";" +
+            {
+                connectionString = this.connectionString;
+                if (!connectionString.Contains("Convert Zero Datetime"))
+                    connectionString += $";Convert Zero Datetime=true";
+                return connectionString;
+            }
+            connectionString = "Server=" + address + ";" +
             "Port=" + port + ";" +
             "Uid=" + username + ";" +
                 (string.IsNullOrEmpty(password) ? "" : "Pwd=\"" + password + "\";") +
                 "Database=" + dbName + ";" +
                 "SSL Mode=None;";
+            if (!connectionString.Contains("Convert Zero Datetime"))
+                connectionString += $";Convert Zero Datetime=true";
             return connectionString;
         }
 
