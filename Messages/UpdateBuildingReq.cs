@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MultiplayerARPG.MMO
+﻿namespace MultiplayerARPG.MMO
 {
 #nullable enable
     public partial struct UpdateBuildingReq
