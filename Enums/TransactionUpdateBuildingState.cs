@@ -6,7 +6,7 @@ namespace MultiplayerARPG.MMO
         None = 0,
         Building = 1 << 0,
         StorageItems = 1 << 1,
-        All = Building | StorageItems,
+        All = Building,
     }
 
     public static class TransactionUpdateBuildingStateExtentions

@@ -21,7 +21,7 @@ namespace MultiplayerARPG.MMO
         PublicCustomData = 1 << 14, // Public bools, ints, floats and so on
         PlayerStorageItems = 1 << 15,
         ProtectedStorageItems = 1 << 16,
-        All = Character | Pk | Mount | Attributes | Skills | SkillUsages | Buffs | Items | Summons | Hotkeys | Quests | Currencies | ServerCustomData | PrivateCustomData | PublicCustomData | PlayerStorageItems | ProtectedStorageItems,
+        All = Character | Pk | Mount | Attributes | Skills | SkillUsages | Buffs | Items | Summons | Hotkeys | Quests | Currencies | ServerCustomData | PrivateCustomData | PublicCustomData,
     }
 
     public static class TransactionUpdateCharacterStateExtentions
