@@ -295,7 +295,29 @@ namespace MultiplayerARPG.MMO
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                LogError(LogTag, "Transaction, Error occurs while replacing player storage items");
+                LogException(LogTag, ex);
+                throw;
+            }
+        }
+
+        private async UniTask FillProtectedStorageItems(MySqlConnection connection, MySqlTransaction transaction, string characterId, List<CharacterItem> storageItems)
+        {
+            try
+            {
+                StorageType storageType = StorageType.Protected;
+                string storageOwnerId = characterId;
+                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < storageItems.Count; ++i)
+                {
+                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing character storage items");
                 LogException(LogTag, ex);
                 throw;
             }
@@ -376,7 +398,7 @@ namespace MultiplayerARPG.MMO
                 await FillPlayerStorageItems(connection, transaction, characterData.UserId, playerStorageItems);
 
             if (protectedStorageItems != null)
-                await FillPlayerStorageItems(connection, transaction, characterData.UserId, protectedStorageItems);
+                await FillProtectedStorageItems(connection, transaction, characterData.Id, protectedStorageItems);
         }
 
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)

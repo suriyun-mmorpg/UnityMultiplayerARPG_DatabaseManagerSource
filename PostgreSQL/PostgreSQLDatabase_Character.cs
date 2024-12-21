@@ -77,7 +77,7 @@ namespace MultiplayerARPG.MMO
                 await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, playerStorageItems);
 
             if (protectedStorageItems != null)
-                await UpdateStorageItems(connection, transaction, StorageType.Protected, characterData.UserId, protectedStorageItems);
+                await UpdateStorageItems(connection, transaction, StorageType.Protected, characterData.Id, protectedStorageItems);
         }
 
         public const string CACHE_KEY_CREATE_CHARACTER = "CREATE_CHARACTER";
@@ -498,7 +498,6 @@ namespace MultiplayerARPG.MMO
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_selectable_weapon_sets", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_equip_items", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_non_equip_items", id);
-                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_protected_non_equip_items", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_quests", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skills", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skill_usages", id);
