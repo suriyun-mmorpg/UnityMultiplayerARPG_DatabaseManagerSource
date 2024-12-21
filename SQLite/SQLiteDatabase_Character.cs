@@ -282,51 +282,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private void FillPlayerStorageItems(SqliteTransaction transaction, string userId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Player;
-                string storageOwnerId = userId;
-                DeleteStorageItems(transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing player storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private void FillProtectedStorageItems(SqliteTransaction transaction, string characterId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Protected;
-                string storageOwnerId = characterId;
-                DeleteStorageItems(transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing player storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private void FillCharacterRelatesData(TransactionUpdateCharacterState state, SqliteTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems)
+        private void FillCharacterRelatesData(TransactionUpdateCharacterState state, SqliteTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs)
         {
             if (state.Has(TransactionUpdateCharacterState.Attributes))
                 FillCharacterAttributes(transaction, characterData);
@@ -396,12 +352,6 @@ namespace MultiplayerARPG.MMO
 
             if (summonBuffs != null)
                 FillSummonBuffs(transaction, characterData.Id, summonBuffs);
-
-            if (playerStorageItems != null)
-                FillPlayerStorageItems(transaction, characterData.UserId, playerStorageItems);
-
-            if (protectedStorageItems != null)
-                FillProtectedStorageItems(transaction, characterData.Id, protectedStorageItems);
         }
 
         public override UniTask CreateCharacter(string userId, IPlayerCharacterData character)
@@ -448,7 +398,7 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@frameDataId", character.FrameDataId),
                     new SqliteParameter("@titleDataId", character.TitleDataId));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
-                FillCharacterRelatesData(state, transaction, character, null, null, null);
+                FillCharacterRelatesData(state, transaction, character, null);
                 if (onCreateCharacter != null)
                     onCreateCharacter.Invoke(_connection, transaction, userId, character);
                 transaction.Commit();
@@ -731,7 +681,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation)
+        public override UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, bool deleteStorageReservation)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -815,7 +765,7 @@ namespace MultiplayerARPG.MMO
                         new SqliteParameter("@unmuteTime", character.UnmuteTime),
                         new SqliteParameter("@id", character.Id));
                 }
-                FillCharacterRelatesData(state, transaction, character, summonBuffs, playerStorageItems, protectedStorageItems);
+                FillCharacterRelatesData(state, transaction, character, summonBuffs);
                 if (deleteStorageReservation)
                 {
                     ExecuteNonQuery(transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",

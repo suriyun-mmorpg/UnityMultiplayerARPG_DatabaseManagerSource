@@ -31,28 +31,6 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        private async UniTask FillBuildingStorageItems(MySqlConnection connection, MySqlTransaction transaction, string buildingId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Building;
-                string storageOwnerId = buildingId;
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
         public override async UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             string extraData = building.ExtraData;
@@ -98,7 +76,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
+        public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             using (MySqlConnection connection = NewConnection())
             {
@@ -144,9 +122,6 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@rotationZ", building.Rotation.z),
                             new MySqlParameter("@channel", channel),
                             new MySqlParameter("@mapName", mapName));
-
-                        if (storageItems != null)
-                            await FillBuildingStorageItems(connection, transaction, building.Id, storageItems);
 
                         await transaction.CommitAsync();
                     }

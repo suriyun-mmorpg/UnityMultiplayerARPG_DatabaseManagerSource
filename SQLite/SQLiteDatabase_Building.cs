@@ -36,28 +36,6 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
-        private void FillBuildingStorageItems(SqliteTransaction transaction, string buildingId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Building;
-                string storageOwnerId = buildingId;
-                DeleteStorageItems(transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
         public override UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             string extraData = building.ExtraData;
@@ -100,7 +78,7 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<BuildingSaveData>>(result);
         }
 
-        public override UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
+        public override UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             SqliteTransaction transaction = _connection.BeginTransaction();
             try
@@ -142,9 +120,6 @@ namespace MultiplayerARPG.MMO
                     new SqliteParameter("@rotationZ", building.Rotation.z),
                     new SqliteParameter("@channel", channel),
                     new SqliteParameter("@mapName", mapName));
-
-                if (storageItems != null)
-                    FillBuildingStorageItems(transaction, building.Id, storageItems);
 
                 transaction.Commit();
             }

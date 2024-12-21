@@ -54,7 +54,7 @@ namespace MultiplayerARPG.MMO
             bool withPrivateCustomData = true,
             bool withPublicCustomData = true);
         public abstract UniTask<List<PlayerCharacterData>> GetCharacters(string userId);
-        public abstract UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation);
+        public abstract UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, bool deleteStorageReservation);
         public abstract UniTask DeleteCharacter(string userId, string id);
         public abstract UniTask<List<CharacterBuff>> GetSummonBuffs(string characterId);
         public abstract UniTask<long> FindCharacterName(string characterName);
@@ -68,7 +68,7 @@ namespace MultiplayerARPG.MMO
 
         public abstract UniTask CreateBuilding(string channel, string mapName, IBuildingSaveData saveData);
         public abstract UniTask<List<BuildingSaveData>> GetBuildings(string channel, string mapName);
-        public abstract UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems);
+        public abstract UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building);
         public abstract UniTask DeleteBuilding(string channel, string mapName, string id);
 
         public abstract UniTask<int> CreateParty(bool shareExp, bool shareItem, string leaderId);

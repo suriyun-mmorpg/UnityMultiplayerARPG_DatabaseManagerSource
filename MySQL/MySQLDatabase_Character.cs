@@ -323,7 +323,7 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems)
+        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs)
         {
             if (state.Has(TransactionUpdateCharacterState.Attributes))
                 await FillCharacterAttributes(connection, transaction, characterData);
@@ -393,12 +393,6 @@ namespace MultiplayerARPG.MMO
 
             if (summonBuffs != null)
                 await FillSummonBuffs(connection, transaction, characterData.Id, summonBuffs);
-
-            if (playerStorageItems != null)
-                await FillPlayerStorageItems(connection, transaction, characterData.UserId, playerStorageItems);
-
-            if (protectedStorageItems != null)
-                await FillProtectedStorageItems(connection, transaction, characterData.Id, protectedStorageItems);
         }
 
         public override async UniTask CreateCharacter(string userId, IPlayerCharacterData character)
@@ -449,7 +443,7 @@ namespace MultiplayerARPG.MMO
                             new MySqlParameter("@frameDataId", character.FrameDataId),
                             new MySqlParameter("@titleDataId", character.TitleDataId));
                         TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
-                        await FillCharacterRelatesData(state, connection, transaction, character, null, null, null);
+                        await FillCharacterRelatesData(state, connection, transaction, character, null);
                         if (onCreateCharacter != null)
                             onCreateCharacter.Invoke(connection, transaction, userId, character);
                         await transaction.CommitAsync();
@@ -734,7 +728,7 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation)
+        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, bool deleteStorageReservation)
         {
             using (MySqlConnection connection = NewConnection())
             {
@@ -822,7 +816,7 @@ namespace MultiplayerARPG.MMO
                                 new MySqlParameter("@unmuteTime", character.UnmuteTime),
                                 new MySqlParameter("@id", character.Id));
                         }
-                        await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, playerStorageItems, protectedStorageItems);
+                        await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs);
                         if (deleteStorageReservation)
                         {
                             await ExecuteNonQuery(connection, transaction, "DELETE FROM storage_reservation WHERE reserverId=@reserverId",

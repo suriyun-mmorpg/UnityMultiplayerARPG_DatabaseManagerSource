@@ -9,6 +9,5 @@ namespace MultiplayerARPG.MMO
         public string ChannelId { get; set; }
         public string MapName { get; set; }
         public BuildingSaveData BuildingData { get; set; }
-        public List<CharacterItem> StorageItems { get; set; }
     }
 }
