@@ -82,7 +82,7 @@ namespace MultiplayerARPG.MMO
         }
 
         public const string CACHE_KEY_UPDATE_BUILDING = "UPDATE_BUILDING";
-        public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building, List<CharacterItem> storageItems)
+        public override async UniTask UpdateBuilding(string channel, string mapName, IBuildingSaveData building)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
@@ -117,9 +117,6 @@ namespace MultiplayerARPG.MMO
                         PostgreSQLHelpers.AndWhereEqualTo("channel", channel),
                         PostgreSQLHelpers.AndWhereEqualTo("map_name", mapName),
                     });
-
-                if (storageItems != null)
-                    await UpdateStorageItems(connection, transaction, StorageType.Building, building.Id, storageItems);
 
                 await transaction.CommitAsync();
             }

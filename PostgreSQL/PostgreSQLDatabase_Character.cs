@@ -9,7 +9,7 @@ namespace MultiplayerARPG.MMO
     public partial class PostgreSQLDatabase
     {
         public const string CACHE_KEY_UPSERT_CHARACTER_MOUNT = "UPSERT_CHARACTER_MOUNT";
-        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems)
+        private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, NpgsqlConnection connection, NpgsqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs)
         {
             if (state.Has(TransactionUpdateCharacterState.Attributes))
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_attributes", characterData.Id, characterData.Attributes);
@@ -72,12 +72,6 @@ namespace MultiplayerARPG.MMO
 
             if (summonBuffs != null)
                 await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_summon_buffs", characterData.Id, summonBuffs);
-
-            if (playerStorageItems != null)
-                await UpdateStorageItems(connection, transaction, StorageType.Player, characterData.UserId, playerStorageItems);
-
-            if (protectedStorageItems != null)
-                await UpdateStorageItems(connection, transaction, StorageType.Protected, characterData.Id, protectedStorageItems);
         }
 
         public const string CACHE_KEY_CREATE_CHARACTER = "CREATE_CHARACTER";
@@ -128,7 +122,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
                     new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
-                await FillCharacterRelatesData(state, connection, transaction, character, null, null, null);
+                await FillCharacterRelatesData(state, connection, transaction, character, null);
                 if (onCreateCharacter != null)
                     onCreateCharacter.Invoke(connection, transaction, userId, character);
                 await transaction.CommitAsync();
@@ -413,7 +407,7 @@ namespace MultiplayerARPG.MMO
         }
 
         public const string CACHE_KEY_UPDATE_CHARACTER = "UPDATE_CHARACTER";
-        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, List<CharacterItem> playerStorageItems, List<CharacterItem> protectedStorageItems, bool deleteStorageReservation)
+        public override async UniTask UpdateCharacter(TransactionUpdateCharacterState state, IPlayerCharacterData character, List<CharacterBuff> summonBuffs, bool deleteStorageReservation)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
@@ -467,7 +461,7 @@ namespace MultiplayerARPG.MMO
                         },
                         PostgreSQLHelpers.WhereEqualTo("id", character.Id));
                 }
-                await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs, playerStorageItems, protectedStorageItems);
+                await FillCharacterRelatesData(state, connection, transaction, character, summonBuffs);
                 if (deleteStorageReservation)
                 {
                     await DeleteReservedStorageByReserver(character.Id);
