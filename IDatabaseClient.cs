@@ -116,6 +116,8 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult> UpdateStorageItemsAsync(UpdateStorageItemsReq request);
 
+        UniTask<DatabaseApiResult> UpdateStorageAndCharacterItemsAsync(UpdateStorageAndCharacterItemsReq request);
+
         UniTask<DatabaseApiResult> DeleteAllReservedStorageAsync();
 
         UniTask<DatabaseApiResult<MailListResp>> MailListAsync(MailListReq request);

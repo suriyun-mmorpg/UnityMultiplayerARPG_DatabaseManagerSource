@@ -49,6 +49,7 @@
         public const string ChangeGuildGold = "change-guild-gold";
         public const string GetStorageItems = "get-storage-items";
         public const string UpdateStorageItems = "update-storage-items";
+        public const string UpdateStorageAndCharacterItems = "update-storage-and-character-items";
         public const string DeleteAllReservedStorage = "delete-all-reserved-storage";
         public const string MailList = "mail-list";
         public const string UpdateReadMailState = "update-get-mail-state";
