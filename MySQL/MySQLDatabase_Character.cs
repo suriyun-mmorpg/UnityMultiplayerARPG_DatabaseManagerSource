@@ -69,27 +69,52 @@ namespace MultiplayerARPG.MMO
 
         private async UniTask FillCharacterItems(MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData)
         {
+            await FillCharacterItems(connection, transaction, characterData.Id,
+                characterData.SelectableWeaponSets,
+                characterData.EquipItems,
+                characterData.NonEquipItems);
+        }
+
+        private async UniTask FillCharacterItems(MySqlConnection connection,
+            MySqlTransaction transaction,
+            string characterId,
+            IList<EquipWeapons> selectableWeaponSets,
+            IList<CharacterItem> equipItems,
+            IList<CharacterItem> nonEquipItems)
+        {
             try
             {
-                await DeleteCharacterItems(connection, transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                for (i = 0; i < characterData.SelectableWeaponSets.Count; ++i)
+                if (selectableWeaponSets != null)
                 {
-                    await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
+                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponRight, characterId);
+                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponLeft, characterId);
+                    for (i = 0; i < selectableWeaponSets.Count; ++i)
+                    {
+                        await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
+                    }
                 }
-                for (i = 0; i < characterData.EquipItems.Count; ++i)
+                if (equipItems != null)
                 {
-                    await CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.EquipItems[i]);
+                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipItems, characterId);
+                    for (i = 0; i < equipItems.Count; ++i)
+                    {
+                        await CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterId, equipItems[i]);
+                    }
                 }
-                for (i = 0; i < characterData.NonEquipItems.Count; ++i)
+                if (nonEquipItems != null)
                 {
-                    await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
+                    await DeleteCharacterItems(connection, transaction, InventoryType.NonEquipItems, characterId);
+                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    {
+                        await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                    }
                 }
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
+                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterId);
                 LogException(LogTag, ex);
                 throw;
             }

@@ -75,31 +75,57 @@ namespace MultiplayerARPG.MMO
             return result;
         }
 
-        public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override async UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
         {
             using (MySqlConnection connection = NewConnection())
             {
                 await OpenConnection(connection);
                 using (MySqlTransaction transaction = connection.BeginTransaction())
                 {
-                    try
-                    {
-                        await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                        HashSet<string> insertedIds = new HashSet<string>();
-                        int i;
-                        for (i = 0; i < characterItems.Count; ++i)
-                        {
-                            await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
-                        }
-                        await transaction.CommitAsync();
-                    }
-                    catch (System.Exception ex)
-                    {
-                        LogError(LogTag, "Transaction, Error occurs while replacing storage items");
-                        LogException(LogTag, ex);
-                        await transaction.RollbackAsync();
-                    }
+                    await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
                 }
+            }
+        }
+
+        public override async UniTask UpdateStorageAndCharacterItems(
+            StorageType storageType,
+            string storageOwnerId,
+            List<CharacterItem> storageItems,
+            string characterId,
+            List<EquipWeapons> selectableWeaponSets,
+            List<CharacterItem> equipItems,
+            List<CharacterItem> nonEquipItems)
+        {
+            using (MySqlConnection connection = NewConnection())
+            {
+                await OpenConnection(connection);
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
+                    await FillCharacterItems(connection, transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+                }
+            }
+        }
+
+        private async UniTask UpdateStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
+        {
+            try
+            {
+                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
+                HashSet<string> insertedIds = new HashSet<string>();
+                int i;
+                for (i = 0; i < storageItems.Count; ++i)
+                {
+                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
+                }
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while replacing storage items");
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+                throw;
             }
         }
 

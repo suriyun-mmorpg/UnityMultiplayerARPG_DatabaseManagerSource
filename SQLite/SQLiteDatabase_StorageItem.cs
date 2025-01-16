@@ -80,17 +80,42 @@ namespace MultiplayerARPG.MMO
             return new UniTask<List<CharacterItem>>(result);
         }
 
-        public override UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
+        public override UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
         {
-            SqliteTransaction transaction = _connection.BeginTransaction();
+            using (SqliteTransaction transaction = _connection.BeginTransaction())
+            {
+                UpdateStorageItems(transaction, storageType, storageOwnerId, storageItems);
+            }
+            return new UniTask();
+        }
+
+        public override UniTask UpdateStorageAndCharacterItems(
+            StorageType storageType,
+            string storageOwnerId,
+            List<CharacterItem> storageItems,
+            string characterId,
+            List<EquipWeapons> selectableWeaponSets,
+            List<CharacterItem> equipItems,
+            List<CharacterItem> nonEquipItems)
+        {
+            using (SqliteTransaction transaction = _connection.BeginTransaction())
+            {
+                UpdateStorageItems(transaction, storageType, storageOwnerId, storageItems);
+                FillCharacterItems(transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+            }
+            return new UniTask();
+        }
+
+        private void UpdateStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
+        {
             try
             {
                 DeleteStorageItems(transaction, storageType, storageOwnerId);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                for (i = 0; i < characterItems.Count; ++i)
+                for (i = 0; i < storageItems.Count; ++i)
                 {
-                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, characterItems[i]);
+                    CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
                 }
                 transaction.Commit();
             }
@@ -99,9 +124,8 @@ namespace MultiplayerARPG.MMO
                 LogError(LogTag, "Transaction, Error occurs while replacing storage items");
                 LogException(LogTag, ex);
                 transaction.Rollback();
+                throw;
             }
-            transaction.Dispose();
-            return new UniTask();
         }
 
         public void DeleteStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId)

@@ -104,6 +104,14 @@ namespace MultiplayerARPG.MMO
         public abstract UniTask UpdateGuildMemberCount(int guildId, int maxGuildMembers);
 
         public abstract UniTask UpdateStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageCharacterItems);
+        public abstract UniTask UpdateStorageAndCharacterItems(
+            StorageType storageType,
+            string storageOwnerId,
+            List<CharacterItem> storageItems,
+            string characterId,
+            List<EquipWeapons> selectableWeaponSets,
+            List<CharacterItem> equipItems,
+            List<CharacterItem> nonEquipItems);
         public abstract UniTask<List<CharacterItem>> GetStorageItems(StorageType storageType, string storageOwnerId);
 
         public abstract UniTask<long> FindReservedStorage(StorageType storageType, string storageOwnerId);

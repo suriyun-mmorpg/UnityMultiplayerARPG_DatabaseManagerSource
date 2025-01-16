@@ -150,6 +150,13 @@ namespace MultiplayerARPG.MMO
         {
             ExecuteNonQuery(transaction, "DELETE FROM characteritem WHERE characterId=@characterId", new SqliteParameter("@characterId", characterId));
         }
+
+        public void DeleteCharacterItems(SqliteTransaction transaction, InventoryType inventoryType, string characterId)
+        {
+            ExecuteNonQuery(transaction, "DELETE FROM characteritem WHERE inventoryType=@inventoryType AND characterId=@characterId",
+                new SqliteParameter("@inventoryType", (byte)inventoryType),
+                new SqliteParameter("@characterId", characterId));
+        }
     }
 }
 #endif

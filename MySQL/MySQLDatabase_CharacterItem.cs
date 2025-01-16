@@ -146,6 +146,13 @@ namespace MultiplayerARPG.MMO
         {
             await ExecuteNonQuery(connection, transaction, "DELETE FROM characteritem WHERE characterId=@characterId", new MySqlParameter("@characterId", characterId));
         }
+
+        public async UniTask DeleteCharacterItems(MySqlConnection connection, MySqlTransaction transaction, InventoryType inventoryType, string characterId)
+        {
+            await ExecuteNonQuery(connection, transaction, "DELETE FROM characteritem WHERE inventoryType=@inventoryType AND characterId=@characterId",
+                new MySqlParameter("@inventoryType", (byte)inventoryType),
+                new MySqlParameter("@characterId", characterId));
+        }
     }
 }
 #endif

@@ -74,27 +74,51 @@ namespace MultiplayerARPG.MMO
 
         private void FillCharacterItems(SqliteTransaction transaction, IPlayerCharacterData characterData)
         {
+            FillCharacterItems(transaction, characterData.Id, 
+                characterData.SelectableWeaponSets, 
+                characterData.EquipItems, 
+                characterData.NonEquipItems);
+        }
+
+        private void FillCharacterItems(SqliteTransaction transaction,
+            string characterId,
+            IList<EquipWeapons> selectableWeaponSets,
+            IList<CharacterItem> equipItems,
+            IList<CharacterItem> nonEquipItems)
+        {
             try
             {
-                DeleteCharacterItems(transaction, characterData.Id);
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                for (i = 0; i < characterData.SelectableWeaponSets.Count; ++i)
+                if (selectableWeaponSets != null)
                 {
-                    CreateCharacterEquipWeapons(transaction, insertedIds, i, characterData.Id, characterData.SelectableWeaponSets[i]);
+                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponRight, characterId);
+                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponLeft, characterId);
+                    for (i = 0; i < selectableWeaponSets.Count; ++i)
+                    {
+                        CreateCharacterEquipWeapons(transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
+                    }
                 }
-                for (i = 0; i < characterData.EquipItems.Count; ++i)
+                if (equipItems != null)
                 {
-                    CreateCharacterEquipItem(transaction, insertedIds, i, characterData.Id, characterData.EquipItems[i]);
+                    DeleteCharacterItems(transaction, InventoryType.EquipItems, characterId);
+                    for (i = 0; i < equipItems.Count; ++i)
+                    {
+                        CreateCharacterEquipItem(transaction, insertedIds, i, characterId, equipItems[i]);
+                    }
                 }
-                for (i = 0; i < characterData.NonEquipItems.Count; ++i)
+                if (nonEquipItems != null)
                 {
-                    CreateCharacterNonEquipItem(transaction, insertedIds, i, characterData.Id, characterData.NonEquipItems[i]);
+                    DeleteCharacterItems(transaction, InventoryType.NonEquipItems, characterId);
+                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    {
+                        CreateCharacterNonEquipItem(transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                    }
                 }
             }
             catch (System.Exception ex)
             {
-                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterData.Id);
+                LogError(LogTag, "Transaction, Error occurs while replacing items of character: " + characterId);
                 LogException(LogTag, ex);
                 throw;
             }

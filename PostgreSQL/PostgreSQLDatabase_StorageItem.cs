@@ -31,6 +31,25 @@ namespace MultiplayerARPG.MMO
             await UpdateStorageItems(connection, null, storageType, storageOwnerId, characterItems);
         }
 
+        public override async UniTask UpdateStorageAndCharacterItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems, string characterId, List<CharacterItem> characterItems)
+        {
+            using var connection = await _dataSource.OpenConnectionAsync();
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
+                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterId, characterItems);
+                await transaction.CommitAsync();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, $"Transaction, Error occurs while update storage and character items: {storageType}, {storageOwnerId}");
+                LogException(LogTag, ex);
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async UniTask UpdateStorageItems(NpgsqlConnection connection, NpgsqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> characterItems)
         {
             switch (storageType)
