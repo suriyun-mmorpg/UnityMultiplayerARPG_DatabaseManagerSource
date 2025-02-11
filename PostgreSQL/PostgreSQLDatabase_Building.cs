@@ -1,4 +1,4 @@
-﻿ #if NET || NETCOREAPP
+﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
@@ -19,7 +19,7 @@ namespace MultiplayerARPG.MMO
                 result.CurrentHp = reader.GetInt32(3);
                 result.RemainsLifeTime = reader.GetFloat(4);
                 result.IsLocked = reader.GetBoolean(5);
-                result.LockPassword = reader.GetString(6);
+                result.LockPassword = reader.IsDBNull(6) ? string.Empty : reader.GetString(6);
                 result.CreatorId = reader.GetString(7);
                 result.CreatorName = reader.GetString(8);
                 result.ExtraData = reader.GetString(9);
