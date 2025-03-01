@@ -5,8 +5,7 @@ using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
-    // Temporary disable cache
-    public class LocalDatabaseCache : IDatabaseCache
+    public partial class LocalDatabaseCache : IDatabaseCache
     {
         private ConcurrentDictionary<string, PlayerCharacterData> _cachedPlayerCharacters = new ConcurrentDictionary<string, PlayerCharacterData>();
         private ConcurrentDictionary<string, SocialCharacterData> _cachedSocialCharacters = new ConcurrentDictionary<string, SocialCharacterData>();
