@@ -31,14 +31,26 @@ namespace MultiplayerARPG.MMO
             await UpdateStorageItems(connection, null, storageType, storageOwnerId, characterItems);
         }
 
-        public override async UniTask UpdateStorageAndCharacterItems(StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems, string characterId, List<CharacterItem> characterItems)
+        public override async UniTask UpdateStorageAndCharacterItems(
+            StorageType storageType,
+            string storageOwnerId,
+            List<CharacterItem> storageItems,
+            string characterId,
+            List<EquipWeapons> selectableWeaponSets,
+            List<CharacterItem> equipItems,
+            List<CharacterItem> nonEquipItems)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
             using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
-                await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterId, characterItems);
+                if (selectableWeaponSets != null)
+                    await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_selectable_weapon_sets", characterId, selectableWeaponSets);
+                if (equipItems != null)
+                    await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_equip_items", characterId, equipItems);
+                if (nonEquipItems != null)
+                    await PostgreSQLHelpers.ExecuteUpsertJson(connection, transaction, "character_non_equip_items", characterId, nonEquipItems);
                 await transaction.CommitAsync();
             }
             catch (System.Exception ex)
