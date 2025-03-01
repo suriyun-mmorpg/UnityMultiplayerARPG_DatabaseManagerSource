@@ -80,5 +80,7 @@
         public const string GetGuildRequests = "get-guild-requests";
         public const string GetGuildRequestNotification = "get-guild-request-notification";
         public const string UpdateGuildMemberCount = "update-guild-member-count";
+        public const string RemovePartyCache = "remove-party-cache";
+        public const string RemoveGuildCache = "remove-guild-cache";
     }
 }
