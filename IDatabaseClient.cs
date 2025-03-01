@@ -155,5 +155,9 @@ namespace MultiplayerARPG.MMO
         UniTask<DatabaseApiResult> UpdateUserCount(UpdateUserCountReq request);
         
         UniTask<DatabaseApiResult> UpdateGuildMemberCountAsync(UpdateGuildMemberCountReq request);
+
+        UniTask<DatabaseApiResult> RemoveGuildCacheAsync(GetGuildReq request);
+
+        UniTask<DatabaseApiResult> RemovePartyCacheAsync(GetPartyReq request);
     }
 }

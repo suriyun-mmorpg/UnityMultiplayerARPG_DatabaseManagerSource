@@ -1,12 +1,12 @@
-﻿using ConcurrentCollections;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
-    public partial class LocalDatabaseCache : IDatabaseCache
+    // Temporary disable cache
+    public class LocalDatabaseCache : IDatabaseCache
     {
         private ConcurrentDictionary<string, PlayerCharacterData> _cachedPlayerCharacters = new ConcurrentDictionary<string, PlayerCharacterData>();
         private ConcurrentDictionary<string, SocialCharacterData> _cachedSocialCharacters = new ConcurrentDictionary<string, SocialCharacterData>();
@@ -18,6 +18,12 @@ namespace MultiplayerARPG.MMO
 
         public UniTask<bool> SetPlayerCharacter(PlayerCharacterData playerCharacter)
         {
+            if (_cachedPlayerCharacters.TryGetValue(playerCharacter.Id, out var prevPlayerCharacter))
+            {
+                playerCharacter.PartyId = prevPlayerCharacter.PartyId;
+                playerCharacter.GuildId = prevPlayerCharacter.GuildId;
+                playerCharacter.GuildRole = prevPlayerCharacter.GuildRole;
+            }
             _cachedPlayerCharacters[playerCharacter.Id] = playerCharacter;
             return UniTask.FromResult(true);
         }
@@ -60,8 +66,44 @@ namespace MultiplayerARPG.MMO
             return false;
         }
 
+        public async UniTask<bool> SetPlayerCharacterSelectableWeaponSets(string characterId, List<EquipWeapons> selectableWeaponSets)
+        {
+            if (_cachedPlayerCharacters.TryGetValue(characterId, out var playerCharacter))
+            {
+                playerCharacter.SelectableWeaponSets = selectableWeaponSets;
+                return await SetPlayerCharacter(playerCharacter);
+            }
+            return false;
+        }
+
+        public async UniTask<bool> SetPlayerCharacterEquipItems(string characterId, List<CharacterItem> equipItems)
+        {
+            if (_cachedPlayerCharacters.TryGetValue(characterId, out var playerCharacter))
+            {
+                playerCharacter.EquipItems = equipItems;
+                return await SetPlayerCharacter(playerCharacter);
+            }
+            return false;
+        }
+
+        public async UniTask<bool> SetPlayerCharacterNonEquipItems(string characterId, List<CharacterItem> nonEquipItems)
+        {
+            if (_cachedPlayerCharacters.TryGetValue(characterId, out var playerCharacter))
+            {
+                playerCharacter.NonEquipItems = nonEquipItems;
+                return await SetPlayerCharacter(playerCharacter);
+            }
+            return false;
+        }
+
         public UniTask<bool> SetSocialCharacter(SocialCharacterData playerCharacter)
         {
+            if (_cachedSocialCharacters.TryGetValue(playerCharacter.id, out var prevPlayerCharacter))
+            {
+                playerCharacter.partyId = prevPlayerCharacter.partyId;
+                playerCharacter.guildId = prevPlayerCharacter.guildId;
+                playerCharacter.guildRole = prevPlayerCharacter.guildRole;
+            }
             _cachedSocialCharacters[playerCharacter.id] = playerCharacter;
             return UniTask.FromResult(true);
         }

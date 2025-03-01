@@ -30,6 +30,21 @@ namespace MultiplayerARPG.MMO
             return UniTask.FromResult(true);
         }
 
+        public UniTask<bool> SetPlayerCharacterSelectableWeaponSets(string characterId, List<EquipWeapons> selectableWeaponSets)
+        {
+            return UniTask.FromResult(true);
+        }
+
+        public UniTask<bool> SetPlayerCharacterEquipItems(string characterId, List<CharacterItem> equipItems)
+        {
+            return UniTask.FromResult(true);
+        }
+
+        public UniTask<bool> SetPlayerCharacterNonEquipItems(string characterId, List<CharacterItem> nonEquipItems)
+        {
+            return UniTask.FromResult(true);
+        }
+
         public UniTask<bool> SetSocialCharacter(SocialCharacterData playerCharacter)
         {
             return UniTask.FromResult(true);
