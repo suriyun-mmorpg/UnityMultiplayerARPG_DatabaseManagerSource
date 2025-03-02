@@ -1,12 +1,7 @@
-#if NET || NETCOREAPP
-using Microsoft.Data.Sqlite;
-#elif (UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE
-using Mono.Data.Sqlite;
-#endif
-
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
-using System.Collections.Generic;
 using Cysharp.Text;
+using Microsoft.Data.Sqlite;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {

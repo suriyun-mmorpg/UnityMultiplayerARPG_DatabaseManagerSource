@@ -2,16 +2,11 @@
 using UnityEngine;
 #endif
 
-#if NET || NETCOREAPP
-using Microsoft.Data.Sqlite;
-#elif (UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE
-using Mono.Data.Sqlite;
-#endif
-
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
-using System.IO;
+using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using Cysharp.Threading.Tasks;
 #endif
 
@@ -534,7 +529,6 @@ namespace MultiplayerARPG.MMO
         public string GetConnectionString()
         {
             string path = dbPath;
-
 #if UNITY_2017_1_OR_NEWER
             if (Application.isMobilePlatform)
             {
@@ -549,9 +543,8 @@ namespace MultiplayerARPG.MMO
                 path = editorDbPath;
 
             if (!File.Exists(path))
-                SqliteConnection.CreateFile(path);
+                File.WriteAllBytes(path, new byte[0]);
 #endif
-
             return "Data Source=" + path;
         }
 
@@ -568,6 +561,7 @@ namespace MultiplayerARPG.MMO
         public int ExecuteNonQuery(SqliteTransaction transaction, string sql, params SqliteParameter[] args)
         {
             int numRows = 0;
+            _connection.Open();
             using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)
@@ -596,6 +590,7 @@ namespace MultiplayerARPG.MMO
         public object ExecuteScalar(SqliteTransaction transaction, string sql, params SqliteParameter[] args)
         {
             object result = null;
+            _connection.Open();
             using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)
@@ -623,6 +618,7 @@ namespace MultiplayerARPG.MMO
 
         public void ExecuteReader(SqliteTransaction transaction, Action<SqliteDataReader> onRead, string sql, params SqliteParameter[] args)
         {
+            _connection.Open();
             using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
             {
                 if (transaction != null)

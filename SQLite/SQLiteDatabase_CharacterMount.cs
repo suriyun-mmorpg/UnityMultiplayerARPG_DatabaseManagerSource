@@ -1,10 +1,6 @@
-﻿#if NET || NETCOREAPP
+﻿#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using Microsoft.Data.Sqlite;
-#elif (UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE
-using Mono.Data.Sqlite;
-#endif
 
-#if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 namespace MultiplayerARPG.MMO
 {
     public partial class SQLiteDatabase
