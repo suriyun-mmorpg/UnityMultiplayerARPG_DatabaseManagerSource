@@ -4,6 +4,7 @@ using UnityEngine;
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
 using Cysharp.Threading.Tasks;
+using Insthync.DevExtension;
 using MySqlConnector;
 using Newtonsoft.Json;
 using System;
