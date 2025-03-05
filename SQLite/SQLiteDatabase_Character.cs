@@ -85,29 +85,38 @@ namespace MultiplayerARPG.MMO
             {
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                if (selectableWeaponSets != null)
+                if (nonEquipItems != null)
                 {
-                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponRight, characterId);
-                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponLeft, characterId);
-                    for (i = 0; i < selectableWeaponSets.Count; ++i)
-                    {
-                        CreateCharacterEquipWeapons(transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
-                    }
+                    DeleteCharacterItems(transaction, InventoryType.NonEquipItems, characterId);
                 }
                 if (equipItems != null)
                 {
                     DeleteCharacterItems(transaction, InventoryType.EquipItems, characterId);
+                }
+                if (selectableWeaponSets != null)
+                {
+                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponRight, characterId);
+                    DeleteCharacterItems(transaction, InventoryType.EquipWeaponLeft, characterId);
+                }
+                if (nonEquipItems != null)
+                {
+                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    {
+                        CreateCharacterNonEquipItem(transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                    }
+                }
+                if (equipItems != null)
+                {
                     for (i = 0; i < equipItems.Count; ++i)
                     {
                         CreateCharacterEquipItem(transaction, insertedIds, i, characterId, equipItems[i]);
                     }
                 }
-                if (nonEquipItems != null)
+                if (selectableWeaponSets != null)
                 {
-                    DeleteCharacterItems(transaction, InventoryType.NonEquipItems, characterId);
-                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    for (i = 0; i < selectableWeaponSets.Count; ++i)
                     {
-                        CreateCharacterNonEquipItem(transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                        CreateCharacterEquipWeapons(transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
                     }
                 }
             }

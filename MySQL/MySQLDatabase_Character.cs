@@ -86,29 +86,38 @@ namespace MultiplayerARPG.MMO
             {
                 HashSet<string> insertedIds = new HashSet<string>();
                 int i;
-                if (selectableWeaponSets != null)
+                if (nonEquipItems != null)
                 {
-                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponRight, characterId);
-                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponLeft, characterId);
-                    for (i = 0; i < selectableWeaponSets.Count; ++i)
-                    {
-                        await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
-                    }
+                    await DeleteCharacterItems(connection, transaction, InventoryType.NonEquipItems, characterId);
                 }
                 if (equipItems != null)
                 {
                     await DeleteCharacterItems(connection, transaction, InventoryType.EquipItems, characterId);
+                }
+                if (selectableWeaponSets != null)
+                {
+                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponRight, characterId);
+                    await DeleteCharacterItems(connection, transaction, InventoryType.EquipWeaponLeft, characterId);
+                }
+                if (nonEquipItems != null)
+                {
+                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    {
+                        await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                    }
+                }
+                if (equipItems != null)
+                {
                     for (i = 0; i < equipItems.Count; ++i)
                     {
                         await CreateCharacterEquipItem(connection, transaction, insertedIds, i, characterId, equipItems[i]);
                     }
                 }
-                if (nonEquipItems != null)
+                if (selectableWeaponSets != null)
                 {
-                    await DeleteCharacterItems(connection, transaction, InventoryType.NonEquipItems, characterId);
-                    for (i = 0; i < nonEquipItems.Count; ++i)
+                    for (i = 0; i < selectableWeaponSets.Count; ++i)
                     {
-                        await CreateCharacterNonEquipItem(connection, transaction, insertedIds, i, characterId, nonEquipItems[i]);
+                        await CreateCharacterEquipWeapons(connection, transaction, insertedIds, i, characterId, selectableWeaponSets[i]);
                     }
                 }
             }
