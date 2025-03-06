@@ -1,5 +1,6 @@
 ﻿#if NET || NETCOREAPP
 using Cysharp.Threading.Tasks;
+using Insthync.DevExtension;
 using Npgsql;
 using NpgsqlTypes;
 using Newtonsoft.Json;
