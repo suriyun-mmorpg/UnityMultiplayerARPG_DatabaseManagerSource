@@ -18,7 +18,7 @@ namespace MultiplayerARPG.MMO
                 currentHp = @currentHp",
                 new SqliteParameter("@id", characterId),
                 new SqliteParameter("@type", (byte)characterMount.type),
-                new SqliteParameter("@sourceId", characterMount.sourceId),
+                new SqliteParameter("@sourceId", characterMount.sourceId != null ? characterMount.sourceId : string.Empty),
                 new SqliteParameter("@mountRemainsDuration", characterMount.mountRemainsDuration),
                 new SqliteParameter("@level", characterMount.level),
                 new SqliteParameter("@currentHp", characterMount.currentHp));
