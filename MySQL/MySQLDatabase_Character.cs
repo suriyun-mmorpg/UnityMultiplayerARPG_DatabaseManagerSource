@@ -313,50 +313,6 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        private async UniTask FillPlayerStorageItems(MySqlConnection connection, MySqlTransaction transaction, string userId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Player;
-                string storageOwnerId = userId;
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing player storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
-        private async UniTask FillProtectedStorageItems(MySqlConnection connection, MySqlTransaction transaction, string characterId, List<CharacterItem> storageItems)
-        {
-            try
-            {
-                StorageType storageType = StorageType.Protected;
-                string storageOwnerId = characterId;
-                await DeleteStorageItems(connection, transaction, storageType, storageOwnerId);
-                HashSet<string> insertedIds = new HashSet<string>();
-                int i;
-                for (i = 0; i < storageItems.Count; ++i)
-                {
-                    await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                LogError(LogTag, "Transaction, Error occurs while replacing character storage items");
-                LogException(LogTag, ex);
-                throw;
-            }
-        }
-
         private async UniTask FillCharacterRelatesData(TransactionUpdateCharacterState state, MySqlConnection connection, MySqlTransaction transaction, IPlayerCharacterData characterData, List<CharacterBuff> summonBuffs)
         {
             if (state.Has(TransactionUpdateCharacterState.Attributes))
