@@ -79,7 +79,16 @@ namespace MultiplayerARPG.MMO
         {
             using (SqliteTransaction transaction = _connection.BeginTransaction())
             {
-                UpdateStorageItems(transaction, storageType, storageOwnerId, storageItems);
+                try
+                {
+                    FillStorageItems(transaction, storageType, storageOwnerId, storageItems);
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
             return new UniTask();
         }
@@ -95,13 +104,22 @@ namespace MultiplayerARPG.MMO
         {
             using (SqliteTransaction transaction = _connection.BeginTransaction())
             {
-                UpdateStorageItems(transaction, storageType, storageOwnerId, storageItems);
-                FillCharacterItems(transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+                try
+                {
+                    FillStorageItems(transaction, storageType, storageOwnerId, storageItems);
+                    FillCharacterItems(transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
             return new UniTask();
         }
 
-        private void UpdateStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
+        private void FillStorageItems(SqliteTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
         {
             try
             {
@@ -112,13 +130,11 @@ namespace MultiplayerARPG.MMO
                 {
                     CreateStorageItem(transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
                 }
-                transaction.Commit();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing storage items");
                 LogException(LogTag, ex);
-                transaction.Rollback();
                 throw;
             }
         }

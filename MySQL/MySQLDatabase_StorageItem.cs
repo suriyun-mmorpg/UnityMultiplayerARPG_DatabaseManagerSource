@@ -82,7 +82,16 @@ namespace MultiplayerARPG.MMO
                 await OpenConnection(connection);
                 using (MySqlTransaction transaction = connection.BeginTransaction())
                 {
-                    await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
+                    try
+                    {
+                        await FillStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
+                        await transaction.CommitAsync();
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
                 }
             }
         }
@@ -101,13 +110,22 @@ namespace MultiplayerARPG.MMO
                 await OpenConnection(connection);
                 using (MySqlTransaction transaction = connection.BeginTransaction())
                 {
-                    await UpdateStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
-                    await FillCharacterItems(connection, transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+                    try
+                    {
+                        await FillStorageItems(connection, transaction, storageType, storageOwnerId, storageItems);
+                        await FillCharacterItems(connection, transaction, characterId, selectableWeaponSets, equipItems, nonEquipItems);
+                        await transaction.CommitAsync();
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
                 }
             }
         }
 
-        private async UniTask UpdateStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
+        private async UniTask FillStorageItems(MySqlConnection connection, MySqlTransaction transaction, StorageType storageType, string storageOwnerId, List<CharacterItem> storageItems)
         {
             try
             {
@@ -118,13 +136,11 @@ namespace MultiplayerARPG.MMO
                 {
                     await CreateStorageItem(connection, transaction, insertedIds, i, storageType, storageOwnerId, storageItems[i]);
                 }
-                await transaction.CommitAsync();
             }
             catch (System.Exception ex)
             {
                 LogError(LogTag, "Transaction, Error occurs while replacing storage items");
                 LogException(LogTag, ex);
-                await transaction.RollbackAsync();
                 throw;
             }
         }
