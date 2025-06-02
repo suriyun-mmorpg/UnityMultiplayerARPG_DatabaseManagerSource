@@ -10,6 +10,8 @@ using System.Text;
 #if UNITY_2017_1_OR_NEWER
 using UnityEngine;
 using LiteNetLibManager;
+#else
+using Microsoft.Extensions.Logging;
 #endif
 
 namespace MultiplayerARPG.MMO
