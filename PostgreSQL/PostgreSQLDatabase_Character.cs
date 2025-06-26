@@ -59,10 +59,12 @@ namespace MultiplayerARPG.MMO
             if (state.Has(TransactionUpdateCharacterState.Mount))
             {
                 await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
+                    new PostgreSQLHelpers.ColumnInfo("id", characterData.Id),
                     new PostgreSQLHelpers.ColumnInfo("type", (short)characterData.Mount.type),
                     new PostgreSQLHelpers.ColumnInfo("source_id", characterData.Mount.sourceId),
                     new PostgreSQLHelpers.ColumnInfo("mount_remains_duration", characterData.Mount.mountRemainsDuration),
-                    new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level));
+                    new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level),
+                    new PostgreSQLHelpers.ColumnInfo("current_hp", characterData.Mount.currentHp));
             }
             
 #if !DISABLE_CLASSIC_PK
