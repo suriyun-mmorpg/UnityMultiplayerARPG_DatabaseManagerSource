@@ -56,7 +56,7 @@ namespace MultiplayerARPG.MMO
             }
 #endif
 
-            if (state.Has(TransactionUpdateCharacterState.Mount))
+             if (state.Has(TransactionUpdateCharacterState.Mount) && !string.IsNullOrEmpty(characterData.Mount.sourceId))
             {
                 await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
                     new PostgreSQLHelpers.ColumnInfo("id", characterData.Id),

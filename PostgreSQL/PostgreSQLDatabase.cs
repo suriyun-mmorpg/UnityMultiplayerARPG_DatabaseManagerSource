@@ -173,7 +173,7 @@ namespace MultiplayerARPG.MMO
                 connection,
                 "user_accesses", "level", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("id", userId));
-            return (byte)(result == null ? 0 : (short)result);
+            return result == null ? (byte)0 : Convert.ToByte(result);
         }
 
         public const string CACHE_KEY_GET_USER_UNBAN_TIME = "GET_USER_UNBAN_TIME";
