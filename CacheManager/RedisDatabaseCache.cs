@@ -1,4 +1,6 @@
-﻿using Cysharp.Text;
+﻿// NOTE: Temporary disable Redis database cache for Unity project
+#if !UNITY_2017_1_OR_NEWER
+using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -472,3 +474,4 @@ namespace MultiplayerARPG.MMO
         }
     }
 }
+#endif
