@@ -460,6 +460,8 @@ namespace MultiplayerARPG.MMO
 
         public UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> buffs)
         {
+            if (buffs == null)
+                return UniTask.FromResult(true);
             return SetAsync(GetSummonBuffsKey(characterId), buffs);
         }
 

@@ -239,9 +239,11 @@ namespace MultiplayerARPG.MMO
             return UniTask.FromResult(_cachedStorageItems.TryRemove(storageId, out _));
         }
 
-        public UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> items)
+        public UniTask<bool> SetSummonBuffs(string characterId, List<CharacterBuff> buffs)
         {
-            _cachedSummonBuffs[characterId] = items;
+            if (buffs == null)
+                return UniTask.FromResult(true);
+            _cachedSummonBuffs[characterId] = buffs;
             return UniTask.FromResult(true);
         }
 
