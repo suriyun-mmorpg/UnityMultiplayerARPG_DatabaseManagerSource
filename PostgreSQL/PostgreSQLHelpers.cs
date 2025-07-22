@@ -866,7 +866,6 @@ namespace MultiplayerARPG.MMO
                 stringBuilder.Append('$');
                 stringBuilder.Append(positionCount++);
             }
-            stringBuilder.Append(" WHERE ");
             writeWhere?.Invoke(ref stringBuilder, ref positionCount);
             commandText = stringBuilder.ToString();
             stringBuilder.Dispose();
@@ -891,7 +890,6 @@ namespace MultiplayerARPG.MMO
             stringBuilder.Append(" FROM ");
             stringBuilder.Append(tableName);
             int positionCount = 1;
-            stringBuilder.Append(" WHERE ");
             writeWhere?.Invoke(ref stringBuilder, ref positionCount);
             commandText = stringBuilder.ToString();
             stringBuilder.Dispose();
@@ -914,7 +912,6 @@ namespace MultiplayerARPG.MMO
             stringBuilder.Append("DELETE FROM ");
             stringBuilder.Append(tableName);
             int positionCount = 1;
-            stringBuilder.Append(" WHERE ");
             writeWhere?.Invoke(ref stringBuilder, ref positionCount);
             commandText = stringBuilder.ToString();
             stringBuilder.Dispose();
@@ -925,13 +922,17 @@ namespace MultiplayerARPG.MMO
 
         private static void WriteWhere(IList<WhereQuery> wheres, [NotNull] string additional, ref Utf16ValueStringBuilder builder, ref int positionCount)
         {
-            for (int i = 0; i < wheres.Count; ++i)
+            if (wheres.Count > 0)
             {
-                builder.Append(wheres[i].preOperators);
-                builder.Append(wheres[i].name);
-                builder.Append(wheres[i].operators);
-                builder.Append('$');
-                builder.Append(positionCount++);
+                builder.Append(" WHERE ");
+                for (int i = 0; i < wheres.Count; ++i)
+                {
+                    builder.Append(wheres[i].preOperators);
+                    builder.Append(wheres[i].name);
+                    builder.Append(wheres[i].operators);
+                    builder.Append('$');
+                    builder.Append(positionCount++);
+                }
             }
             builder.Append(' ');
             builder.Append(additional);
