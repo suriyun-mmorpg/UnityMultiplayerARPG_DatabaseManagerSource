@@ -31,6 +31,8 @@ namespace MultiplayerARPG.MMO
         private readonly StackExchange.Redis.IDatabase _redis;
         private readonly StackExchange.Redis.IServer _server;
         private static TimeSpan s_cacheTTL = new TimeSpan(0, 15, 0);
+        private static TimeSpan s_partyCacheTTL = new TimeSpan(0, 10, 0);
+        private static TimeSpan s_guildCacheTTL = new TimeSpan(0, 5, 0);
         private static string s_connectionConfig = "localhost";
         private static string s_dbPrefix = "gamedb:";
 #if !UNITY_2017_1_OR_NEWER
@@ -136,12 +138,12 @@ namespace MultiplayerARPG.MMO
         private static string GetStorageItemsKey(StorageType type, string ownerId) => ZString.Concat(s_dbPrefix, STORAGE_ITEMS_KEY, ((int)type).ToString(), ":", ownerId);
         private static string GetSummonBuffsKey(string characterId) => ZString.Concat(s_dbPrefix, SUMMON_BUFFS_KEY, characterId);
 
-        public async UniTask<bool> SetAsync<T>(string key, T value)
+        public async UniTask<bool> SetAsync<T>(string key, T value, TimeSpan? expiry)
         {
             try
             {
                 byte[] data = MessagePackSerializer.Serialize(value, ContractlessStandardResolver.Options);
-                return await _redis.StringSetAsync(key, data, expiry: s_cacheTTL);
+                return await _redis.StringSetAsync(key, data, expiry: expiry);
             }
             catch (Exception ex)
             {
@@ -180,12 +182,12 @@ namespace MultiplayerARPG.MMO
             }
         }
 
-        public async UniTask<bool> SetAsync<T>(RedisKey key, T value)
+        public async UniTask<bool> SetAsync<T>(RedisKey key, T value, TimeSpan? expiry)
         {
             try
             {
                 byte[] data = MessagePackSerializer.Serialize(value, ContractlessStandardResolver.Options);
-                return await _redis.StringSetAsync(key, data, expiry: s_cacheTTL);
+                return await _redis.StringSetAsync(key, data, expiry: expiry);
             }
             catch (Exception ex)
             {
@@ -234,7 +236,7 @@ namespace MultiplayerARPG.MMO
                 playerCharacter.GuildId = prevPlayerCharacterValue.GuildId;
                 playerCharacter.GuildRole = prevPlayerCharacterValue.GuildRole;
             }
-            return await SetAsync(GetPlayerCharacterKey(playerCharacter.Id), playerCharacter);
+            return await SetAsync(GetPlayerCharacterKey(playerCharacter.Id), playerCharacter, s_cacheTTL);
         }
         public UniTask<DatabaseCacheResult<PlayerCharacterData>> GetPlayerCharacter(string characterId)
         {
@@ -251,7 +253,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.PartyId = partyId;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -262,7 +264,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.GuildId = guildId;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -274,7 +276,7 @@ namespace MultiplayerARPG.MMO
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.GuildId = guildId;
                 prevPlayerCharacterValue.GuildRole = guildRole;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -286,7 +288,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.SelectableWeaponSets = selectableWeaponSets;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -298,7 +300,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.EquipItems = equipItems;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -310,7 +312,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.NonEquipItems = nonEquipItems;
-                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetPlayerCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -325,7 +327,7 @@ namespace MultiplayerARPG.MMO
                 playerCharacter.guildId = prevPlayerCharacterValue.guildId;
                 playerCharacter.guildRole = prevPlayerCharacterValue.guildRole;
             }
-            return await SetAsync(GetSocialCharacterKey(playerCharacter.id), playerCharacter);
+            return await SetAsync(GetSocialCharacterKey(playerCharacter.id), playerCharacter, s_cacheTTL);
         }
         public UniTask<DatabaseCacheResult<SocialCharacterData>> GetSocialCharacter(string characterId)
         {
@@ -342,7 +344,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.partyId = partyId;
-                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -353,7 +355,7 @@ namespace MultiplayerARPG.MMO
             {
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.guildId = guildId;
-                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
@@ -365,14 +367,14 @@ namespace MultiplayerARPG.MMO
                 var prevPlayerCharacterValue = prevPlayerCharacter.Value;
                 prevPlayerCharacterValue.guildId = guildId;
                 prevPlayerCharacterValue.guildRole = guildRole;
-                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue);
+                return await SetAsync(GetSocialCharacterKey(characterId), prevPlayerCharacterValue, s_cacheTTL);
             }
             return false;
         }
 
         public UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building)
         {
-            return SetAsync(GetBuildingKey(channel, mapName, building.Id), building);
+            return SetAsync(GetBuildingKey(channel, mapName, building.Id), building, s_cacheTTL);
         }
         public UniTask<DatabaseCacheResult<BuildingSaveData>> GetBuilding(string channel, string mapName, string buildingId)
         {
@@ -421,7 +423,7 @@ namespace MultiplayerARPG.MMO
 
         public UniTask<bool> SetParty(PartyData party)
         {
-            return SetAsync(GetPartyKey(party.id), party);
+            return SetAsync(GetPartyKey(party.id), party, s_partyCacheTTL);
         }
         public UniTask<DatabaseCacheResult<PartyData>> GetParty(int id)
         {
@@ -434,7 +436,7 @@ namespace MultiplayerARPG.MMO
 
         public UniTask<bool> SetGuild(GuildData guild)
         {
-            return SetAsync(GetGuildKey(guild.id), guild);
+            return SetAsync(GetGuildKey(guild.id), guild, s_guildCacheTTL);
         }
         public UniTask<DatabaseCacheResult<GuildData>> GetGuild(int id)
         {
@@ -447,7 +449,7 @@ namespace MultiplayerARPG.MMO
 
         public UniTask<bool> SetStorageItems(StorageType storageType, string storageOwnerId, List<CharacterItem> items)
         {
-            return SetAsync(GetStorageItemsKey(storageType, storageOwnerId), items);
+            return SetAsync(GetStorageItemsKey(storageType, storageOwnerId), items, s_cacheTTL);
         }
         public UniTask<DatabaseCacheResult<List<CharacterItem>>> GetStorageItems(StorageType storageType, string storageOwnerId)
         {
@@ -462,7 +464,7 @@ namespace MultiplayerARPG.MMO
         {
             if (buffs == null)
                 return UniTask.FromResult(true);
-            return SetAsync(GetSummonBuffsKey(characterId), buffs);
+            return SetAsync(GetSummonBuffsKey(characterId), buffs, s_cacheTTL);
         }
 
         public UniTask<DatabaseCacheResult<List<CharacterBuff>>> GetSummonBuffs(string characterId)
