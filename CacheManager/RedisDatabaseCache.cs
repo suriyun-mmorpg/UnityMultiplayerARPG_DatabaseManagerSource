@@ -40,7 +40,7 @@ namespace MultiplayerARPG.MMO
 #if UNITY_2017_1_OR_NEWER
         public RedisDatabaseCache()
 #else
-        public RedisDatabaseCache(ILogger<BaseDatabase> logger)
+        public RedisDatabaseCache(ILogger<RedisDatabaseCache> logger)
 #endif
         {
 #if !UNITY_2017_1_OR_NEWER
