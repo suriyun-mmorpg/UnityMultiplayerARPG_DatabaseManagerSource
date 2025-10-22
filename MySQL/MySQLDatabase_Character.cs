@@ -395,8 +395,8 @@ namespace MultiplayerARPG.MMO
                     try
                     {
                         await ExecuteNonQuery(connection, transaction, "INSERT INTO characters " +
-                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, titleDataId) VALUES " +
-                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @titleDataId)",
+                    "(id, userId, dataId, entityId, factionId, characterName, level, exp, currentHp, currentMp, currentStamina, currentFood, currentWater, equipWeaponSet, statPoint, skillPoint, gold, currentChannel, currentMapName, currentPositionX, currentPositionY, currentPositionZ, currentRotationX, currentRotationY, currentRotationZ, currentSafeArea, respawnMapName, respawnPositionX, respawnPositionY, respawnPositionZ, iconDataId, frameDataId, backgroundDataId, titleDataId) VALUES " +
+                    "(@id, @userId, @dataId, @entityId, @factionId, @characterName, @level, @exp, @currentHp, @currentMp, @currentStamina, @currentFood, @currentWater, @equipWeaponSet, @statPoint, @skillPoint, @gold, @currentChannel, @currentMapName, @currentPositionX, @currentPositionY, @currentPositionZ, @currentRotationX, @currentRotationY, @currentRotationZ, @currentSafeArea, @respawnMapName, @respawnPositionX, @respawnPositionY, @respawnPositionZ, @iconDataId, @frameDataId, @backgroundDataId, @titleDataId)",
                             new MySqlParameter("@id", character.Id),
                             new MySqlParameter("@userId", userId),
                             new MySqlParameter("@dataId", character.DataId),
@@ -431,6 +431,7 @@ namespace MultiplayerARPG.MMO
 #endif
                             new MySqlParameter("@iconDataId", character.IconDataId),
                             new MySqlParameter("@frameDataId", character.FrameDataId),
+                            new MySqlParameter("@backgroundDataId", character.BackgroundDataId),
                             new MySqlParameter("@titleDataId", character.TitleDataId));
                         TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
                         await FillCharacterRelatesData(state, connection, transaction, character, null);
@@ -484,36 +485,37 @@ namespace MultiplayerARPG.MMO
 #endif
                 result.IconDataId = reader.GetInt32(33);
                 result.FrameDataId = reader.GetInt32(34);
-                result.TitleDataId = reader.GetInt32(35);
-                result.Reputation = reader.GetInt32(36);
-                result.LastDeadTime = reader.GetInt64(37);
-                result.UnmuteTime = reader.GetInt64(38);
-                result.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(39), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
+                result.BackgroundDataId = reader.GetInt32(35);
+                result.TitleDataId = reader.GetInt32(36);
+                result.Reputation = reader.GetInt32(37);
+                result.LastDeadTime = reader.GetInt64(38);
+                result.UnmuteTime = reader.GetInt64(39);
+                result.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(40), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
-                if (!reader.IsDBNull(40))
-                    result.IsPkOn = reader.GetBoolean(40);
                 if (!reader.IsDBNull(41))
-                    result.LastPkOnTime = reader.GetInt64(41);
+                    result.IsPkOn = reader.GetBoolean(41);
                 if (!reader.IsDBNull(42))
-                    result.PkPoint = reader.GetInt32(42);
+                    result.LastPkOnTime = reader.GetInt64(42);
                 if (!reader.IsDBNull(43))
-                    result.ConsecutivePkKills = reader.GetInt32(43);
+                    result.PkPoint = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    result.HighestPkPoint = reader.GetInt32(44);
+                    result.ConsecutivePkKills = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    result.HighestConsecutivePkKills = reader.GetInt32(45);
+                    result.HighestPkPoint = reader.GetInt32(45);
+                if (!reader.IsDBNull(46))
+                    result.HighestConsecutivePkKills = reader.GetInt32(46);
 #endif
                 CharacterMount mount = new CharacterMount();
-                if (!reader.IsDBNull(46))
-                    mount.type = (MountType)reader.GetInt16(46);
                 if (!reader.IsDBNull(47))
-                    mount.sourceId = reader.GetString(47);
+                    mount.type = (MountType)reader.GetInt16(47);
                 if (!reader.IsDBNull(48))
-                    mount.mountRemainsDuration = reader.GetFloat(48);
+                    mount.sourceId = reader.GetString(48);
                 if (!reader.IsDBNull(49))
-                    mount.level = reader.GetInt32(49);
+                    mount.mountRemainsDuration = reader.GetFloat(49);
                 if (!reader.IsDBNull(50))
-                    mount.currentHp = reader.GetInt32(50);
+                    mount.level = reader.GetInt32(50);
+                if (!reader.IsDBNull(51))
+                    mount.currentHp = reader.GetInt32(51);
                 result.Mount = mount;
                 return true;
             }
@@ -550,7 +552,7 @@ namespace MultiplayerARPG.MMO
                 c.currentMapName, c.currentPositionX, c.currentPositionY, c.currentPositionZ, c.currentRotationX, currentRotationY, currentRotationZ,
                 c.currentSafeArea,
                 c.respawnMapName, c.respawnPositionX, c.respawnPositionY, c.respawnPositionZ,
-                c.iconDataId, c.frameDataId, c.titleDataId, c.reputation, c.lastDeadTime, c.unmuteTime, c.updateAt,
+                c.iconDataId, c.frameDataId, c.backgroundDataId, c.titleDataId, c.reputation, c.lastDeadTime, c.unmuteTime, c.updateAt,
                 cpk.isPkOn, cpk.lastPkOnTime, cpk.pkPoint, cpk.consecutivePkKills, cpk.highestPkPoint, cpk.highestConsecutivePkKills,
                 cmnt.type, cmnt.sourceId, cmnt.mountRemainsDuration, cmnt.level, cmnt.currentHp
                 FROM characters AS c 
@@ -754,14 +756,15 @@ namespace MultiplayerARPG.MMO
                                 " currentRotationY=@currentRotationY," +
                                 " currentRotationZ=@currentRotationZ," +
                                 " currentSafeArea=@currentSafeArea," +
-    #if !DISABLE_DIFFER_MAP_RESPAWNING
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                                 " respawnMapName=@respawnMapName," +
                                 " respawnPositionX=@respawnPositionX," +
                                 " respawnPositionY=@respawnPositionY," +
                                 " respawnPositionZ=@respawnPositionZ," +
-    #endif
+#endif
                                 " iconDataId=@iconDataId," +
                                 " frameDataId=@frameDataId," +
+                                " backgroundDataId=@backgroundDataId," +
                                 " titleDataId=@titleDataId," +
                                 " reputation=@reputation," +
                                 " lastDeadTime=@lastDeadTime," +
@@ -792,14 +795,15 @@ namespace MultiplayerARPG.MMO
                                 new MySqlParameter("@currentRotationY", character.CurrentRotation.y),
                                 new MySqlParameter("@currentRotationZ", character.CurrentRotation.z),
                                 new MySqlParameter("@currentSafeArea", character.CurrentSafeArea),
-    #if !DISABLE_DIFFER_MAP_RESPAWNING
+#if !DISABLE_DIFFER_MAP_RESPAWNING
                                 new MySqlParameter("@respawnMapName", character.RespawnMapName),
                                 new MySqlParameter("@respawnPositionX", character.RespawnPosition.x),
                                 new MySqlParameter("@respawnPositionY", character.RespawnPosition.y),
                                 new MySqlParameter("@respawnPositionZ", character.RespawnPosition.z),
-    #endif
+#endif
                                 new MySqlParameter("@iconDataId", character.IconDataId),
                                 new MySqlParameter("@frameDataId", character.FrameDataId),
+                                new MySqlParameter("@backgroundDataId", character.BackgroundDataId),
                                 new MySqlParameter("@titleDataId", character.TitleDataId),
                                 new MySqlParameter("@reputation", character.Reputation),
                                 new MySqlParameter("@lastDeadTime", character.LastDeadTime),

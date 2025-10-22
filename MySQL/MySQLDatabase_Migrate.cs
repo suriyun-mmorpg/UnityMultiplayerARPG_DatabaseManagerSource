@@ -331,6 +331,14 @@ namespace MultiplayerARPG.MMO
             {
                 await ExecuteNonQuery("ALTER TABLE `charactersummon` ADD `sourceId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' AFTER `type`;");
             });
+            await DoMigration("1.92", async () =>
+            {
+                // Add player background cosmetic (guarded for existing installs)
+                object colExists = await ExecuteScalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'characters' AND COLUMN_NAME = 'backgroundDataId'");
+                long count = colExists != null ? (long)colExists : 0;
+                if (count == 0)
+                    await ExecuteNonQuery("ALTER TABLE `characters` ADD `backgroundDataId` INT NOT NULL DEFAULT '0' AFTER `frameDataId`;");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)
