@@ -56,7 +56,7 @@ namespace MultiplayerARPG.MMO
             }
 #endif
 
-             if (state.Has(TransactionUpdateCharacterState.Mount) && !string.IsNullOrEmpty(characterData.Mount.sourceId))
+            if (state.Has(TransactionUpdateCharacterState.Mount) && !string.IsNullOrEmpty(characterData.Mount.sourceId))
             {
                 await PostgreSQLHelpers.ExecuteUpsert(CACHE_KEY_UPSERT_CHARACTER_MOUNT, connection, transaction, "character_mount", "id",
                     new PostgreSQLHelpers.ColumnInfo("id", characterData.Id),
@@ -66,7 +66,7 @@ namespace MultiplayerARPG.MMO
                     new PostgreSQLHelpers.ColumnInfo("level", characterData.Mount.level),
                     new PostgreSQLHelpers.ColumnInfo("current_hp", characterData.Mount.currentHp));
             }
-            
+
 #if !DISABLE_CLASSIC_PK
             if (state.Has(TransactionUpdateCharacterState.Pk))
                 await UpdateCharacterPk(connection, transaction, characterData);
@@ -121,6 +121,7 @@ namespace MultiplayerARPG.MMO
 #endif
                     new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                     new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
+                    new PostgreSQLHelpers.ColumnInfo("background_data_id", character.BackgroundDataId),
                     new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
                     new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation));
                 TransactionUpdateCharacterState state = TransactionUpdateCharacterState.All;
@@ -174,36 +175,37 @@ namespace MultiplayerARPG.MMO
 #endif
                 character.IconDataId = reader.GetInt32(33);
                 character.FrameDataId = reader.GetInt32(34);
-                character.TitleDataId = reader.GetInt32(35);
-                character.Reputation = reader.GetInt32(36);
-                character.LastDeadTime = reader.GetInt64(37);
-                character.UnmuteTime = reader.GetInt64(38);
-                character.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(39), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
+                character.BackgroundDataId = reader.GetInt32(35);
+                character.TitleDataId = reader.GetInt32(36);
+                character.Reputation = reader.GetInt32(37);
+                character.LastDeadTime = reader.GetInt64(38);
+                character.UnmuteTime = reader.GetInt64(39);
+                character.LastUpdate = ((System.DateTimeOffset)System.DateTime.SpecifyKind(reader.GetDateTime(40), System.DateTimeKind.Utc)).ToUnixTimeSeconds();
 #if !DISABLE_CLASSIC_PK
-                if (!reader.IsDBNull(40))
-                    character.IsPkOn = reader.GetBoolean(40);
                 if (!reader.IsDBNull(41))
-                    character.LastPkOnTime = reader.GetInt64(41);
+                    character.IsPkOn = reader.GetBoolean(41);
                 if (!reader.IsDBNull(42))
-                    character.PkPoint = reader.GetInt32(42);
+                    character.LastPkOnTime = reader.GetInt64(42);
                 if (!reader.IsDBNull(43))
-                    character.ConsecutivePkKills = reader.GetInt32(43);
+                    character.PkPoint = reader.GetInt32(43);
                 if (!reader.IsDBNull(44))
-                    character.HighestPkPoint = reader.GetInt32(44);
+                    character.ConsecutivePkKills = reader.GetInt32(44);
                 if (!reader.IsDBNull(45))
-                    character.HighestConsecutivePkKills = reader.GetInt32(45);
+                    character.HighestPkPoint = reader.GetInt32(45);
+                if (!reader.IsDBNull(46))
+                    character.HighestConsecutivePkKills = reader.GetInt32(46);
 #endif
                 CharacterMount mount = new CharacterMount();
-                if (!reader.IsDBNull(46))
-                    mount.type = (MountType)reader.GetInt16(46);
                 if (!reader.IsDBNull(47))
-                    mount.sourceId = reader.GetString(47);
+                    mount.type = (MountType)reader.GetInt16(47);
                 if (!reader.IsDBNull(48))
-                    mount.mountRemainsDuration = reader.GetFloat(48);
+                    mount.sourceId = reader.GetString(48);
                 if (!reader.IsDBNull(49))
-                    mount.level = reader.GetInt32(49);
+                    mount.mountRemainsDuration = reader.GetFloat(49);
                 if (!reader.IsDBNull(50))
-                    mount.currentHp = reader.GetInt32(50);
+                    mount.level = reader.GetInt32(50);
+                if (!reader.IsDBNull(51))
+                    mount.currentHp = reader.GetInt32(51);
                 character.Mount = mount;
                 return true;
             }
@@ -275,7 +277,7 @@ namespace MultiplayerARPG.MMO
                 c.current_map_name, c.current_position_x, c.current_position_y, c.current_position_z, c.current_rotation_x, current_rotation_y, current_rotation_z,
                 c.current_safe_area,
                 c.respawn_map_name, c.respawn_position_x, c.respawn_position_y, c.respawn_position_z,
-                c.icon_data_id, c.frame_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
+                c.icon_data_id, c.frame_data_id, c.background_data_id, c.title_data_id, c.reputation, c.last_dead_time, c.unmute_time, c.update_time,
                 cpk.is_pk_on, cpk.last_pk_on_time, cpk.pk_point, cpk.consecutive_pk_kills, cpk.highest_pk_point, cpk.highest_consecutive_pk_kills,
                 cmnt.type, cmnt.source_id, cmnt.mount_remains_duration, cmnt.level, cmnt.current_hp
                 FROM characters AS c 
@@ -455,6 +457,7 @@ namespace MultiplayerARPG.MMO
 #endif
                             new PostgreSQLHelpers.ColumnInfo("icon_data_id", character.IconDataId),
                             new PostgreSQLHelpers.ColumnInfo("frame_data_id", character.FrameDataId),
+                            new PostgreSQLHelpers.ColumnInfo("background_data_id", character.BackgroundDataId),
                             new PostgreSQLHelpers.ColumnInfo("title_data_id", character.TitleDataId),
                             new PostgreSQLHelpers.ColumnInfo("reputation", character.Reputation),
                             new PostgreSQLHelpers.ColumnInfo("last_dead_time", character.LastDeadTime),
@@ -588,7 +591,7 @@ namespace MultiplayerARPG.MMO
             using var readerCharacters = await PostgreSQLHelpers.ExecuteSelect(
                 null,
                 connection,
-                "characters", "id, data_id, character_name, level, icon_data_id, frame_data_id, title_data_id", $"AND {excludeIdsQuery} ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}",
+                "characters", "id, data_id, character_name, level, icon_data_id, frame_data_id, background_data_id, title_data_id", $"AND {excludeIdsQuery} ORDER BY RANDOM() OFFSET {skip} LIMIT {limit}",
                 PostgreSQLHelpers.WhereLike("LOWER(character_name)", $"%{characterName.ToLower()}%"));
             List<SocialCharacterData> characters = new List<SocialCharacterData>();
             SocialCharacterData tempCharacter;
@@ -601,7 +604,8 @@ namespace MultiplayerARPG.MMO
                 tempCharacter.level = readerCharacters.GetInt32(3);
                 tempCharacter.iconDataId = readerCharacters.GetInt32(4);
                 tempCharacter.frameDataId = readerCharacters.GetInt32(5);
-                tempCharacter.titleDataId = readerCharacters.GetInt32(6);
+                tempCharacter.backgroundDataId = readerCharacters.GetInt32(6);
+                tempCharacter.titleDataId = readerCharacters.GetInt32(7);
                 characters.Add(tempCharacter);
             }
             return characters;
@@ -702,7 +706,7 @@ namespace MultiplayerARPG.MMO
                     connection,
                     "characters",
                     characterQueries,
-                    "id, data_id, character_name, level, icon_data_id, frame_data_id, title_data_id");
+                    "id, data_id, character_name, level, icon_data_id, frame_data_id, background_data_id, title_data_id");
                 SocialCharacterData tempCharacter;
                 while (readerCharacters.Read())
                 {
@@ -713,7 +717,8 @@ namespace MultiplayerARPG.MMO
                     tempCharacter.level = readerCharacters.GetInt32(3);
                     tempCharacter.iconDataId = readerCharacters.GetInt32(4);
                     tempCharacter.frameDataId = readerCharacters.GetInt32(5);
-                    tempCharacter.titleDataId = readerCharacters.GetInt32(6);
+                    tempCharacter.backgroundDataId = readerCharacters.GetInt32(6);
+                    tempCharacter.titleDataId = readerCharacters.GetInt32(7);
                     characters.Add(tempCharacter);
                 }
             }
