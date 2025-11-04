@@ -143,6 +143,9 @@ namespace MultiplayerARPG.MMO
             if (!IsColumnExist("characters", "frameDataId"))
                 ExecuteNonQuery("ALTER TABLE characters ADD frameDataId INTEGER NOT NULL DEFAULT 0;");
 
+            if (!IsColumnExist("characters", "backgroundDataId"))
+                ExecuteNonQuery("ALTER TABLE characters ADD backgroundDataId INTEGER NOT NULL DEFAULT 0;");
+
             if (!IsColumnExist("characters", "titleDataId"))
                 ExecuteNonQuery("ALTER TABLE characters ADD titleDataId INTEGER NOT NULL DEFAULT 0;");
 
