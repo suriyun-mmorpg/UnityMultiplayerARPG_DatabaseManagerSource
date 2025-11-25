@@ -1,8 +1,20 @@
-﻿namespace MultiplayerARPG.MMO
+﻿using LiteNetLib.Utils;
+
+namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct GetGuildGoldReq
+    public partial struct GetGuildGoldReq : INetSerializable
     {
         public int GuildId { get; set; }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            GuildId = reader.GetInt();
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(GuildId);
+        }
     }
 }

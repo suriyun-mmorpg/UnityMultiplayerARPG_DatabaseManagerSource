@@ -1,10 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using LiteNetLib.Utils;
+using System.Collections.Generic;
 
 namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct SocialCharactersResp
+    public partial struct SocialCharactersResp : INetSerializable
     {
         public List<SocialCharacterData> List { get; set; }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            List = reader.GetList<SocialCharacterData>();
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.PutList(List);
+        }
     }
 }

@@ -1,8 +1,20 @@
-﻿namespace MultiplayerARPG.MMO
+﻿using LiteNetLib.Utils;
+
+namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct BuildingResp
+    public partial struct BuildingResp : INetSerializable
     {
         public BuildingSaveData BuildingData { get; set; }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            BuildingData = reader.Get(() => new BuildingSaveData());
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(BuildingData);
+        }
     }
 }

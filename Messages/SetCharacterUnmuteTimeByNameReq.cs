@@ -1,9 +1,23 @@
-﻿namespace MultiplayerARPG.MMO
+﻿using LiteNetLib.Utils;
+
+namespace MultiplayerARPG.MMO
 {
 #nullable enable
-    public partial struct SetCharacterUnmuteTimeByNameReq
+    public partial struct SetCharacterUnmuteTimeByNameReq : INetSerializable
     {
         public string CharacterName { get; set; }
         public long UnmuteTime { get; set; }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            CharacterName = reader.GetString();
+            UnmuteTime = reader.GetPackedLong();
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(CharacterName);
+            writer.PutPackedLong(UnmuteTime);
+        }
     }
 }
