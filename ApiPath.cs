@@ -72,6 +72,11 @@
         public const string ValidateEmailVerification = "validate-email-verification";
         public const string FindEmail = "find-email";
         public const string GetFriendRequestNotification = "get-friend-request-notification";
+        public const string GetUserUnlockContents = "get-user-unlock-contents";
+        public const string GetAllUserUnlockContents = "get-all-user-unlock-contents";
+        public const string ChangeUserUnlockContentProgression = "change-user-unlock-content-progression";
+        public const string UpdateUserUnlockContent = "update-user-unlock-content";
+        public const string GetUserUnlockContent = "get-user-unlock-content";
         public const string UpdateUserCount = "update-user-count";
         public const string GetSocialCharacter = "get-social-character";
         public const string FindGuilds = "find-guilds";

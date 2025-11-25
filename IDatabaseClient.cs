@@ -152,6 +152,16 @@ namespace MultiplayerARPG.MMO
 
         UniTask<DatabaseApiResult<GetFriendRequestNotificationResp>> GetFriendRequestNotificationAsync(GetFriendRequestNotificationReq request);
 
+        UniTask<DatabaseApiResult<UserUnlockContentsResp>> GetUserUnlockContentsAsync(GetUserUnlockContentsReq request);
+
+        UniTask<DatabaseApiResult<UserUnlockContentsResp>> GetAllUserUnlockContentsAsync(GetAllUserUnlockContentsReq request);
+
+        UniTask<DatabaseApiResult<UserUnlockContentResp>> ChangeUserUnlockContentProgressionAsync(ChangeUserUnlockContentProgressionReq request);
+
+        UniTask<DatabaseApiResult> UpdateUserUnlockContentAsync(UpdateUserUnlockContentReq request);
+
+        UniTask<DatabaseApiResult<UserUnlockContentResp>> GetUserUnlockContentAsync(GetUserUnlockContentReq request);
+
         UniTask<DatabaseApiResult> UpdateUserCount(UpdateUserCountReq request);
         
         UniTask<DatabaseApiResult> UpdateGuildMemberCountAsync(UpdateGuildMemberCountReq request);
