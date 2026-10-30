@@ -116,33 +116,37 @@ namespace MultiplayerARPG.MMO
         {
             return UniTask.FromResult(_cachedSocialCharacters.TryRemove(characterId, out _));
         }
-        public async UniTask<bool> SetSocialCharacterPartyId(string characterId, int partyId)
+        public UniTask<bool> SetSocialCharacterPartyId(string characterId, int partyId)
         {
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.partyId = partyId;
-                await SetSocialCharacter(playerCharacter);
+                // Not through SetSocialCharacter, which copies the cached party and guild back over the change
+                _cachedSocialCharacters[characterId] = playerCharacter;
+                return UniTask.FromResult(true);
             }
-            return false;
+            return UniTask.FromResult(false);
         }
-        public async UniTask<bool> SetSocialCharacterGuildId(string characterId, int guildId)
+        public UniTask<bool> SetSocialCharacterGuildId(string characterId, int guildId)
         {
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.guildId = guildId;
-                await SetSocialCharacter(playerCharacter);
+                _cachedSocialCharacters[characterId] = playerCharacter;
+                return UniTask.FromResult(true);
             }
-            return false;
+            return UniTask.FromResult(false);
         }
-        public async UniTask<bool> SetSocialCharacterGuildIdAndRole(string characterId, int guildId, byte guildRole)
+        public UniTask<bool> SetSocialCharacterGuildIdAndRole(string characterId, int guildId, byte guildRole)
         {
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.guildId = guildId;
                 playerCharacter.guildRole = guildRole;
-                await SetSocialCharacter(playerCharacter);
+                _cachedSocialCharacters[characterId] = playerCharacter;
+                return UniTask.FromResult(true);
             }
-            return false;
+            return UniTask.FromResult(false);
         }
 
         public UniTask<bool> SetBuilding(string channel, string mapName, BuildingSaveData building)
