@@ -18,7 +18,7 @@ namespace MultiplayerARPG.MMO
             if (string.IsNullOrEmpty(id))
                 return;
             insertedIds.Add(id);
-            await ExecuteNonQuery(connection, transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version)",
+            await ExecuteNonQuery(connection, transaction, "INSERT INTO storageitem (id, idx, storageType, storageOwnerId, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version, ammoDataId) VALUES (@id, @idx, @storageType, @storageOwnerId, @dataId, @level, @amount, @durability, @exp, @lockRemainsDuration, @expireTime, @randomSeed, @ammo, @sockets, @version, @ammoDataId)",
                 new MySqlParameter("@id", id),
                 new MySqlParameter("@idx", idx),
                 new MySqlParameter("@storageType", (byte)storageType),
@@ -33,7 +33,8 @@ namespace MultiplayerARPG.MMO
                 new MySqlParameter("@randomSeed", characterItem.randomSeed),
                 new MySqlParameter("@ammo", characterItem.ammo),
                 new MySqlParameter("@sockets", characterItem.WriteSockets()),
-                new MySqlParameter("@version", characterItem.version));
+                new MySqlParameter("@version", characterItem.version),
+                new MySqlParameter("@ammoDataId", characterItem.ammoDataId));
         }
 
         private bool GetStorageItem(MySqlDataReader reader, out CharacterItem result)
@@ -53,6 +54,7 @@ namespace MultiplayerARPG.MMO
                 result.ammo = reader.GetInt32(9);
                 result.ReadSockets(reader.GetString(10));
                 result.version = reader.GetByte(11);
+                result.ammoDataId = reader.GetInt32(12);
                 return true;
             }
             result = CharacterItem.Empty;
@@ -69,7 +71,7 @@ namespace MultiplayerARPG.MMO
                 {
                     result.Add(tempInventory);
                 }
-            }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
+            }, "SELECT id, dataId, level, amount, durability, exp, lockRemainsDuration, expireTime, randomSeed, ammo, sockets, version, ammoDataId FROM storageitem WHERE storageType=@storageType AND storageOwnerId=@storageOwnerId ORDER BY idx ASC",
                 new MySqlParameter("@storageType", (byte)storageType),
                 new MySqlParameter("@storageOwnerId", storageOwnerId));
             return result;

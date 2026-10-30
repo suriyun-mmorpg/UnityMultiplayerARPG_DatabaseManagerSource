@@ -44,6 +44,9 @@ namespace MultiplayerARPG.MMO
             if (!IsColumnExist("characteritem", "version"))
                 ExecuteNonQuery("ALTER TABLE characteritem ADD version INTEGER NOT NULL DEFAULT 0;");
 
+            if (!IsColumnExist("characteritem", "ammoDataId"))
+                ExecuteNonQuery("ALTER TABLE characteritem ADD ammoDataId INTEGER NOT NULL DEFAULT 0;");
+
             if (!IsColumnExist("storageitem", "durability"))
                 ExecuteNonQuery("ALTER TABLE storageitem ADD durability REAL NOT NULL DEFAULT 0;");
 
@@ -67,6 +70,9 @@ namespace MultiplayerARPG.MMO
 
             if (!IsColumnExist("storageitem", "version"))
                 ExecuteNonQuery("ALTER TABLE storageitem ADD version INTEGER NOT NULL DEFAULT 0;");
+
+            if (!IsColumnExist("storageitem", "ammoDataId"))
+                ExecuteNonQuery("ALTER TABLE storageitem ADD ammoDataId INTEGER NOT NULL DEFAULT 0;");
 
             if (!IsColumnExist("characterquest", "randomTasksIndex"))
                 ExecuteNonQuery("ALTER TABLE characterquest ADD randomTasksIndex INTEGER NOT NULL DEFAULT 0;");
