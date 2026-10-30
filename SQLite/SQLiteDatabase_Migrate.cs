@@ -5,6 +5,7 @@ using Mono.Data.Sqlite;
 #endif
 
 #if NET || NETCOREAPP || ((UNITY_EDITOR || UNITY_SERVER || !EXCLUDE_SERVER_CODES) && UNITY_STANDALONE)
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace MultiplayerARPG.MMO
@@ -217,7 +218,8 @@ namespace MultiplayerARPG.MMO
 
             if (!IsColumnType("mail", "gold", "INTEGER"))
             {
-                ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS mail_modifying (
+                // Copies the columns both tables have, by name, and keeps the old table if the copy fails
+                RebuildTable("mail", @"CREATE TABLE mail_modifying (
                   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                   eventId TEXT NULL DEFAULT NULL,
                   senderId TEXT NULL DEFAULT NULL,
@@ -226,6 +228,7 @@ namespace MultiplayerARPG.MMO
                   title TEXT NOT NULL,
                   content TEXT NOT NULL,
                   gold INTEGER NOT NULL DEFAULT 0,
+                  cash INTEGER NOT NULL DEFAULT 0,
                   currencies TEXT NOT NULL,
                   items TEXT NOT NULL,
                   isRead INTEGER NOT NULL DEFAULT 0,
@@ -236,15 +239,12 @@ namespace MultiplayerARPG.MMO
                   deleteTimestamp TIMESTAMP NULL DEFAULT NULL,
                   sentTimestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );");
-                ExecuteNonQuery("INSERT INTO mail_modifying SELECT * FROM mail;");
-                ExecuteNonQuery("ALTER TABLE mail RENAME TO mail_delete;");
-                ExecuteNonQuery("ALTER TABLE mail_modifying RENAME TO mail;");
-                ExecuteNonQuery("DROP TABLE mail_delete;");
             }
 
             if (!IsColumnType("characters", "statPoint", "REAL") || !IsColumnType("characters", "skillPoint", "REAL"))
             {
-                ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS characters_modifying (
+                // Copies the columns both tables have, by name, and keeps the old table if the copy fails
+                RebuildTable("characters", @"CREATE TABLE characters_modifying (
                   id TEXT NOT NULL PRIMARY KEY,
                   userId TEXT NOT NULL,
                   dataId INGETER NOT NULL DEFAULT 0,
@@ -266,6 +266,7 @@ namespace MultiplayerARPG.MMO
                   guildId INTEGER NOT NULL DEFAULT 0,
                   guildRole INTEGER NOT NULL DEFAULT 0,
                   sharedGuildExp INTEGER NOT NULL DEFAULT 0,
+                  currentChannel TEXT NOT NULL DEFAULT '',
                   currentMapName TEXT NOT NULL,
                   currentPositionX REAL NOT NULL DEFAULT 0,
                   currentPositionY REAL NOT NULL DEFAULT 0,
@@ -273,21 +274,86 @@ namespace MultiplayerARPG.MMO
                   currentRotationX REAL NOT NULL DEFAULT 0,
                   currentRotationY REAL NOT NULL DEFAULT 0,
                   currentRotationZ REAL NOT NULL DEFAULT 0,
+                  currentSafeArea TEXT NOT NULL DEFAULT '',
                   respawnMapName TEXT NOT NULL,
                   respawnPositionX REAL NOT NULL DEFAULT 0,
                   respawnPositionY REAL NOT NULL DEFAULT 0,
                   respawnPositionZ REAL NOT NULL DEFAULT 0,
+                  iconDataId INTEGER NOT NULL DEFAULT 0,
+                  frameDataId INTEGER NOT NULL DEFAULT 0,
+                  backgroundDataId INTEGER NOT NULL DEFAULT 0,
+                  titleDataId INTEGER NOT NULL DEFAULT 0,
+                  reputation INTEGER NOT NULL DEFAULT 0,
                   lastDeadTime INTEGER NOT NULL DEFAULT 0,
                   unmuteTime INTEGER NOT NULL DEFAULT 0,
                   createAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   updateAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );");
-                ExecuteNonQuery("INSERT INTO characters_modifying SELECT * FROM characters;");
-                ExecuteNonQuery("ALTER TABLE characters RENAME TO characters_delete;");
-                ExecuteNonQuery("DROP TABLE characters_delete;");
-                ExecuteNonQuery("ALTER TABLE characters_modifying RENAME TO characters;");
             }
             return default;
+        }
+
+        /// <summary>
+        /// Replaces a table with one made by createModifyingTable (which must create tableName + "_modifying"),
+        /// copying the columns both tables have. It all runs in one transaction, so if the copy fails
+        /// or loses rows, the old table and its rows are kept and the error is logged.
+        /// </summary>
+        private void RebuildTable(string tableName, string createModifyingTable)
+        {
+            string modifyingTableName = tableName + "_modifying";
+            SqliteTransaction transaction = _connection.BeginTransaction();
+            try
+            {
+                ExecuteMigrationQuery(transaction, "DROP TABLE IF EXISTS " + modifyingTableName + ";");
+                ExecuteMigrationQuery(transaction, createModifyingTable);
+                List<string> columns = GetColumnNames(transaction, modifyingTableName);
+                List<string> oldColumns = GetColumnNames(transaction, tableName);
+                columns.RemoveAll(column => !oldColumns.Contains(column));
+                string columnList = string.Join(", ", columns);
+                ExecuteMigrationQuery(transaction, "INSERT INTO " + modifyingTableName + " (" + columnList + ") SELECT " + columnList + " FROM " + tableName + ";");
+                object oldCount = ExecuteScalar(transaction, "SELECT COUNT(*) FROM " + tableName + ";");
+                object newCount = ExecuteScalar(transaction, "SELECT COUNT(*) FROM " + modifyingTableName + ";");
+                if (oldCount == null || !oldCount.Equals(newCount))
+                    throw new System.Exception("Copied " + newCount + " of " + oldCount + " rows");
+                ExecuteMigrationQuery(transaction, "ALTER TABLE " + tableName + " RENAME TO " + tableName + "_delete;");
+                ExecuteMigrationQuery(transaction, "ALTER TABLE " + modifyingTableName + " RENAME TO " + tableName + ";");
+                ExecuteMigrationQuery(transaction, "DROP TABLE " + tableName + "_delete;");
+                transaction.Commit();
+            }
+            catch (System.Exception ex)
+            {
+                LogError(LogTag, "Transaction, Error occurs while migrating table: " + tableName + ", the old table is kept");
+                LogException(LogTag, ex);
+                transaction.Rollback();
+            }
+            transaction.Dispose();
+        }
+
+        /// <summary>Like ExecuteNonQuery, but throws instead of logging, so a failed step stops the migration.</summary>
+        private void ExecuteMigrationQuery(SqliteTransaction transaction, string sql)
+        {
+            using (SqliteCommand cmd = new SqliteCommand(sql, _connection))
+            {
+                cmd.Transaction = transaction;
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private List<string> GetColumnNames(SqliteTransaction transaction, string tableName)
+        {
+            List<string> result = new List<string>();
+            using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", _connection))
+            {
+                cmd.Transaction = transaction;
+                using (SqliteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(reader.GetString(1));
+                    }
+                }
+            }
+            return result;
         }
     }
 }

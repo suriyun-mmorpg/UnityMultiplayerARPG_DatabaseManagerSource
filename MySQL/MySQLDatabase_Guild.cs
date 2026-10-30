@@ -356,7 +356,7 @@ namespace MultiplayerARPG.MMO
             object countResult = await ExecuteScalar("SELECT COUNT(*) FROM characters WHERE guildId=@guildId",
                 new MySqlParameter("@guildId", guildId));
             int count = (int)(long)countResult;
-            await ExecuteNonQuery("UPDATE guild SET currentMembers=@currentMembers, maxMembers=@maxMembers WHERE guildId=@guildId",
+            await ExecuteNonQuery("UPDATE guild SET currentMembers=@currentMembers, maxMembers=@maxMembers WHERE id=@guildId",
                 new MySqlParameter("@currentMembers", count),
                 new MySqlParameter("@maxMembers", maxMember),
                 new MySqlParameter("@guildId", guildId));

@@ -282,7 +282,7 @@ namespace MultiplayerARPG.MMO
                     guildListEntry.MaxMembers = reader.GetInt32(10);
                     result.Add(guildListEntry);
                 }
-            }, "SELECT id, guildName, level, guildMessage, guildMessage2, score, options, autoAcceptRequests, rank, currentMembers, maxMembers FROM guild WHERE guildName LIKE @guildName AND " + excludeIdsQuery + " ORDER BY RAND() LIMIT " + skip + ", " + limit,
+            }, "SELECT id, guildName, level, guildMessage, guildMessage2, score, options, autoAcceptRequests, rank, currentMembers, maxMembers FROM guild WHERE guildName LIKE @guildName AND " + excludeIdsQuery + " ORDER BY RANDOM() LIMIT " + skip + ", " + limit,
                 new SqliteParameter("@guildName", "%" + guildName + "%"));
             return new UniTask<List<GuildListEntry>>(result);
         }
@@ -351,7 +351,7 @@ namespace MultiplayerARPG.MMO
                         socialCharacterData.level = reader.GetInt32(3);
                         result.Add(socialCharacterData);
                     }
-                }, "SELECT id, dataId, characterName, level FROM characters WHERE BINARY id = @id",
+                }, "SELECT id, dataId, characterName, level FROM characters WHERE id = @id",
                     new SqliteParameter("@id", characterId));
             }
             return new UniTask<List<SocialCharacterData>>(result);
@@ -369,7 +369,7 @@ namespace MultiplayerARPG.MMO
             object countResult = ExecuteScalar("SELECT COUNT(*) FROM characters WHERE guildId=@guildId",
                 new SqliteParameter("@guildId", guildId));
             int count = (int)(long)countResult;
-            ExecuteNonQuery("UPDATE guild SET currentMembers=@currentMembers, maxMembers=@maxMembers WHERE guildId=@guildId",
+            ExecuteNonQuery("UPDATE guild SET currentMembers=@currentMembers, maxMembers=@maxMembers WHERE id=@guildId",
                 new SqliteParameter("@currentMembers", count),
                 new SqliteParameter("@maxMembers", maxMember),
                 new SqliteParameter("@guildId", guildId));

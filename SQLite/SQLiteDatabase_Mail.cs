@@ -59,9 +59,9 @@ namespace MultiplayerARPG.MMO
                 if (reader.Read())
                 {
                     result.Id = reader.GetInt32(0).ToString();
-                    result.EventId = reader.GetString(1);
-                    result.SenderId = reader.GetString(2);
-                    result.SenderName = reader.GetString(3);
+                    result.EventId = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                    result.SenderId = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                    result.SenderName = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
                     result.ReceiverId = reader.GetString(4);
                     result.Title = reader.GetString(5);
                     result.Content = reader.GetString(6);

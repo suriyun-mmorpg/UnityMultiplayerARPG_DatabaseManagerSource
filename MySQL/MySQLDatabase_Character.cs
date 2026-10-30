@@ -857,6 +857,7 @@ namespace MultiplayerARPG.MMO
                             await DeleteCharacterSkills(connection, transaction, id);
                             await DeleteCharacterSkillUsages(connection, transaction, id);
                             await DeleteCharacterSummons(connection, transaction, id);
+                            await DeleteSummonBuff(connection, transaction, id);
                             await DeleteCharacterMount(connection, transaction, id);
 
                             await DeleteCharacterDataBooleans(connection, transaction, "character_server_boolean", id);

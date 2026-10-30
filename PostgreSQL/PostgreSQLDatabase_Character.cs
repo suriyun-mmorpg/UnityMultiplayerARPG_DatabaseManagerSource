@@ -501,6 +501,7 @@ namespace MultiplayerARPG.MMO
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skills", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_skill_usages", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_summons", id);
+                await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_summon_buffs", id);
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_mount", id);
 
                 await PostgreSQLHelpers.ExecuteDeleteById(connection, transaction, "character_server_booleans", id);
