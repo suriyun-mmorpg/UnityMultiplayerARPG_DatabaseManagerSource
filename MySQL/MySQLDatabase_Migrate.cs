@@ -335,6 +335,12 @@ namespace MultiplayerARPG.MMO
             {
                 await ExecuteNonQuery("ALTER TABLE `characters` ADD `backgroundDataId` INT NOT NULL DEFAULT '0' AFTER `frameDataId`;");
             });
+            await DoMigration("2026-10-31_fix-missing-ammo-data-id", async () =>
+            {
+                // The weapon's loaded ammo type, so a reloaded weapon keeps it after a save
+                await ExecuteNonQuery("ALTER TABLE `characteritem` ADD `ammoDataId` INT NOT NULL DEFAULT '0' AFTER `version`;");
+                await ExecuteNonQuery("ALTER TABLE `storageitem` ADD `ammoDataId` INT NOT NULL DEFAULT '0' AFTER `version`;");
+            });
         }
 
         private async UniTask<bool> DoMigration(string migrationId, MigrateActionDelegate migrateAction)
