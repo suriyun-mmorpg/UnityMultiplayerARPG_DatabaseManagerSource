@@ -121,7 +121,6 @@ namespace MultiplayerARPG.MMO
             if (_cachedSocialCharacters.TryGetValue(characterId, out var playerCharacter))
             {
                 playerCharacter.partyId = partyId;
-                // Not through SetSocialCharacter, which copies the cached party and guild back over the change
                 _cachedSocialCharacters[characterId] = playerCharacter;
                 return UniTask.FromResult(true);
             }
