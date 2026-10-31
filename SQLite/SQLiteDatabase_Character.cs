@@ -843,6 +843,7 @@ namespace MultiplayerARPG.MMO
                     DeleteCharacterSkills(transaction, id);
                     DeleteCharacterSkillUsages(transaction, id);
                     DeleteCharacterSummons(transaction, id);
+                    DeleteSummonBuff(transaction, id);
                     DeleteCharacterMount(transaction, id);
 
                     DeleteCharacterDataBooleans(transaction, "character_server_boolean", id);

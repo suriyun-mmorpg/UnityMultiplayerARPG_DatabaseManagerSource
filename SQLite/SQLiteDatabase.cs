@@ -508,13 +508,14 @@ namespace MultiplayerARPG.MMO
         {
             using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", _connection))
             {
-                SqliteDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.GetString(1).Equals(findingColumn))
-                        return true;
+                    while (reader.Read())
+                    {
+                        if (reader.GetString(1).Equals(findingColumn))
+                            return true;
+                    }
                 }
-                reader.Close();
             }
             return false;
         }
@@ -523,13 +524,14 @@ namespace MultiplayerARPG.MMO
         {
             using (SqliteCommand cmd = new SqliteCommand("PRAGMA table_info(" + tableName + ");", _connection))
             {
-                SqliteDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.GetString(1).Equals(findingColumn))
-                        return reader.GetString(2).ToLower().Equals(type.ToLower());
+                    while (reader.Read())
+                    {
+                        if (reader.GetString(1).Equals(findingColumn))
+                            return reader.GetString(2).ToLower().Equals(type.ToLower());
+                    }
                 }
-                reader.Close();
             }
             return false;
         }
@@ -795,7 +797,7 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask<bool> ValidateEmailVerification(string userId)
         {
-            object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE userId=@userId AND isEmailVerified=1",
+            object result = ExecuteScalar("SELECT COUNT(*) FROM userlogin WHERE id=@userId AND isEmailVerified=1",
                 new SqliteParameter("@userId", userId));
             return new UniTask<bool>((result != null ? (long)result : 0) > 0);
         }
