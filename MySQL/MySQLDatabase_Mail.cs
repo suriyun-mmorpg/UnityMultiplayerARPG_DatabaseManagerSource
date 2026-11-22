@@ -95,17 +95,10 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<long> UpdateClaimMailItemsState(string mailId, string userId)
         {
-            object result = await ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId=@receiverId",
+            // Atomic: only the call that flips isClaim 0->1 sees 1 affected row
+            return await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=UTC_TIME() WHERE id=@id AND receiverId=@receiverId AND isClaim=0 AND isDelete=0",
                 new MySqlParameter("@id", mailId),
                 new MySqlParameter("@receiverId", userId));
-            long count = result != null ? (long)result : 0;
-            if (count > 0)
-            {
-                await ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=UTC_TIME() WHERE id=@id AND receiverId=@receiverId AND isClaim=0",
-                    new MySqlParameter("@id", mailId),
-                    new MySqlParameter("@receiverId", userId));
-            }
-            return count;
         }
 
         public override async UniTask<long> UpdateDeleteMailState(string mailId, string userId)
