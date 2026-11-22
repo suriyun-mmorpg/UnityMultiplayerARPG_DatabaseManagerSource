@@ -118,6 +118,7 @@ namespace MultiplayerARPG.MMO
         }
 
         public const string CACHE_KEY_VALIDATE_USER_LOGIN = "VALIDATE_USER_LOGIN";
+        public const string CACHE_KEY_REHASH_PASSWORD = "REHASH_PASSWORD";
         public override async UniTask<string> ValidateUserLogin(string username, string password)
         {
             using var connection = await _dataSource.OpenConnectionAsync();
@@ -127,12 +128,25 @@ namespace MultiplayerARPG.MMO
                 "users", "id, password", "LIMIT 1",
                 PostgreSQLHelpers.WhereEqualTo("username", username));
             string id = string.Empty;
+            bool rehash = false;
             if (reader.Read())
             {
                 id = reader.GetString(0);
                 string hashedPassword = reader.GetString(1);
                 if (!UserLoginManager.VerifyPassword(password, hashedPassword))
                     id = string.Empty;
+                else
+                    rehash = UserLoginManager.NeedsRehash(hashedPassword);
+            }
+            await reader.CloseAsync();
+            if (rehash)
+            {
+                await PostgreSQLHelpers.ExecuteUpdate(
+                    CACHE_KEY_REHASH_PASSWORD,
+                    connection, null,
+                    "users",
+                    new[] { new PostgreSQLHelpers.ColumnInfo("password", UserLoginManager.GetHashedPassword(password)) },
+                    PostgreSQLHelpers.WhereEqualTo("id", id));
             }
             return id;
         }
