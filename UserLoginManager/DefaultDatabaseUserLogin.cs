@@ -4,7 +4,7 @@ using System.Text;
 namespace MultiplayerARPG.MMO
 {
     /// <summary>
-    /// New passwords are stored as "p1$salt$hash": PBKDF2-SHA512 with a random per-user salt (the optional
+    /// New passwords are stored as "p2$salt$hash": PBKDF2-HMAC-SHA512 (210k iterations; legacy "p1$" at 100k also verifies) with a random per-user salt (the optional
     /// prefix/postfix settings act as a server-wide pepper). Legacy unsalted-MD5 hashes still verify so
     /// existing accounts can log in; <see cref="NeedsRehash"/> flags them so the database upgrades them.
     /// </summary>
@@ -24,8 +24,10 @@ namespace MultiplayerARPG.MMO
             return System.Guid.NewGuid().ToString("N");
         }
 
-        private const string Version = "p1$";
-        private const int Iterations = 100000;
+        private const string Version = "p2$";
+        private const string LegacyVersion = "p1$";
+        private const int Iterations = 210000; // OWASP minimum for PBKDF2-HMAC-SHA512
+        private const int LegacyIterations = 100000;
         private const int SaltSize = 16;
         private const int HashSize = 32;
 
@@ -34,7 +36,7 @@ namespace MultiplayerARPG.MMO
             byte[] salt = new byte[SaltSize];
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
                 rng.GetBytes(salt);
-            return Version + ToB64(salt) + "$" + ToB64(Pbkdf2(password, salt));
+            return Version + ToB64(salt) + "$" + ToB64(Pbkdf2(password, salt, Iterations));
         }
 
         public bool VerifyPassword(string password, string hashedPassword)
@@ -43,14 +45,15 @@ namespace MultiplayerARPG.MMO
                 return false;
             byte[] actual;
             byte[] expected;
-            if (hashedPassword.StartsWith(Version))
+            bool isCurrent = hashedPassword.StartsWith(Version);
+            if (isCurrent || hashedPassword.StartsWith(LegacyVersion))
             {
                 string[] parts = hashedPassword.Substring(Version.Length).Split('$');
                 if (parts.Length != 2)
                     return false;
                 try
                 {
-                    actual = Pbkdf2(password, FromB64(parts[0]));
+                    actual = Pbkdf2(password, FromB64(parts[0]), isCurrent ? Iterations : LegacyIterations);
                     expected = FromB64(parts[1]);
                 }
                 catch (System.FormatException)
@@ -71,9 +74,9 @@ namespace MultiplayerARPG.MMO
             return !hashedPassword.StartsWith(Version);
         }
 
-        private byte[] Pbkdf2(string password, byte[] salt)
+        private byte[] Pbkdf2(string password, byte[] salt, int iterations)
         {
-            using (Rfc2898DeriveBytes kdf = new Rfc2898DeriveBytes(_passwordSaltPrefix + password + _passwordSaltPostfix, salt, Iterations, HashAlgorithmName.SHA512))
+            using (Rfc2898DeriveBytes kdf = new Rfc2898DeriveBytes(_passwordSaltPrefix + password + _passwordSaltPostfix, salt, iterations, HashAlgorithmName.SHA512))
                 return kdf.GetBytes(HashSize);
         }
 
