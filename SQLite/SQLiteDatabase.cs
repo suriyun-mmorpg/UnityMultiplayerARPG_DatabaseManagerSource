@@ -702,9 +702,11 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask<int> ChangeGold(string userId, int gold)
         {
-            ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id",
+            int rows = ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id AND gold + @gold >= 0",
                 new SqliteParameter("@id", userId),
                 new SqliteParameter("@gold", gold));
+            if (rows <= 0)
+                return new UniTask<int>(-1);
             return GetGold(userId);
         }
 

@@ -471,9 +471,11 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> ChangeGold(string userId, int gold)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id",
+            int rows = await ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id AND gold + @gold >= 0",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@gold", gold));
+            if (rows <= 0)
+                return -1;
             return await GetGold(userId);
         }
 

@@ -234,9 +234,11 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> ChangeGuildGold(int guildId, int gold)
         {
-            await ExecuteNonQuery("UPDATE guild SET gold = gold + @gold WHERE id=@id",
+            int rows = await ExecuteNonQuery("UPDATE guild SET gold = gold + @gold WHERE id=@id AND gold + @gold >= 0",
                 new MySqlParameter("@id", guildId),
                 new MySqlParameter("@gold", gold));
+            if (rows <= 0)
+                return -1;
             return await GetGuildGold(guildId);
         }
 

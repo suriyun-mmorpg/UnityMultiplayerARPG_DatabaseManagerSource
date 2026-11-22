@@ -228,14 +228,14 @@ namespace MultiplayerARPG.MMO
         {
             await PrepareUserCurrencies(userId);
             using var connection = await _dataSource.OpenConnectionAsync();
-            NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET gold = gold + $1 WHERE id = $2 RETURNING gold", connection);
+            NpgsqlCommand cmd = new NpgsqlCommand("UPDATE user_currencies SET gold = gold + $1 WHERE id = $2 AND gold + $1 >= 0 RETURNING gold", connection);
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Integer });
             cmd.Parameters.Add(new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Varchar });
             await cmd.PrepareAsync();
             cmd.Parameters[0].Value = gold;
             cmd.Parameters[1].Value = userId;
             object result = await cmd.ExecuteScalarAsync();
-            return result == null ? 0 : (int)result;
+            return result == null ? -1 : (int)result;
         }
 
         public const string CACHE_KET_GET_CASH = "GET_CASH";
