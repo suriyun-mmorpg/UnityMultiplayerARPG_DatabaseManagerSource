@@ -421,6 +421,7 @@ namespace MultiplayerARPG.MMO
         public override async UniTask<string> ValidateUserLogin(string username, string password)
         {
             string id = string.Empty;
+            bool rehash = false;
             await ExecuteReader((reader) =>
             {
                 if (reader.Read())
@@ -429,10 +430,17 @@ namespace MultiplayerARPG.MMO
                     string hashedPassword = reader.GetString(1);
                     if (!UserLoginManager.VerifyPassword(password, hashedPassword))
                         id = string.Empty;
+                    else
+                        rehash = UserLoginManager.NeedsRehash(hashedPassword);
                 }
             }, "SELECT id, password FROM userlogin WHERE username=@username AND authType=@authType LIMIT 1",
                 new MySqlParameter("@username", username),
                 new MySqlParameter("@authType", AUTH_TYPE_NORMAL));
+
+            if (rehash)
+                await ExecuteNonQuery("UPDATE userlogin SET password=@password WHERE id=@id",
+                    new MySqlParameter("@id", id),
+                    new MySqlParameter("@password", UserLoginManager.GetHashedPassword(password)));
 
             return id;
         }
@@ -471,9 +479,11 @@ namespace MultiplayerARPG.MMO
 
         public override async UniTask<int> ChangeGold(string userId, int gold)
         {
-            await ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id",
+            int rows = await ExecuteNonQuery("UPDATE userlogin SET gold = gold + @gold WHERE id=@id AND gold + @gold >= 0",
                 new MySqlParameter("@id", userId),
                 new MySqlParameter("@gold", gold));
+            if (rows <= 0)
+                return -1;
             return await GetGold(userId);
         }
 

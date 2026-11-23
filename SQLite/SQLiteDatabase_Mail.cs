@@ -100,17 +100,10 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask<long> UpdateClaimMailItemsState(string mailId, string userId)
         {
-            object result = ExecuteScalar("SELECT COUNT(*) FROM mail WHERE id=@id AND receiverId LIKE @receiverId",
+            // Atomic: only the call that flips isClaim 0->1 sees 1 affected row
+            return new UniTask<long>(ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=datetime('now', 'utc') WHERE id=@id AND receiverId LIKE @receiverId AND isClaim=0 AND isDelete=0",
                 new SqliteParameter("@id", mailId),
-                new SqliteParameter("@receiverId", userId));
-            long count = result != null ? (long)result : 0;
-            if (count > 0)
-            {
-                ExecuteNonQuery("UPDATE mail SET isClaim=1, claimTimestamp=datetime('now', 'utc') WHERE id=@id AND receiverId LIKE @receiverId AND isClaim=0",
-                    new SqliteParameter("@id", mailId),
-                    new SqliteParameter("@receiverId", userId));
-            }
-            return new UniTask<long>(count);
+                new SqliteParameter("@receiverId", userId)));
         }
 
         public override UniTask<long> UpdateDeleteMailState(string mailId, string userId)

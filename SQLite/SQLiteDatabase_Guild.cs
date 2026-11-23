@@ -250,9 +250,11 @@ namespace MultiplayerARPG.MMO
 
         public override UniTask<int> ChangeGuildGold(int guildId, int gold)
         {
-            ExecuteNonQuery("UPDATE guild SET gold = gold + @gold WHERE id=@id",
+            int rows = ExecuteNonQuery("UPDATE guild SET gold = gold + @gold WHERE id=@id AND gold + @gold >= 0",
                 new SqliteParameter("@id", guildId),
                 new SqliteParameter("@gold", gold));
+            if (rows <= 0)
+                return new UniTask<int>(-1);
             return GetGuildGold(guildId);
         }
 

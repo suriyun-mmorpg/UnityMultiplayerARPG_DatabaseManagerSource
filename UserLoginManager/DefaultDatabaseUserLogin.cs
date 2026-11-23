@@ -4,7 +4,9 @@ using System.Text;
 namespace MultiplayerARPG.MMO
 {
     /// <summary>
-    /// The default one use nanoid to generate ID, use MD5 (with salt setting) I recommend you to create new database user login manager because MD5 is considered insecure nowsaday
+    /// New passwords are stored as "p2$salt$hash": PBKDF2-HMAC-SHA512 (210k iterations; legacy "p1$" at 100k also verifies) with a random per-user salt (the optional
+    /// prefix/postfix settings act as a server-wide pepper). Legacy unsalted-MD5 hashes still verify so
+    /// existing accounts can log in; <see cref="NeedsRehash"/> flags them so the database upgrades them.
     /// </summary>
     public class DefaultDatabaseUserLogin : IDatabaseUserLogin
     {
@@ -22,15 +24,66 @@ namespace MultiplayerARPG.MMO
             return System.Guid.NewGuid().ToString("N");
         }
 
+        private const string Version = "p2$";
+        private const string LegacyVersion = "p1$";
+        private const int Iterations = 210000; // OWASP minimum for PBKDF2-HMAC-SHA512
+        private const int LegacyIterations = 100000;
+        private const int SaltSize = 16;
+        private const int HashSize = 32;
+
         public string GetHashedPassword(string password)
         {
-            return GetMD5(password);
+            byte[] salt = new byte[SaltSize];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+                rng.GetBytes(salt);
+            return Version + ToB64(salt) + "$" + ToB64(Pbkdf2(password, salt, Iterations));
         }
 
         public bool VerifyPassword(string password, string hashedPassword)
         {
-            return GetMD5(password).Equals(hashedPassword);
+            if (string.IsNullOrEmpty(hashedPassword))
+                return false;
+            byte[] actual;
+            byte[] expected;
+            bool isCurrent = hashedPassword.StartsWith(Version);
+            if (isCurrent || hashedPassword.StartsWith(LegacyVersion))
+            {
+                string[] parts = hashedPassword.Substring(Version.Length).Split('$');
+                if (parts.Length != 2)
+                    return false;
+                try
+                {
+                    actual = Pbkdf2(password, FromB64(parts[0]), isCurrent ? Iterations : LegacyIterations);
+                    expected = FromB64(parts[1]);
+                }
+                catch (System.FormatException)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                actual = Encoding.UTF8.GetBytes(GetMD5(password));
+                expected = Encoding.UTF8.GetBytes(hashedPassword.ToLowerInvariant());
+            }
+            return CryptographicOperations.FixedTimeEquals(actual, expected);
         }
+
+        public bool NeedsRehash(string hashedPassword)
+        {
+            return !hashedPassword.StartsWith(Version);
+        }
+
+        private byte[] Pbkdf2(string password, byte[] salt, int iterations)
+        {
+            using (Rfc2898DeriveBytes kdf = new Rfc2898DeriveBytes(_passwordSaltPrefix + password + _passwordSaltPostfix, salt, iterations, HashAlgorithmName.SHA512))
+                return kdf.GetBytes(HashSize);
+        }
+
+        // Unpadded base64: keeps the whole hash at 69 chars, inside the MySQL varchar(72) column.
+        private static string ToB64(byte[] data) => System.Convert.ToBase64String(data).TrimEnd('=');
+
+        private static byte[] FromB64(string text) => System.Convert.FromBase64String(text + new string('=', (4 - text.Length % 4) % 4));
 
         private string GetMD5(string text)
         {
